@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提示词四技巧五天掌握计划 · 10/14–10/18</title>
+<style>
+  :root{
+    --ink:#1a1d24;
+    --ink-2:#4a5160;
+    --ink-3:#767e8d;
+    --line:#e3e6ec;
+    --bg:#f6f7f9;
+    --card:#ffffff;
+    --brand:#2f5bd7;
+    --brand-soft:#eef2fd;
+    --warn:#b4690e;
+    --warn-soft:#fdf3e3;
+    --ok:#1f7a52;
+    --ok-soft:#e8f5ee;
+    --danger:#b3352f;
+    --danger-soft:#fbeceb;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    font-size:15px;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1020px;margin:0 auto;padding:0 28px 80px;}
+
+  /* ---------- 顶部 ---------- */
+  header.hero{
+    background:linear-gradient(140deg,#1c2440 0%,#2f3d70 55%,#3a4d8f 100%);
+    color:#fff;
+    margin:0 -28px 40px;
+    padding:44px 28px 38px;
+  }
+  .hero-inner{max-width:964px;margin:0 auto;}
+  .kicker{
+    display:inline-block;
+    font-size:12.5px;letter-spacing:.14em;
+    background:rgba(255,255,255,.14);
+    padding:5px 12px;border-radius:20px;margin-bottom:16px;
+  }
+  h1{font-size:31px;line-height:1.35;margin:0 0 10px;font-weight:700;letter-spacing:-.01em;}
+  .hero p.lede{margin:0;color:#c9d2ea;font-size:15.5px;max-width:720px;}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px;}
+  .stat{
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:12px;padding:14px 16px;
+  }
+  .stat .n{font-size:25px;font-weight:700;line-height:1.2;}
+  .stat .n small{font-size:13px;font-weight:500;opacity:.85;margin-left:2px;}
+  .stat .l{font-size:12.5px;color:#b9c4e0;margin-top:4px;}
+
+  .verdict{
+    margin-top:22px;background:rgba(255,255,255,.12);
+    border-left:3px solid #7fd1a8;
+    border-radius:0 10px 10px 0;padding:14px 18px;font-size:14.5px;color:#e8edf9;
+  }
+  .verdict b{color:#fff;}
+
+  /* ---------- 通用 ---------- */
+  section{margin-bottom:40px;}
+  h2{
+    font-size:21px;margin:0 0 6px;font-weight:700;letter-spacing:-.01em;
+    display:flex;align-items:baseline;gap:10px;
+  }
+  h2 .idx{
+    font-size:12.5px;font-weight:600;color:var(--brand);
+    background:var(--brand-soft);border-radius:6px;padding:2px 9px;
+    letter-spacing:.05em;
+  }
+  .sub{color:var(--ink-3);font-size:13.5px;margin:0 0 18px;}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:22px 24px;
+  }
+  .card + .card{margin-top:14px;}
+
+  h3{font-size:16.5px;margin:0 0 10px;font-weight:650;}
+  h4{font-size:14.5px;margin:18px 0 8px;font-weight:650;color:var(--ink-2);}
+  p{margin:0 0 10px;}
+  ul{margin:0 0 10px;padding-left:20px;}
+  li{margin-bottom:6px;}
+  li:last-child{margin-bottom:0;}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.8px;background:#f0f2f6;color:#2b3550;
+    padding:1.5px 6px;border-radius:5px;
+  }
+
+  /* ---------- 表格 ---------- */
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);}
+  th{
+    background:#eef1f6;font-weight:650;font-size:13.5px;color:var(--ink-2);
+    border-bottom:1px solid #d8dde6;
+  }
+  tr:last-child td{border-bottom:none;}
+  td.k{font-weight:600;color:var(--ink);white-space:nowrap;}
+
+  /* ---------- 路线图 ---------- */
+  .route{display:grid;grid-template-columns:1fr;gap:0;}
+  .phase{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 22px;margin-bottom:14px;position:relative;
+  }
+  .phase-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px;}
+  .phase-head .tag{
+    font-size:12px;font-weight:650;background:var(--brand);color:#fff;
+    border-radius:6px;padding:3px 10px;
+  }
+  .phase-head .date{font-size:13.5px;color:var(--ink-3);}
+  .phase .goal{font-size:14.5px;font-weight:600;margin:0 0 4px;}
+  .phase .why{font-size:13.5px;color:var(--ink-2);margin:0;}
+
+  .days{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px;}
+  .daychip{
+    border:1px solid var(--line);border-radius:10px;padding:12px 12px 13px;background:#fbfcfd;
+  }
+  .daychip .d{font-size:12.5px;color:var(--ink-3);font-weight:600;}
+  .daychip .t{font-size:13.5px;font-weight:650;margin:3px 0 5px;line-height:1.45;}
+  .daychip .s{font-size:12.5px;color:var(--ink-2);}
+
+  /* ---------- 每日卡 ---------- */
+  .day{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    overflow:hidden;margin-bottom:16px;
+  }
+  .day-head{
+    padding:16px 22px;border-bottom:1px solid var(--line);
+    display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;
+    background:linear-gradient(90deg,#f8f9fc,#ffffff);
+  }
+  .day-head .no{
+    font-size:12px;font-weight:700;color:#fff;background:var(--ink);
+    border-radius:6px;padding:3px 9px;letter-spacing:.03em;
+  }
+  .day-head .ttl{font-size:17px;font-weight:700;}
+  .day-head .meta{font-size:13px;color:var(--ink-3);margin-left:auto;}
+  .day-body{padding:18px 22px 20px;}
+  .day-body .focus{
+    font-size:14px;color:var(--ink-2);background:#f7f8fb;
+    border-left:3px solid var(--brand);border-radius:0 8px 8px 0;
+    padding:9px 14px;margin-bottom:16px;
+  }
+  .day-body .focus b{color:var(--ink);}
+
+  .steps{display:grid;grid-template-columns:1fr;gap:0;}
+  .step{
+    display:grid;grid-template-columns:106px 1fr;gap:14px;
+    padding:11px 0;border-top:1px dashed var(--line);
+  }
+  .step:first-of-type{border-top:none;padding-top:0;}
+  .step .lb{
+    font-size:13px;font-weight:650;color:var(--brand);
+    background:var(--brand-soft);border-radius:6px;padding:3px 0;text-align:center;
+    height:fit-content;
+  }
+  .step .ct{font-size:14px;}
+  .step .ct .what{font-weight:600;}
+  .step .ct .det{color:var(--ink-2);font-size:13.5px;margin-top:2px;}
+
+  .gate{
+    margin-top:16px;background:var(--ok-soft);border:1px solid #c9e6d7;
+    border-radius:10px;padding:12px 16px;font-size:14px;
+  }
+  .gate .gh{font-size:12.5px;font-weight:700;color:var(--ok);letter-spacing:.05em;margin-bottom:3px;}
+
+  .out{
+    margin-top:12px;font-size:13.5px;color:var(--ink-2);
+    padding-top:12px;border-top:1px solid var(--line);
+  }
+  .out b{color:var(--ink);}
+
+  /* ---------- 技巧速查 ---------- */
+  .tech{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:0;margin-bottom:14px;overflow:hidden;
+  }
+  .tech-head{
+    padding:14px 22px;border-bottom:1px solid var(--line);
+    background:#f8f9fc;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;
+  }
+  .tech-head .nm{font-size:16.5px;font-weight:700;}
+  .tech-head .en{font-size:13px;color:var(--ink-3);}
+  .tech-head .pos{
+    margin-left:auto;font-size:12.5px;color:var(--ink-2);
+    background:#eef1f6;border-radius:20px;padding:3px 11px;
+  }
+  .tech-body{padding:16px 22px 18px;display:grid;grid-template-columns:1fr 1fr;gap:16px 26px;}
+  @media(max-width:760px){ .tech-body{grid-template-columns:1fr;} }
+  .blk h5{
+    font-size:13px;font-weight:700;margin:0 0 6px;letter-spacing:.03em;
+    color:var(--ink-3);text-transform:none;
+  }
+  .blk ul{font-size:13.8px;}
+  .blk.good h5{color:var(--ok);}
+  .blk.bad h5{color:var(--danger);}
+  .sig{
+    background:#f2f5fb;border:1px solid #dde4f2;border-radius:8px;
+    padding:10px 13px;font-size:13.5px;color:#2f3d70;margin-bottom:8px;
+  }
+
+  /* ---------- 提示区 ---------- */
+  .note{
+    border-radius:12px;padding:14px 18px;font-size:14px;margin-bottom:12px;
+    border:1px solid;
+  }
+  .note.warn{background:var(--warn-soft);border-color:#f0dcbc;color:#6b4405;}
+  .note.ok{background:var(--ok-soft);border-color:#c9e6d7;color:#145639;}
+  .note.danger{background:var(--danger-soft);border-color:#f0ccc9;color:#7d211d;}
+  .note b{font-weight:700;}
+  .note .nt{display:block;font-size:12.5px;font-weight:700;letter-spacing:.05em;margin-bottom:4px;opacity:.8;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:760px){ .grid2{grid-template-columns:1fr;} }
+
+  .kv{display:grid;grid-template-columns:96px 1fr;gap:8px 14px;font-size:14px;}
+  .kv dt{font-weight:600;color:var(--ink-2);}
+  .kv dd{margin:0;color:var(--ink);}
+
+  footer{
+    margin-top:44px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:12.8px;color:var(--ink-3);
+  }
+
+  @media print{
+    body{background:#fff;font-size:11.5pt;}
+    header.hero{background:#1c2440 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .card,.day,.tech,.phase{break-inside:avoid;}
+    section{margin-bottom:22px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="kicker">AI 初学者 · 第二周 · 提示词进阶</span>
+    <h1>提示词四技巧五天掌握计划</h1>
+    <p class="lede">结构化输出（JSON mode）、Few-shot、Chain-of-thought、系统提示词分层 —— 五天把「会用」升级到「看得懂、分得清、改得对」。</p>
+
+    <div class="stats">
+      <div class="stat"><div class="n">5<small>天</small></div><div class="l">10/14 周三 – 10/18 周日</div></div>
+      <div class="stat"><div class="n">3<small>小时/天以上</small></div><div class="l">合计约 15–18 小时</div></div>
+      <div class="stat"><div class="n">4<small>个知识点</small></div><div class="l">分层 / JSON / 示例 / 推理链</div></div>
+      <div class="stat"><div class="n">80<small>% 标注准确率</small></div><div class="l">结业验收线</div></div>
+    </div>
+
+    <div class="verdict">
+      <b>可行性：能完成，但真正的难点不在「学」而在「看」。</b>
+      这四个知识点概念都不难，一周读两遍就懂；卡住大多数初学者的是——拿到一段陌生提示词，说不清它到底用了什么技巧、好在哪、该怎么改。所以本计划把 <b>每天一半以上的时间分配给「拆解别人的提示词」和「对比实验」</b>，而不是继续看教程。按每天 3 小时计，留约 20% 缓冲，实际有效任务约 2.5 小时/天。
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ============ 1. 目标与判断 ============ -->
+<section>
+  <h2><span class="idx">01</span>目标、标准与关键取舍</h2>
+  <p class="sub">先说清楚这周五天结束时，什么算「掌握了」。</p>
+
+  <div class="card">
+    <h3>目标契约</h3>
+    <dl class="kv">
+      <dt>主目标</dt><dd>掌握结构化输出、Few-shot、Chain-of-thought、系统提示词分层四个知识点，达到「能看懂和分辨」。</dd>
+      <dt>完成标准</dt><dd>拿到一段陌生提示词，能说出它用了哪些技巧、每一处为什么这样写、好在哪、差在哪，并给出改写版本；自己写提示词时知道该往哪个方向改。</dd>
+      <dt>验收线</dt><dd>① 6–8 段陌生提示词的拆解卡，技巧标注准确率 ≥ 80%；② 不看资料口述四个技巧的定义、适用场景、各 2 个失败模式；③ 一个同时用上四种技巧的完整提示词，跑得通。</dd>
+      <dt>期限</dt><dd>2026/10/14（周三）– 10/18（周日），共 5 天。</dd>
+      <dt>投入</dt><dd>每天 3 小时以上。按 80% 折算，每天有效任务约 2.5 小时，余下作为缓冲、补欠和休息。</dd>
+      <dt>练手环境</dt><dd>网页版对话工具为主（ChatGPT / DeepSeek / 豆包等）；代码 API 作为 Day 2 的「了解 + 选做」路径，两条都覆盖。</dd>
+      <dt>已有基础</dt><dd>上周学完吴恩达提示词课程，已具备「指令清晰具体」「给模型思考时间」等基本原则。</dd>
+    </dl>
+  </div>
+
+  <div class="card">
+    <h3>为什么按这个顺序排</h3>
+    <table>
+      <thead><tr><th style="width:22%">顺序</th><th style="width:30%">知识点</th><th>排在这个位置的理由</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Day 1</td><td>系统提示词分层</td><td>它是「坐标系」。没有分层框架，后面三天的练习就没有挂载点——你要分辨一段提示词用了什么技巧，先得知道一段提示词由哪几层构成。先建骨架，再看零件。</td></tr>
+        <tr><td class="k">Day 2</td><td>结构化输出 / JSON mode</td><td>最具体、最容易立刻验证对错（能不能被 <code>json.loads</code> 解析，是客观判据）。先拿一个「有硬性验收」的技巧建立手感。</td></tr>
+        <tr><td class="k">Day 3</td><td>Few-shot</td><td>示例是「给模式」，比 CoT 更基础。而且 Few-shot 与结构化输出经常同时出现，第二天刚练完 schema，正好接着看示例如何辅助定格式。</td></tr>
+        <tr><td class="k">Day 4</td><td>Chain-of-thought</td><td>CoT 可与 Few-shot 合体（带推理链的示例 = Few-shot CoT），放在 Few-shot 之后顺理成章；且 CoT 的判断难度最高（要能判断「该不该用」），放在最后学、留一天缓冲。</td></tr>
+        <tr><td class="k">Day 5</td><td>混合分辨 + 验收</td><td>四个技巧混着出现在真实提示词里，只有合练才能真正达到「分辨」。这一天也是补进度和复盘的安全垫。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note warn">
+    <span class="nt">最重要的一条取舍</span>
+    如果你只有时间做三件事，做这三件：<b>Day 1 的五层拆解模板</b>、<b>Day 3 的 0/1/3/5-shot 对比实验</b>、<b>Day 5 的拆解卡</b>。代码 API 部分、Day 4 的五题对比，都是可以砍的。理由：你的验收标准是「分辨」，而分辨能力来自对比样本量，不是来自读更多教程。
+  </div>
+</section>
+
+<!-- ============ 2. 路线 ============ -->
+<section>
+  <h2><span class="idx">02</span>五天路线</h2>
+  <p class="sub">两个阶段：先逐个攻克建立判据，再混合分辨接受检验。</p>
+
+  <div class="route">
+    <div class="phase">
+      <div class="phase-head">
+        <span class="tag">阶段一</span>
+        <span class="date">10/14 周三 – 10/17 周六（4 天）</span>
+      </div>
+      <p class="goal">建立坐标 + 逐个攻克：每天拿下一个技巧，产出一份「判据卡」</p>
+      <p class="why">策略是「一天一技巧、一天一判据」。每天结束时必须留下一条可复用的判断标准（什么时候该用 / 什么时候不该用 / 长什么样 / 常见毛病），Day 5 的混合分辨就靠这四张判据卡。</p>
+      <div class="days">
+        <div class="daychip"><div class="d">10/14 周三</div><div class="t">系统提示词分层</div><div class="s">建骨架</div></div>
+        <div class="daychip"><div class="d">10/15 周四</div><div class="t">结构化输出</div><div class="s">网页版 + 代码两条路</div></div>
+        <div class="daychip"><div class="d">10/16 周五</div><div class="t">Few-shot</div><div class="s">对比实验</div></div>
+        <div class="daychip"><div class="d">10/17 周六</div><div class="t">Chain-of-thought</div><div class="s">边界判断</div></div>
+        <div class="daychip" style="background:#f2f5fb;"><div class="d">—</div><div class="t" style="color:#767e8d;">（进入阶段二）</div><div class="s">—</div></div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-head">
+        <span class="tag">阶段二</span>
+        <span class="date">10/18 周日（1 天）</span>
+      </div>
+      <p class="goal">混合分辨 + 验收：拿陌生提示词开刀，一次用上四种技巧</p>
+      <p class="why">前面四天是「分」，这一天是「合」。真实提示词从来不会只用一种技巧，能不能在混合场景里准确切分，才是验收标准说的「看懂和分辨」。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. 每日安排 ============ -->
+<section>
+  <h2><span class="idx">03</span>每日详细安排</h2>
+  <p class="sub">每天按「学习 → 练习 → 测试 → 纠错」四环节走，每格约 2.5 小时有效任务，其余为缓冲。</p>
+
+  <!-- Day 1 -->
+  <div class="day">
+    <div class="day-head">
+      <span class="no">DAY 1</span>
+      <span class="ttl">系统提示词分层</span>
+      <span class="meta">10/14 周三 · 约 3–3.5 小时</span>
+    </div>
+    <div class="day-body">
+      <div class="focus">
+        <b>核心问题：</b>一段提示词由哪几层构成？为什么分开写比堆在一起好？——这是后面所有「分辨」动作的基础工具。
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="lb">学习 45′</div>
+          <div class="ct">
+            <div class="what">搞懂五层结构，以及「为什么要分层」</div>
+            <div class="det">五层：<b>角色与身份</b>（你是谁、服务对象）、<b>任务与目标</b>（要做什么、什么叫做好）、<b>约束与边界</b>（不能做什么、遇到什么情况怎么办）、<b>输出格式</b>（长什么样、字段/结构/长度）、<b>示例与上下文</b>（给样例、给背景资料）。分层的三个好处：可复用（换任务只改任务层）、可调试（出问题能定位到某一层）、可替换（示例层换一批不影响格式层）。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">练习 60′</div>
+          <div class="ct">
+            <div class="what">拆解 2 段真实的 system prompt，逐句标注属于哪一层</div>
+            <div class="det">素材来源：某个公开的 GPTs / 智能体指令全文、开源项目的 prompt 文件、你常用的 AI 产品的系统提示词。用不同颜色或标记把每一句归入五层之一。重点观察两件事：① 有多少句子其实「跨层」（比如一句里既说了角色又说了格式）；② 约束层是不是被放在了最末尾最容易被忽略的位置。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">产出 30′</div>
+          <div class="ct">
+            <div class="what">搭出自己的「通用五层模板」</div>
+            <div class="det">一页纸：五层各写一句占位句 + 每层 3 条可填内容提示。以后写任何提示词都从这个模板出发。这是本周最重要的产出物之一。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">测试 30′</div>
+          <div class="ct">
+            <div class="what">闭卷回忆 + 标层准确率自测</div>
+            <div class="det">① 不看模板，口述五层并说明每层作用，全对才过；② 找一段没拆过的提示词，逐句标层，准确率 ≥ 80% 才过。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">纠错 30′</div>
+          <div class="ct">
+            <div class="what">回头改自己上周写的提示词</div>
+            <div class="det">翻出吴恩达课程里你写过的 2–3 个提示词，按五层重新归类，标出「缺了哪一层」。大概率你会发现：任务层写得很详细，但约束层和输出格式层基本是空的。</div>
+          </div>
+        </div>
+      </div>
+      <div class="gate">
+        <div class="gh">今日通过标准</div>
+        能不看资料说出五层名称与作用；拿到一段陌生提示词能在 10 分钟内完成分层标注，准确率 ≥ 80%；手上有一份自己的五层模板。
+      </div>
+      <div class="out"><b>产出：</b>五层通用模板（1 页）· 2 段真实提示词的分层标注稿 · 上周旧提示词的「缺层清单」</div>
+    </div>
+  </div>
+
+  <!-- Day 2 -->
+  <div class="day">
+    <div class="day-head">
+      <span class="no">DAY 2</span>
+      <span class="ttl">结构化输出 / JSON mode</span>
+      <span class="meta">10/15 周四 · 约 3–3.5 小时</span>
+    </div>
+    <div class="day-body">
+      <div class="focus">
+        <b>核心问题：</b>「能解析」和「字段对」是两件事。分清这两种强度，才看得懂别人的提示词在哪个层级上做了约束。
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="lb">学习 60′</div>
+          <div class="ct">
+            <div class="what">网页版怎么要 JSON，代码侧两种模式差在哪</div>
+            <div class="det">
+              <b>网页版：</b>直接在提示词里描述字段名、类型、枚举值，并明确「只输出 JSON，不要任何解释性文字」。<br>
+              <b>代码侧（了解即可）：</b><code>response_format: {type:"json_object"}</code> 是 JSON mode，只保证输出是合法 JSON，<b>不保证字段存在、不保证枚举值合法</b>；<code>response_format: {type:"json_schema", strict:true}</code> 是 Structured Outputs，用受限解码在 token 层面屏蔽非法路径，官方评测 100% 符合 schema。代价：只支持 JSON Schema 子集（嵌套上限约 5 层、不支持 <code>minLength/maxLength</code>、strict 模式下所有字段必须 required，可选字段用允许 null 表达）。
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">练习 45′</div>
+          <div class="ct">
+            <div class="what">网页版对比实验：同一抽取任务跑两种写法</div>
+            <div class="det">任务：从一段中文新闻里抽取 时间 / 地点 / 人物 / 事件类型 四个字段。写法 A 只说「提取这些信息」，写法 B 明确给出 JSON 结构与字段说明并要求只输出 JSON。各跑 3 次（共 6 次），统计「能被直接解析」的比例。你会明显看到 A 经常夹带「以下是提取结果：」这类废话。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">选做 45′</div>
+          <div class="ct">
+            <div class="what">代码路径（有 API key 就做，没有就只读文档）</div>
+            <div class="det">用 OpenAI 兼容接口跑通一次 <code>json_object</code>，再跑通一次 <code>json_schema + strict:true</code>（Python 可用 pydantic 定义结构）。<b>故意写一次错误 schema，看报错长什么样</b>——记住这个报错，以后排查很有用。没有 key 就改为阅读文档 + 抄一遍示例代码，目标只是「知道有这条路径」。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">测试 30′</div>
+          <div class="ct">
+            <div class="what">三个不同任务各写一个 schema 并验证</div>
+            <div class="det">任务类型：分类（输出 标签+置信度）、抽取（多字段）、多字段摘要。每个写清字段名、类型、枚举值，实际跑一次，要求输出可被 <code>json.loads</code> 解析且字段齐全，3/3 通过。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">纠错 30′</div>
+          <div class="ct">
+            <div class="what">整理「不遵守格式」的三种典型失败</div>
+            <div class="det">① 输出前后夹带解释文字；② 字段名被模型自行改名或翻译；③ 嵌套层级 / 枚举值不符合要求。每条写一句触发原因和一句修法，进失败清单。</div>
+          </div>
+        </div>
+      </div>
+      <div class="gate">
+        <div class="gh">今日通过标准</div>
+        能说清 JSON mode 与 Structured Outputs 的区别（一句话版本：一个保证能解析，一个保证字段对）；三个任务的输出 3/3 可被解析且字段齐全；失败清单里有至少 3 条记录。
+      </div>
+      <div class="out"><b>产出：</b>网页版对比实验记录（6 次结果）· 三个可复用的 schema · 格式失败清单</div>
+    </div>
+  </div>
+
+  <!-- Day 3 -->
+  <div class="day">
+    <div class="day-head">
+      <span class="no">DAY 3</span>
+      <span class="ttl">Few-shot 示例</span>
+      <span class="meta">10/16 周五 · 约 3–3.5 小时</span>
+    </div>
+    <div class="day-body">
+      <div class="focus">
+        <b>核心问题：</b>示例不是在「教模型正确答案」，而是在「设定一个让它继续下去的模式」。想通这一点，你看别人写的示例就懂它想传达什么了。
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="lb">学习 45′</div>
+          <div class="ct">
+            <div class="what">示例到底在传达什么 + 数量、选择、顺序的经验规则</div>
+            <div class="det">
+              示例传达的不只是答案，更是：<b>输出格式</b>、<b>判断粒度</b>（多细算「负面」）、<b>标签词表</b>（用 P1/P2 还是 高/中/低）、<b>边界怎么判</b>、<b>语气</b>。<br>
+              数量经验值：<b>3 个是默认甜点</b>（覆盖常见 / 边界 / 棘手各一）；5 个适合字段多的结构化输出；8 个以上收益递减，顺序敏感性也变强。<br>
+              选择规则：多样性优先于数量；格式必须完全一致；分类任务每个标签至少一个例子；示例标错比选错更致命。<br>
+              顺序规则：存在首因/近因偏差，同类标签不要扎堆排；重要场景至少测 3 种排序。
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">练习 90′</div>
+          <div class="ct">
+            <div class="what">0 / 1 / 3 / 5-shot 四版本对比实验</div>
+            <div class="det">选一个真实任务（推荐：客服意图分类，或影评情感 + 理由）。写四个版本的提示词，用<b>同一批 10 条输入</b>分别跑一遍，记录：格式一致性（口径是否统一）、判断一致性（同样输入多次跑是否稳定）、加第几个例子开始稳定。做成一张对比表——这张表就是你日后判断「该给几个例子」的直觉来源。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">测试 30′</div>
+          <div class="ct">
+            <div class="what">新任务限时实战</div>
+            <div class="det">换一个你没写过的任务（如：把用户反馈归类到 5 个产品模块），20 分钟内写出 3-shot 提示词，10 条测试输入中格式与口径一致 ≥ 8 条才算过。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">纠错 45′</div>
+          <div class="ct">
+            <div class="what">拆解别人提示词里的示例，判断「这个例子提供了什么」</div>
+            <div class="det">找 3 段带示例的提示词，对每个示例标注它主要传达的是格式、粒度、词表、边界还是语气；再找出其中的「坏例子」（几个例子长得太像 / 格式前后不一致 / 标错了 / 同类标签扎堆）。这是今天对「分辨」贡献最大的一步。</div>
+          </div>
+        </div>
+      </div>
+      <div class="gate">
+        <div class="gh">今日通过标准</div>
+        能说清「示例 = 设模式」而不是「示例 = 教答案」；给出 0/1/3/5-shot 在自己任务上的对比结论；能一眼指出别人示例集里的三类坏例子。
+      </div>
+      <div class="out"><b>产出：</b>0/1/3/5-shot 对比表 · 10 条测试集与结果 · 坏例子识别清单</div>
+    </div>
+  </div>
+
+  <!-- Day 4 -->
+  <div class="day">
+    <div class="day-head">
+      <span class="no">DAY 4</span>
+      <span class="ttl">Chain-of-thought 推理链</span>
+      <span class="meta">10/17 周六 · 约 3.5 小时</span>
+    </div>
+    <div class="day-body">
+      <div class="focus">
+        <b>核心问题：</b>CoT 不是万能增强器。会分辨的人，标志是能判断「这题<b>不该</b>用 CoT」——这才是今天的重点。
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="lb">学习 60′</div>
+          <div class="ct">
+            <div class="what">三种写法 + 适用边界的硬证据</div>
+            <div class="det">
+              三种写法：<b>Zero-shot CoT</b>（一句「让我们一步步思考」触发）、<b>Few-shot CoT</b>（给带完整推理链的示例）、<b>手写步骤分解</b>（你自己规定第一步做什么第二步做什么）。<br>
+              边界证据：一项覆盖 100+ 论文、20 个数据集的 meta 分析显示，CoT 的收益<b>高度集中在数学与符号推理</b>（平均 +12～14 分），在常识、软推理、简单问答上收益接近 0，有时更慢更贵。近年的研究还提示两点：一是推理链越长不等于想得越对；二是推理链<b>不总是忠实的</b>——它不一定反映模型真实的思考过程，别把它当可解释性工具。
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">练习 90′</div>
+          <div class="ct">
+            <div class="what">同一题跑四种写法，做一张对比表</div>
+            <div class="det">挑 5 道需要多步推理的题（算术应用题、逻辑题、多条件判断各来几道）。每道题分别用：直接问 / 加「一步步思考」/ 给 2 个带推理链的示例 / 手写固定步骤分解。记录正确率、输出长度、耗时。注意观察：简单题上 CoT 是否只是变长而没变准。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">测试 30′</div>
+          <div class="ct">
+            <div class="what">盲测「该不该用 CoT」</div>
+            <div class="det">给自己 6 道新题（混合：3 道符号/数学类、3 道常识/摘要类），先判断该不该用 CoT 并说明理由，再用选定的方法做。判断准确 ≥ 4/6，做对 ≥ 4/6。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">纠错 30′</div>
+          <div class="ct">
+            <div class="what">记录 CoT 的失败模式</div>
+            <div class="det">① 推理链中途跑偏，最后一步救不回来；② 中间步骤被编造，看起来完整但事实错误；③ 变长变慢但正确率没提升；④ 把推理链当「模型的真实想法」来审计——这是不可靠的。写进失败清单，与 Day 2 的格式失败清单合并。</div>
+          </div>
+        </div>
+      </div>
+      <div class="gate">
+        <div class="gh">今日通过标准</div>
+        能一句话说清 CoT 主要在哪类任务上有效（数学/符号/多步推理），并说出至少两类不该用的场景；盲测判断准确率 ≥ 4/6。
+      </div>
+      <div class="out"><b>产出：</b>5 题 × 4 写法的对比表 · 6 题判断盲测结果 · 更新后的失败清单</div>
+    </div>
+  </div>
+
+  <!-- Day 5 -->
+  <div class="day">
+    <div class="day-head">
+      <span class="no">DAY 5</span>
+      <span class="ttl">混合分辨 + 结业验收</span>
+      <span class="meta">10/18 周日 · 约 3.5 小时</span>
+    </div>
+    <div class="day-body">
+      <div class="focus">
+        <b>核心问题：</b>真实提示词四种技巧是混着用的。今天的任务就是——拿到没见过的，切得开、说得出、改得对。
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="lb">练习 90′</div>
+          <div class="ct">
+            <div class="what">拆解 6–8 段陌生提示词，做「拆解卡」</div>
+            <div class="det">素材：GitHub 上的 prompt 仓库、公开的智能体指令、别人分享的提示词合集（中英文各来几段）。每张拆解卡写四栏：① 用了哪些技巧（分层 / 结构化 / 示例 / 推理链，可能同时有多个）；② 每一处为什么这样写；③ 好在哪、差在哪；④ 你的改写版本。<b>每张卡限时 10 分钟</b>，逼自己形成直觉而不是慢慢抠。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">综合 60′</div>
+          <div class="ct">
+            <div class="what">一个真实任务，四种技巧全用上</div>
+            <div class="det">推荐任务：把一段长文本（新闻/报告/会议记录）转成指定 JSON 结构的摘要卡片。要求：用五层结构搭骨架；输出格式层写清 schema；给 3 个示例覆盖不同文本类型；对需要判断的字段加推理要求。写完跑通，检查输出能否被解析。</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">验收 45′</div>
+          <div class="ct">
+            <div class="what">四项结业检查，不看资料完成</div>
+            <div class="det">
+              ① 四个技巧各 30 秒口述：定义 + 适用场景 + 不适用场景；<br>
+              ② 5 段陌生提示词拆解，技巧标注准确率 ≥ 80%；<br>
+              ③ 自己写 4 个提示词（每个以一种技巧为主），隔一小时回看能清楚认出用了什么；<br>
+              ④ 说出每种技巧的 2 个典型失败模式。
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="lb">复盘 30′</div>
+          <div class="ct">
+            <div class="what">整理成一页《个人提示词检查清单》</div>
+            <div class="det">往后写任何提示词都对着过一遍：分层齐不齐 → 输出格式写死了没 → 要不要给示例、给几个 → 这题该不该要推理链 → 有没有踩进失败清单里的坑。这份清单是本周唯一的长期资产。</div>
+          </div>
+        </div>
+      </div>
+      <div class="gate">
+        <div class="gh">结业通过标准</div>
+        四项检查全部达标；手上有一份可长期使用的检查清单；能向别人解释这四种技巧的区别（不是只说自己会用）。
+      </div>
+      <div class="out"><b>产出：</b>6–8 张拆解卡 · 一个四技巧综合提示词 · 个人提示词检查清单（1 页）</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. 分辨速查 ============ -->
+<section>
+  <h2><span class="idx">04</span>四个技巧的分辨速查</h2>
+  <p class="sub">这一节是本计划的核心资产：看到什么信号 → 判断用了什么技巧 → 判断它写得好不好。</p>
+
+  <div class="tech">
+    <div class="tech-head">
+      <span class="nm">系统提示词分层</span>
+      <span class="en">Layered System Prompt</span>
+      <span class="pos">骨架 · 其他三个技巧的挂载点</span>
+    </div>
+    <div class="tech-body">
+      <div class="blk">
+        <h5>一眼认出它的信号</h5>
+        <div class="sig">出现 <code>#</code> 或 <code>##</code> 分节标题；出现「你是……」「你的任务是……」「请遵守以下限制」「按如下格式输出」「举例如下」这几类句子。</div>
+        <ul>
+          <li>角色层：你是资深XX、服务于XX人群</li>
+          <li>任务层：目标是、要求你、判断标准是</li>
+          <li>约束层：不要、禁止、必须、如果……则</li>
+          <li>格式层：字段清单、结构、字数、语气</li>
+          <li>示例层：Example、例如、输入→输出</li>
+        </ul>
+      </div>
+      <div class="blk good">
+        <h5>写得好 vs 常见毛病</h5>
+        <ul>
+          <li><b>好：</b>五层边界清楚，改一层不动其他层；约束写在靠前位置</li>
+          <li><b>好：</b>每层职责单一，一句只说一件事</li>
+          <li><b>毛病：</b>所有要求堆成一大段，出问题无法定位</li>
+          <li><b>毛病：</b>约束层压在最末尾，长提示词里容易被忽略</li>
+          <li><b>毛病：</b>角色层和任务层混写，改任务时误伤角色设定</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tech">
+    <div class="tech-head">
+      <span class="nm">结构化输出 / JSON mode</span>
+      <span class="en">Structured Output</span>
+      <span class="pos">零件 · 服务于下游程序解析</span>
+    </div>
+    <div class="tech-body">
+      <div class="blk">
+        <h5>一眼认出它的信号</h5>
+        <div class="sig">出现 schema / 字段名清单 / 「只输出 JSON，不要任何解释」/ <code>response_format</code> / 枚举值限定。</div>
+        <ul>
+          <li><b>弱约束（JSON mode）：</b>只保证输出是合法 JSON，字段可能缺、枚举可能出非法值</li>
+          <li><b>强约束（Structured Outputs）：</b>在生成层面屏蔽非法 token，字段与枚举必然符合 schema</li>
+          <li>网页版能做的只有「描述结构 + 要求只输出 JSON」，属于弱约束</li>
+          <li>强约束的代价：只支持 schema 子集（嵌套上限约 5 层、所有字段必填、可选字段用 null 表达）</li>
+        </ul>
+      </div>
+      <div class="blk">
+        <h5>什么时候用 / 不用</h5>
+        <ul>
+          <li><b>用：</b>下游要程序解析、批量跑、字段固定、需要跨调用一致</li>
+          <li><b>不用：</b>答案给人读、需要自由发挥的写作、结构还没想清楚只是在探索</li>
+        </ul>
+        <h5 style="margin-top:12px;color:var(--danger);">典型失败</h5>
+        <ul>
+          <li>输出夹带「好的，以下是结果：」导致解析失败</li>
+          <li>字段名被模型自行改名或翻译成中文</li>
+          <li>嵌套层级、枚举值不符合要求</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tech">
+    <div class="tech-head">
+      <span class="nm">Few-shot 示例</span>
+      <span class="en">Few-shot Prompting</span>
+      <span class="pos">零件 · 用示范代替描述</span>
+    </div>
+    <div class="tech-body">
+      <div class="blk">
+        <h5>一眼认出它的信号</h5>
+        <div class="sig">提示词里有 2–5 组「输入 → 输出」的成对示范，常见分隔方式：<code>Example 1/2/3</code>、<code>###</code>、<code>Q: / A:</code>。</div>
+        <ul>
+          <li>关键理解：示例不是在教正确答案，而是在<b>设定模型要延续的模式</b></li>
+          <li>它传达的是：格式、判断粒度、标签词表、边界怎么处理、语气</li>
+          <li>数量：<b>3 个是默认甜点</b>；5 个适合字段多的结构化输出；超过 8 个收益递减</li>
+          <li>顺序有首因/近因偏差，同类标签不要扎堆</li>
+        </ul>
+      </div>
+      <div class="blk">
+        <h5>什么时候用 / 不用</h5>
+        <ul>
+          <li><b>用：</b>格式特殊、标签词表是自造的（如 P1/P2/P3）、需要跨几百次调用保持一致、zero-shot 只有六七十分而你要九十分、语气光靠描述定不住</li>
+          <li><b>不用：</b>摘要、翻译、明显标签的分类、改写润色、大部分基于清晰上下文的问答——这些 zero-shot 就够</li>
+          <li><b>换招：</b>如果是算术/多步推理，直接用 CoT，别堆示例</li>
+        </ul>
+        <h5 style="margin-top:12px;color:var(--danger);">典型失败</h5>
+        <ul>
+          <li>几个例子都长一个样，模型泛化差</li>
+          <li>示例之间格式不一致（这是最常见的失败原因）</li>
+          <li>示例本身标错了——比选错例子更致命</li>
+          <li>同类标签扎堆排列，导致输出偏向某一类</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tech">
+    <div class="tech-head">
+      <span class="nm">Chain-of-thought 推理链</span>
+      <span class="en">Chain-of-thought</span>
+      <span class="pos">零件 · 只在特定任务上真的有用</span>
+    </div>
+    <div class="tech-body">
+      <div class="blk">
+        <h5>一眼认出它的信号</h5>
+        <div class="sig">出现「让我们一步步思考」「先分析再给结论」「请展示你的推理过程」，或示例里带着完整的推导过程。</div>
+        <ul>
+          <li><b>Zero-shot CoT：</b>一句话触发，成本最低</li>
+          <li><b>Few-shot CoT：</b>示例里带推理链，等于前两个技巧合体</li>
+          <li><b>手写步骤分解：</b>你自己规定第一步做什么、第二步做什么，可控性最高</li>
+        </ul>
+      </div>
+      <div class="blk">
+        <h5>什么时候用 / 不用</h5>
+        <ul>
+          <li><b>用：</b>数学、符号运算、多步逻辑推理、需要跨多条件做判断</li>
+          <li><b>不用：</b>常识问答、摘要、简单分类、改写——研究显示这些场景收益接近 0，只是更慢更贵</li>
+          <li><b>不用：</b>对延迟敏感、成本敏感、或任务模型已经能直接做对</li>
+        </ul>
+        <h5 style="margin-top:12px;color:var(--danger);">典型失败</h5>
+        <ul>
+          <li>不加区分地对所有任务都用，白白增加成本</li>
+          <li>推理链很长但答案没更准（写得多不等于想得对）</li>
+          <li>中间步骤是编造的，看起来完整但事实错误</li>
+          <li>把推理链当成模型的真实思考过程来审计——它并不总是忠实的</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="note ok">
+    <span class="nt">四个技巧的关系</span>
+    <b>分层是骨架，另外三个是零件。</b>结构化输出通常写在分层的「输出格式层」，Few-shot 写在「示例层」，CoT 写在「任务层」（要求先分析）。而 Few-shot 和 CoT 经常合体——给带推理链的示例，就是 Few-shot CoT。看到一段提示词时，先按五层切，再看每层里用了哪个零件，就不会漏。
+  </div>
+</section>
+
+<!-- ============ 5. 现实边界 ============ -->
+<section>
+  <h2><span class="idx">05</span>现实边界：不够时间、状态不好、走偏了怎么办</h2>
+  <p class="sub">计划一定会遇到现实波动，这一节是给那时候看的。</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>缓冲在哪里</h3>
+      <ul>
+        <li>每天按 3 小时排了约 2.5 小时有效任务，<b>每天自带约半小时弹性</b>。</li>
+        <li>Day 2 的代码路径是<b>选做</b>，整块可砍，不影响主线。</li>
+        <li>Day 5 的综合任务（60 分钟）是天然缓冲——前面落了进度就先拿这段时间补，补不完再砍综合任务本身。</li>
+        <li>Day 4 是周六，Day 5 是周日，两天都有条件临时加时。</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>最小可执行方案</h3>
+      <p style="color:var(--ink-2);font-size:13.5px;">某天只剩 45 分钟时，只做这两件事：</p>
+      <ul>
+        <li>学 30 分钟：只看当天技巧的「分辨速查」一节</li>
+        <li>练 15 分钟：<b>拆解 1 段别人的提示词</b>，标注用了什么技巧</li>
+      </ul>
+      <p style="margin-top:14px;color:var(--ink-2);font-size:13.5px;"><b>必须保住的三项</b>（砍什么都别砍这三个）：Day 1 五层模板、Day 3 的 0/1/3/5-shot 对比、Day 5 拆解卡。<b>可以舍弃的</b>：代码 API 实操、Day 4 五题对比可减到 3 题、Day 2 可只做网页版。</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>检查信号与调整动作</h3>
+    <table>
+      <thead><tr><th style="width:20%">什么时候检查</th><th style="width:38%">看什么信号</th><th>没达标怎么调整</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="k">Day 2 结束</td>
+          <td>三个任务的输出里，能被解析的少于 2 个</td>
+          <td>Day 3 开始前先花 20 分钟回到 Day 2 补一次：把 schema 写得更死（字段名加英文、加枚举、明确「不要解释文字」），补完再往下走，不要带债前进。</td>
+        </tr>
+        <tr>
+          <td class="k">Day 3 结束</td>
+          <td>对比表做不出来，或看不出加几个例子开始稳定</td>
+          <td>说明测试输入太单一。换成 10 条差异更大的输入重跑，只跑 0-shot 和 3-shot 两个版本，省时间。</td>
+        </tr>
+        <tr>
+          <td class="k">Day 4 结束</td>
+          <td>「该不该用 CoT」的盲测错 ≥ 3/6</td>
+          <td>Day 5 加 30 分钟重做判断练习：只练「分类该不该用」，把判断依据压缩成一句可背诵的规则。</td>
+        </tr>
+        <tr>
+          <td class="k">任意连续两天</td>
+          <td>每天实际完成不到安排的一半</td>
+          <td>立刻降级：砍掉代码路径和 Day 5 综合任务，只保 Day 1、Day 3、Day 5 三天的核心动作。宁可三个技巧学扎实，不要四个都学个半吊子。</td>
+        </tr>
+        <tr>
+          <td class="k">Day 5 验收</td>
+          <td>拆解卡标注准确率低于 80%</td>
+          <td>先确认是「没认出来」还是「认出来但说不清」。前者补 Day 1 分层，后者补口述练习。这周没达成就顺延两三天，不要为了赶日期放水通过。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>关键假设</h3>
+    <ul>
+      <li>起始日按今天 <b>10/14（周三）</b> 起算，到 10/18（周日）共 5 天；若你实际从别的日子开始，把日期整体平移即可，任务不变。</li>
+      <li>每天按 <b>3 小时</b> 净投入估算（你说的是「3 小时以上」）。若实际更多，多出来的时间优先加在 Day 3 和 Day 5——这两天的样本量直接决定分辨能力。</li>
+      <li>代码路径按 <b>OpenAI 兼容 API</b> 写。若你用其他厂商，参数名需对应调整（有的厂商只支持 JSON mode，不支持严格 schema）。</li>
+      <li>「每天能投入 3 小时以上」是你自述的估计。如果工作日实际只有碎片时间，把 Day 1 / Day 3 安排在整块时间，Day 2 / Day 4 可以打散。</li>
+      <li>本周目标是「能看懂和分辨」，<b>不是做出可交付的项目</b>。如果你中途改主意想做项目，Day 5 的综合任务就是现成的起点，但别在前四天加项目。</li>
+    </ul>
+  </div>
+
+  <div class="note danger">
+    <span class="nt">别踩的坑</span>
+    ① 不要把五天都用来看教程——这四个知识点读两遍就懂，卡点在分辨，而分辨只能靠拆样本练出来。<br>
+    ② 不要在 Day 2 卡在代码环境上超过 45 分钟。装环境、调 key、查报错是时间黑洞，今天是学结构化输出的概念，不是学调 API。<br>
+    ③ 不要相信「加了 CoT 就一定更好」。本周最能体现你水平的一句话，是能说出「这道题不该用 CoT」。<br>
+    ④ 不要把模型的推理链当成它的真实想法。这个认知误区很多人带很久。
+  </div>
+</section>
+
+<footer>
+  提示词四技巧五天掌握计划 · 2026/10/14 – 10/18 · 每天 3 小时以上 · 完成标准：能看懂和分辨<br>
+  本页为阅读与导航版本，可在浏览器中直接打开或打印。计划依据你的自述（每天 3 小时以上、网页版与代码都想了解、目标为能分辨）制定，并按每日实际完成情况自行调整。
+</footer>
+
+</div>
+</body>
+</html>

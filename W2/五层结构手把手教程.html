@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系统提示词五层结构 · 手把手教程（Day 1）</title>
+<style>
+  :root{
+    --ink:#1a1d24; --ink-2:#4a5160; --ink-3:#7a8290;
+    --line:#e3e6ec; --bg:#f6f7f9; --card:#fff;
+    --brand:#2f5bd7; --brand-soft:#eef2fd;
+    --warn:#a96408; --warn-soft:#fdf3e3;
+    --ok:#1f7a52; --ok-soft:#e9f5ee;
+    --bad:#b3352f; --bad-soft:#fbeceb;
+    --l1:#7c4dbe; --l2:#2f5bd7; --l3:#b3352f; --l4:#1f7a52; --l5:#a96408;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:0 26px 90px;}
+
+  header.hero{
+    background:linear-gradient(140deg,#1c2440 0%,#2f3d70 60%,#3d5099 100%);
+    color:#fff;margin:0 -26px 36px;padding:40px 26px 34px;
+  }
+  .hero-inner{max-width:888px;margin:0 auto;}
+  .kicker{display:inline-block;font-size:12.5px;letter-spacing:.13em;
+    background:rgba(255,255,255,.14);padding:5px 12px;border-radius:20px;margin-bottom:14px;}
+  h1{font-size:29px;line-height:1.35;margin:0 0 10px;font-weight:700;letter-spacing:-.01em;}
+  .lede{margin:0;color:#c9d2ea;font-size:15px;max-width:700px;}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .meta-row span{font-size:12.5px;background:rgba(255,255,255,.11);
+    border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:5px 12px;color:#dbe2f2;}
+
+  section{margin-bottom:38px;}
+  h2{font-size:21px;margin:0 0 6px;font-weight:700;letter-spacing:-.01em;
+     display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  h2 .idx{font-size:12.5px;font-weight:600;color:var(--brand);background:var(--brand-soft);
+     border-radius:6px;padding:2px 9px;letter-spacing:.04em;}
+  .sub{color:var(--ink-3);font-size:13.5px;margin:0 0 16px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;}
+  .card+.card{margin-top:14px;}
+  h3{font-size:16.5px;margin:0 0 10px;font-weight:650;}
+  h4{font-size:14.5px;margin:18px 0 8px;font-weight:650;color:var(--ink-2);}
+  p{margin:0 0 11px;}
+  ul,ol{margin:0 0 11px;padding-left:21px;}
+  li{margin-bottom:7px;}
+  li:last-child{margin-bottom:0;}
+  b{font-weight:650;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.8px;background:#f0f2f6;color:#2b3550;padding:1.5px 6px;border-radius:5px;}
+  em{font-style:normal;background:linear-gradient(transparent 62%,#ffe9a8 62%);padding:0 1px;font-weight:600;}
+
+  pre{
+    background:#1e2433;color:#dfe4ee;border-radius:11px;padding:16px 18px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;line-height:1.72;overflow-x:auto;margin:0 0 12px;
+    white-space:pre-wrap;word-break:break-word;
+  }
+  pre .cm{color:#7f8ba3;}
+  pre .k{color:#7fd1a8;font-weight:600;}
+  pre .v{color:#e8c37a;}
+  .cap{font-size:12.5px;color:var(--ink-3);margin:-6px 0 14px;}
+
+  .note{border-radius:12px;padding:14px 18px;font-size:14px;margin:14px 0;border:1px solid;}
+  .note.warn{background:var(--warn-soft);border-color:#f0dcbc;color:#6b4405;}
+  .note.ok{background:var(--ok-soft);border-color:#c9e6d7;color:#145639;}
+  .note.bad{background:var(--bad-soft);border-color:#f0ccc9;color:#7d211d;}
+  .note.brand{background:var(--brand-soft);border-color:#d5dffb;color:#233a75;}
+  .note .nt{display:block;font-size:12.5px;font-weight:700;letter-spacing:.05em;margin-bottom:4px;opacity:.85;}
+
+  .stop{background:#fff8e6;border:1px dashed #e6c98a;border-radius:12px;padding:15px 19px;margin:18px 0;}
+  .stop .stop-h{font-size:12.5px;font-weight:700;color:var(--warn);letter-spacing:.06em;margin-bottom:6px;}
+  .stop p{margin:0 0 8px;font-size:14.5px;}
+  .stop p:last-child{margin-bottom:0;}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:6px;}
+  th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);}
+  th{background:#eef1f6;font-weight:650;font-size:13.5px;color:var(--ink-2);border-bottom:1px solid #d8dde6;}
+  tr:last-child td{border-bottom:none;}
+  td.k{font-weight:600;white-space:nowrap;}
+
+  /* 五层卡片 */
+  .layer{border:1px solid var(--line);border-left:4px solid;border-radius:12px;
+    background:var(--card);padding:18px 22px;margin-bottom:14px;}
+  .layer.l1{border-left-color:var(--l1);}
+  .layer.l2{border-left-color:var(--l2);}
+  .layer.l3{border-left-color:var(--l3);}
+  .layer.l4{border-left-color:var(--l4);}
+  .layer.l5{border-left-color:var(--l5);}
+  .layer-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:8px;}
+  .layer-h .no{font-size:11.5px;font-weight:700;color:#fff;border-radius:6px;padding:2px 9px;}
+  .l1 .no{background:var(--l1);} .l2 .no{background:var(--l2);}
+  .l3 .no{background:var(--l3);} .l4 .no{background:var(--l4);} .l5 .no{background:var(--l5);}
+  .layer-h .nm{font-size:17px;font-weight:700;}
+  .layer-h .en{font-size:12.5px;color:var(--ink-3);}
+  .layer .oneline{font-size:14px;color:var(--ink-2);margin:0 0 12px;}
+  .layer .oneline b{color:var(--ink);}
+
+  .qa{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:720px){.qa{grid-template-columns:1fr;}}
+  .qa .box{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13.8px;}
+  .qa .box h5{margin:0 0 6px;font-size:12.5px;font-weight:700;letter-spacing:.04em;}
+  .qa .box.good{background:var(--ok-soft);border-color:#c9e6d7;}
+  .qa .box.good h5{color:var(--ok);}
+  .qa .box.bad{background:var(--bad-soft);border-color:#f0ccc9;}
+  .qa .box.bad h5{color:var(--bad);}
+  .qa .box ul{margin:0;padding-left:18px;}
+  .qa .box li{margin-bottom:5px;}
+
+  details{background:#fafbfd;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:12px;}
+  summary{cursor:pointer;font-size:14px;font-weight:650;color:var(--brand);}
+  summary::marker{color:var(--brand);}
+  details[open] summary{margin-bottom:10px;}
+  details .ans{font-size:14px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px;margin-top:6px;}
+  details .ans p{margin:0 0 8px;}
+  details .ans p:last-child{margin-bottom:0;}
+
+  .num-step{display:grid;grid-template-columns:32px 1fr;gap:14px;margin-bottom:16px;}
+  .num-step .n{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;
+    font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .num-step .c h4{margin:0 0 6px;font-size:15px;color:var(--ink);}
+  .num-step .c p{margin:0 0 8px;font-size:14.3px;}
+
+  .checklist{list-style:none;padding:0;}
+  .checklist li{padding-left:28px;position:relative;margin-bottom:9px;font-size:14.5px;}
+  .checklist li::before{content:"";position:absolute;left:0;top:6px;width:15px;height:15px;
+    border:1.5px solid #a8b0c0;border-radius:4px;}
+
+  .finish{background:linear-gradient(135deg,#eaf5ef,#f4fbf7);border:1px solid #c3e5d4;
+    border-radius:14px;padding:20px 24px;}
+  .finish h3{color:var(--ok);}
+
+  footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:12.8px;color:var(--ink-3);}
+
+  @media print{
+    body{background:#fff;font-size:11pt;}
+    header.hero{background:#1c2440 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    details{border:1px solid var(--line);} details[open] .ans{display:block;}
+    .card,.layer,.note{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="kicker">DAY 1 · 第一个任务 · 手把手教程</span>
+    <h1>系统提示词五层结构</h1>
+    <p class="lede">搞懂它是什么、为什么要分层、以及怎么把一坨提示词拆成五层。跟着做完，你会拿到一份能长期复用的模板。</p>
+    <div class="meta-row">
+      <span>预计 45 分钟学 + 60 分钟练</span>
+      <span>零基础可跟</span>
+      <span>含 5 个动手练习 · 附参考答案</span>
+      <span>不需要写代码</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ========== 开场：先看一段坏提示词 ========== -->
+<section>
+  <h2><span class="idx">开场</span>先看一段"揉成一坨"的提示词</h2>
+  <p class="sub">别急着学概念。先看看大多数人写的提示词长什么样，问题在哪。</p>
+
+  <div class="card">
+    <p>假设你要做一个"客服回复助手"。很多人第一次会这么写：</p>
+    <pre><span class="cm"># 一坨版（真实初学者写法）</span>
+你是一个客服，帮我回复客户的邮件。客户邮件发给你之后你就回复，
+要礼貌一点，别太啰嗦，如果客户问的是退款你就告诉他7天内可以退，
+如果是投诉就先道歉。回复别超过200字。用中文回复。
+不要承诺你做不到的事。如果遇到你不知道的就让他联系人工客服。
+回复的时候要有称呼，最后要署名"XX客服团队"。</pre>
+    <p class="cap">↑ 这段提示词<b>能用</b>，但有三个毛病，你先自己找 30 秒。</p>
+
+    <details>
+      <summary>我找完了 / 找不出来，看分析</summary>
+      <div class="ans">
+        <p>这段提示词里，所有要求<b>挤在一段里，没有结构</b>。三个具体的麻烦：</p>
+        <p><b>① 想改一处，怕碰到别处。</b>你想把"200字"改成"100字"，要在这一大段文字里找到那句话再改——改完你不确定会不会影响别的。</p>
+        <p><b>② 出问题时，不知道该改哪里。</b>模型输出了 500 字，超了。是提示词哪句没起作用？你说不清，只能整体重写一遍碰运气。</p>
+        <p><b>③ 换个任务，等于重写。</b>你现在想做一个"会议纪要整理助手"，这段提示词几乎一行都复用不了——因为角色、任务、格式、规矩全混在一起，拆不出来。</p>
+        <p>这三个麻烦分别对应分层的三个好处。下面讲五层的时候你会看到，其实就是把这段话<b>按性质分个类</b>，毛病就全没了。</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ========== 1. 五层是什么 ========== -->
+<section>
+  <h2><span class="idx">01</span>五层分别是什么</h2>
+  <p class="sub">一句话先记住：一段完整的提示词，回答的是五个问题——<b>你是谁 / 干什么 / 有什么规矩 / 交出什么样 / 参考什么样板</b>。</p>
+
+  <div class="note brand">
+    <span class="nt">先建立一个比喻</span>
+    五层结构本质就是一份<b>岗位说明书</b>：给新人交代工作时，你会说「你的岗位是客服」（角色）、「这个月目标是处理退款和投诉」（任务）、「公司规定不能承诺做不到的事」（约束）、「回复要写成这个格式」（格式）、「参考这几个样板」（示例）。<br>
+    你不会把这五件事搅成一段话说给新人听——为什么对 AI 就可以？
+  </div>
+
+  <div class="layer l1">
+    <div class="layer-h">
+      <span class="no">第 1 层</span>
+      <span class="nm">角色与身份层</span>
+      <span class="en">Role</span>
+    </div>
+    <p class="oneline"><b>回答"你是谁"。</b>给模型一个身份、专业背景、服务对象、说话的分寸感。</p>
+    <div class="qa">
+      <div class="box good"><h5>✓ 这样写有效</h5>
+        <ul>
+          <li>你是 XX 公司的售后客服，负责处理退款与投诉类邮件</li>
+          <li>你的专业背景是电商售后，熟悉 7 天无理由规则</li>
+          <li>你的服务对象是已下单的消费者，他们大多带着情绪来</li>
+          <li>语气：平静、不卑不亢，不使用感叹号</li>
+        </ul>
+      </div>
+      <div class="box bad"><h5>✗ 这样写基本没用</h5>
+        <ul>
+          <li>你是一个世界顶级专家（虚，模型不知道该做什么）</li>
+          <li>你很聪明、很厉害、经验丰富（形容词，不可执行）</li>
+          <li>你是最好的客服（"最好"没有定义）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>判断标准：</b>你写的这句话，能不能翻译成"模型接下来该做什么动作"？能，就是好角色描述；不能，就是玄学。
+      <br>「熟悉 7 天无理由规则」→ 能：遇到退款问题会引用这个规则。「世界顶级专家」→ 不能。
+    </div>
+  </div>
+
+  <div class="layer l2">
+    <div class="layer-h">
+      <span class="no">第 2 层</span>
+      <span class="nm">任务与目标层</span>
+      <span class="en">Task</span>
+    </div>
+    <p class="oneline"><b>回答"你要干什么、做成什么样算好"。</b>这是唯一必填的一层——其他四层可以省，这层不能。</p>
+    <div class="qa">
+      <div class="box good"><h5>✓ 这样写有效</h5>
+        <ul>
+          <li>你的任务：读客户邮件 → 判断属于哪一类 → 按对应策略起草回复</li>
+          <li>判断标准：客户看完后不需要再追问就能知道下一步该做什么</li>
+          <li>不要做的事：不要替客户做决定，不要主动推销</li>
+        </ul>
+      </div>
+      <div class="box bad"><h5>✗ 这样写太虚</h5>
+        <ul>
+          <li>帮我回复邮件（回复成什么样算好？没说）</li>
+          <li>处理好客户问题（"处理好"没有定义）</li>
+          <li>尽量让客户满意（不可衡量）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note ok" style="margin-bottom:0;">
+      <b>这层的核心是可验收。</b>写完任务层，问自己一句：<em>我拿到输出后，能不能判断它达没达标？</em>能判断，就写对了；只能凭感觉，就还得补。
+    </div>
+  </div>
+
+  <div class="layer l3">
+    <div class="layer-h">
+      <span class="no">第 3 层</span>
+      <span class="nm">约束与边界层</span>
+      <span class="en">Constraints</span>
+    </div>
+    <p class="oneline"><b>回答"什么不能做、遇到边界情况怎么办"。</b>这是新手最容易漏、漏了最容易出事的一层。</p>
+    <div class="qa">
+      <div class="box good"><h5>✓ 这样写有效</h5>
+        <ul>
+          <li>禁止：不得承诺退款到账的具体日期</li>
+          <li>禁止：不得透露内部流程或其他客户信息</li>
+          <li>边界：若客户询问的问题超出售后范围，回复"建议您联系人工客服"并停止</li>
+          <li>边界：若邮件信息不足以判断类别，先向客户追问，不要猜</li>
+        </ul>
+      </div>
+      <div class="box bad"><h5>✗ 这样写等于没写</h5>
+        <ul>
+          <li>不要乱说（什么是"乱说"？）</li>
+          <li>注意合规（哪条合规？）</li>
+          <li>不确定时谨慎处理（怎么算谨慎？）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>约束层必须写"两件事"：</b>① 明确禁止什么；② <b>遇到触发条件时该做什么动作</b>。只写①不写②，模型遇到边界情况会自己瞎发挥。
+    </div>
+  </div>
+
+  <div class="layer l4">
+    <div class="layer-h">
+      <span class="no">第 4 层</span>
+      <span class="nm">输出格式层</span>
+      <span class="en">Output Format</span>
+    </div>
+    <p class="oneline"><b>回答"交出来的东西长什么样"。</b>结构、字段、长度、语气、顺序——凡是"能看见的形状"都归这层。</p>
+    <div class="qa">
+      <div class="box good"><h5>✓ 这样写有效</h5>
+        <ul>
+          <li>输出三部分：称呼 / 正文 / 署名，用空行隔开</li>
+          <li>正文不超过 3 句话，总字数不超过 200 字</li>
+          <li>结尾固定写：「XX客服团队」</li>
+          <li>只输出回复正文，不要输出你的分析过程</li>
+        </ul>
+      </div>
+      <div class="box bad"><h5>✗ 这样写不可验证</h5>
+        <ul>
+          <li>简洁一点（多少字算简洁？）</li>
+          <li>语气好一些（什么是好？）</li>
+          <li>格式清晰（什么格式？）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note ok" style="margin-bottom:0;">
+      <b>检验方法：</b>格式层里每一条，都应该能被<b>一眼看出有没有违反</b>。"不超过 200 字"能查，"简洁一点"查不了。
+      <br>这也是 Day 2 要学的<b>结构化输出</b>的落点——格式层写死了，就能要求模型直接吐 JSON。
+    </div>
+  </div>
+
+  <div class="layer l5">
+    <div class="layer-h">
+      <span class="no">第 5 层</span>
+      <span class="nm">示例与上下文层</span>
+      <span class="en">Examples &amp; Context</span>
+    </div>
+    <p class="oneline"><b>回答"参考什么样板、基于什么材料"。</b>示例给"照着做"，上下文给"依据这些"。Day 3 的 Few-shot 就落在这层。</p>
+    <div class="qa">
+      <div class="box good"><h5>✓ 这样写有效</h5>
+        <ul>
+          <li>示例：给出 2–3 组「客户邮件 → 回复」的成对样板</li>
+          <li>示例覆盖不同类型：退款 / 投诉 / 咨询各一个</li>
+          <li>上下文：附上你们的退款政策原文，让模型引用真实条款</li>
+        </ul>
+      </div>
+      <div class="box bad"><h5>✗ 这样写会坏事</h5>
+        <ul>
+          <li>三个示例都是同一种类型（模型只会处理这一种）</li>
+          <li>示例的格式和第 4 层说的不一致（模型会跟着示例走，格式层白写）</li>
+          <li>示例本身写错了（比没有示例更糟）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note bad" style="margin-bottom:0;">
+      <b>这层有一条硬规律：示例赢过描述。</b>当第 4 层说的格式和示例里实际的格式冲突时，模型<b>通常跟着示例走</b>。所以示例的格式必须和你要求的格式严格一致——这是新手最常踩的坑之一。
+    </div>
+  </div>
+
+  <div class="note brand">
+    <b>关于顺序：</b>五层的排列顺序不唯一，常见是「角色 → 任务 → 约束 → 格式 → 示例」。但<b>覆盖面必须全</b>，顺序可以调。
+    唯一有讲究的是：<b>约束层别压在最末尾</b>——长提示词里靠后的内容容易被模型"淡忘"，把"禁止做什么"放在中间或靠前更稳。
+  </div>
+</section>
+
+<!-- ========== 2. 为什么要分层 ========== -->
+<section>
+  <h2><span class="idx">02</span>到底为什么要分层</h2>
+  <p class="sub">这是本教程的核心。三个好处，每个都配一个"看得见的差别"。</p>
+
+  <div class="card">
+    <h3>好处一：可复用 —— 换任务只改一层</h3>
+    <p>把开场那段提示词分层之后，你会发现：<b>角色、约束、格式三层其实跟"回邮件"这个具体任务无关</b>，它们描述的是"你希望这个客服助手是个什么样的人、守什么规矩、交出什么形状"。</p>
+    <p>所以只要换掉第 2 层（任务），同一个助手立刻变成另一个工具：</p>
+    <pre><span class="cm"># 换掉第 2 层，其他四层原样不动</span>
+
+<span class="k">【任务层 · 换成这个】</span>
+你的任务：读一段客户与客服的聊天记录 → 判断这个客户最终有没有解决问题 →
+输出一段 50 字以内的内部备注，供下一任客服接手时快速了解情况。
+
+<span class="k">【其他四层：一行不改】</span>
+角色层、约束层、格式层、示例层保持不变</pre>
+    <p class="cap">↑ 一个「客服回复助手」，改一层就变成了「会话交接摘要助手」。如果不分层，你得从头再写一遍。</p>
+  </div>
+
+  <div class="card">
+    <h3>好处二：可调试 —— 出问题直接定位到层</h3>
+    <p>这是分层最实用的价值。模型输出不对时，<b>对照症状查层</b>，而不是整体重写碰运气：</p>
+    <table>
+      <thead><tr><th style="width:34%">你看到的症状</th><th style="width:20%">问题出在哪层</th><th>怎么改</th></tr></thead>
+      <tbody>
+        <tr><td>语气不对（太热情/太生硬）</td><td class="k">角色层</td><td>补一句具体的语气要求，别写"语气好一点"</td></tr>
+        <tr><td>做的事不对（答非所问、漏了环节）</td><td class="k">任务层</td><td>把任务拆成明确步骤，补上"做成什么样算好"</td></tr>
+        <tr><td>越界了（承诺了不该承诺的、瞎编信息）</td><td class="k">约束层</td><td>补一条明确禁止 + 触发时该做什么动作</td></tr>
+        <tr><td>形状不对（太长、结构乱、夹带废话）</td><td class="k">格式层</td><td>把格式写成可验证的硬指标（字数、字段、分段）</td></tr>
+        <tr><td>口径飘（同类问题这次这样下次那样）</td><td class="k">示例层</td><td>补覆盖不同情况的示例，统一格式（Day 3 详讲）</td></tr>
+      </tbody>
+    </table>
+    <div class="note ok" style="margin-bottom:0;">
+      <b>没有分层时，这五种症状你只能整体重写；分层后，你改的是一层，其他四层不受影响。</b>这张表建议存下来，后面四天都会用到。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>好处三：可替换 —— 局部换掉不牵动全局</h3>
+    <p>示例层尤其明显。你想让助手支持新业务（比如新增了"换货"类型），只需在示例层加一组示例：</p>
+    <pre><span class="k">【示例层 · 新增一组】</span>
+例 3（换货）
+客户邮件：收到的鞋子尺码不合适，能换大一码吗？
+回复：您好，支持 7 天内无理由换货……
+
+<span class="k">【其他四层：不动】</span></pre>
+    <p class="cap">↑ 角色、任务、约束、格式完全不动，助手就学会了新业务。这是"示例层可替换"带来的直接好处。</p>
+  </div>
+
+  <div class="note brand">
+    <span class="nt">一个额外好处</span>
+    <b>可分工。</b>团队里做提示词时，业务同事负责任务层和示例层（他最懂业务），你负责约束层和格式层（你最懂模型）。分层之后各改各的，不会互相覆盖。这是专业团队都在用这套结构的原因。
+  </div>
+</section>
+
+<!-- ========== 3. 完整实操 ========== -->
+<section>
+  <h2><span class="idx">03</span>实操：把一坨拆成五层</h2>
+  <p class="sub">把开场那段坏提示词，逐句归类，然后重写。</p>
+
+  <div class="card">
+    <h3>第一步：逐句标注属于哪一层</h3>
+    <pre><span class="v">你是一个客服，帮我回复客户的邮件。</span>          <span class="cm">← 角色层 + 任务层（混在一起了）</span>
+<span class="v">客户邮件发给你之后你就回复，</span>                <span class="cm">← 任务层</span>
+<span class="v">要礼貌一点，别太啰嗦，</span>                      <span class="cm">← 角色层（语气）+ 格式层（长度）混写</span>
+<span class="v">如果客户问的是退款你就告诉他7天内可以退，</span>    <span class="cm">← 任务层（策略）</span>
+<span class="v">如果是投诉就先道歉。</span>                        <span class="cm">← 任务层（策略）</span>
+<span class="v">回复别超过200字。</span>                            <span class="cm">← 格式层</span>
+<span class="v">用中文回复。</span>                                  <span class="cm">← 格式层</span>
+<span class="v">不要承诺你做不到的事。</span>                        <span class="cm">← 约束层</span>
+<span class="v">如果遇到你不知道的就让他联系人工客服。</span>        <span class="cm">← 约束层</span>
+<span class="v">回复的时候要有称呼，</span>                          <span class="cm">← 格式层</span>
+<span class="v">最后要署名"XX客服团队"。</span>                      <span class="cm">← 格式层</span></pre>
+    <p class="cap">↑ 看出来了吗：<b>格式层的要求散落在 5 个不同位置</b>，约束层的两句话被夹在中间。这就是"不分层"的真实代价。</p>
+  </div>
+
+  <div class="card">
+    <h3>第二步：归拢重写</h3>
+    <pre><span class="k"># 角色层</span>
+你是 XX 公司的售后客服，负责处理退款、换货与投诉类邮件。
+你的服务对象是已下单消费者，他们大多带着情绪。语气平静、不卑不亢，不使用感叹号。
+
+<span class="k"># 任务层</span>
+你的任务：读客户邮件 → 判断属于「退款 / 换货 / 投诉 / 咨询」哪一类 → 按对应策略起草回复。
+判断标准：客户读完不需要再追问，就知道下一步该做什么。
+
+<span class="k"># 约束层</span>
+禁止：不得承诺退款到账的具体日期，不得透露内部流程或其他客户信息。
+边界：若邮件信息不足以判断类别，先向客户追问，不要猜。
+边界：若问题超出售后范围，回复「建议您联系人工客服」并停止。
+
+<span class="k"># 格式层</span>
+输出三部分：称呼 / 正文 / 署名，中间用空行隔开。
+正文不超过 3 句话，总字数不超过 200 字。
+结尾固定写：「XX客服团队」。
+只输出回复正文，不要输出你的分析过程。
+
+<span class="k"># 示例层</span>
+例 1（退款）
+客户邮件：我上周买的耳机不想要了，能退吗？
+回复：您好，订单支持 7 天内无理由退货……
+（另附：退款 / 投诉 / 咨询 各一组示例，格式与上面严格一致）</pre>
+    <p class="cap">↑ 同样的内容，分层之后：能改、能定位、能复用。字数差不多，效果天差地别。</p>
+  </div>
+
+  <div class="stop">
+    <div class="stop-h">✋ 停下来，自己做一遍（3 分钟）</div>
+    <p>别往下读。翻出你<b>上周吴恩达课程里写过的一个提示词</b>，用五种颜色（或①—⑤标记）把每一句标进五层。</p>
+    <p>做完再看下一步。你大概率会发现：任务层写得很详细，但<b>约束层和格式层基本是空的</b>——几乎所有初学者都这样。</p>
+  </div>
+</section>
+
+<!-- ========== 4. 练习 ========== -->
+<section>
+  <h2><span class="idx">04</span>五个练习（从易到难）</h2>
+  <p class="sub">练习是这 45 分钟里最值钱的部分。建议全部做完，至少做完 1、2、5。</p>
+
+  <div class="card">
+    <h3>练习 1 · 找缺失的层（5 分钟）</h3>
+    <p>下面这段提示词，哪几层<b>完全没写</b>？缺了会导致什么后果？</p>
+    <pre>你是一位资深数据分析师。
+帮我分析这份销售数据，找出问题并给出建议。
+要专业一点。</pre>
+    <details>
+      <summary>参考答案</summary>
+      <div class="ans">
+        <p><b>写了的：</b>角色层（资深数据分析师）、任务层（分析数据、找问题、给建议）——但任务层很虚。</p>
+        <p><b>完全没写的：</b>约束层、格式层、示例层，三层全空。</p>
+        <p><b>后果：</b></p>
+        <p>① 没格式层 → 模型可能输出一大段自说自话的分析，你要的内容埋在第 8 段；</p>
+        <p>② 没约束层 → 数据里没有的信息它也会编（比如"建议开拓华东市场"，但数据里根本没有华东数据）；</p>
+        <p>③ 没示例层 → 每次输出的粒度、口径都不一样，没法对比。</p>
+        <p><b>最该补的一条：</b>格式层。加一句"输出三部分：发现的问题（不超过3条）/ 每条对应的证据（引用数据中的具体数字）/ 建议动作（不超过3条）"，效果立刻不一样。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3>练习 2 · 判断一句话属于哪层（5 分钟）</h3>
+    <p>下面 6 句话，分别属于哪一层？</p>
+    <table>
+      <tbody>
+        <tr><td style="width:70%">A. 若用户提供的信息不足以判断，先追问，不要自行假设</td><td class="k">
+          <details><summary>看答案</summary><div class="ans"><p><b>约束层。</b>典型的"边界 + 触发动作"写法。</p></div></details></td></tr>
+        <tr><td>B. 输出用 JSON，字段为 category、confidence、reason</td><td class="k">
+          <details><summary>看答案</summary><div class="ans"><p><b>格式层。</b>而且这条是 Day 2 结构化输出的落点。</p></div></details></td></tr>
+        <tr><td>C. 你的服务对象是刚入职的新人，他们看不懂专业术语</td><td class="k">
+          <details><summary>看答案</summary><div class="ans"><p><b>角色层。</b>限定服务对象和表达分寸。</p></div></details></td></tr>
+        <tr><td>D. 每条建议后面必须附上数据中的具体数字作为依据</td><td class="k">
+          <details><summary>看答案</summary><div class="ans"><p><b>格式层 + 约束层</b>的交叉。它规定了输出形状（格式），也禁止了无依据输出（约束）。<b>一句话跨两层是正常的</b>，不用强行拆开。</p></div></details></td></tr>
+        <tr><td>E. 例：输入"这个东西不好用" → 输出 负面</td><td class="k">
+          <details><summary>看答案</summary><div class="ans"><p><b>示例层。</b>Day 3 的 Few-shot 就在这里。</p></div></details></td></tr>
+        <tr><td>F. 你的任务是判断这段评论的情感倾向，准确度要达到九成以上</td><td class="k">
+          <details><summary>看答案</summary><div class="ans"><p><b>任务层。</b>而且它给出了可验收标准（九成以上），是好写法。</p></div></details></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>练习 3 · 拆一段真实的系统提示词（20 分钟，本日重点）</h3>
+    <p>找一段<b>真实存在</b>的 system prompt 来拆。素材从这几处拿，任选：</p>
+    <ul>
+      <li>GitHub 上搜 <code>system prompt</code>、<code>awesome prompts</code>，找开源项目的提示词文件</li>
+      <li>你常用的 AI 产品 / 智能体的指令全文（有些会公开）</li>
+      <li>别人分享的提示词合集（中英文各找一段，中文的更贴近你的真实使用场景）</li>
+    </ul>
+    <p>拆解要求：</p>
+    <ol>
+      <li>逐句标进五层，用不同颜色或 ①—⑤ 标记</li>
+      <li>标完之后回答两个问题：<b>哪一层写得最厚？哪一层是空的？</b></li>
+      <li>找出至少一处<b>跨层混写</b>的句子（比如角色和格式写在一句里）</li>
+      <li>限时 15 分钟一段，别抠细节——你要练的是直觉，不是做标注作业</li>
+    </ol>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>做这个练习时留意一个现象：</b>你会发现写得好的提示词，五层的<b>厚度是不均匀的</b>——通常任务层和格式层最厚，角色层只有一两句话。这很正常。<b>分层不等于平均分配字数</b>，该厚的厚、该薄的薄。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>练习 4 · 改一段有病的提示词（10 分钟）</h3>
+    <p>下面这段提示词分层了，但<b>每层都有毛病</b>。找出至少 3 处并改写。</p>
+    <pre><span class="k"># 角色</span>
+你是世界上最顶尖的翻译专家，精通所有语言。
+
+<span class="k"># 任务</span>
+帮我把用户给的文本翻译好。
+
+<span class="k"># 约束</span>
+不要出错，要准确。
+
+<span class="k"># 格式</span>
+输出要清晰美观。
+
+<span class="k"># 示例</span>
+例1：Hello → 你好
+例2：Hi → 你好
+例3：Hey → 你好</pre>
+    <details>
+      <summary>参考答案（至少能找出 5 处）</summary>
+      <div class="ans">
+        <p><b>① 角色层玄学。</b>「世界顶尖、精通所有语言」不可执行。改成「你是中英技术文档译者，术语优先采用 XX 行业标准译法」。</p>
+        <p><b>② 任务层没有验收标准。</b>「翻译好」没定义。补上「目标读者是中文开发者，要求术语统一、句式符合中文技术文档习惯」。</p>
+        <p><b>③ 约束层空话。</b>「不要出错，要准确」等于没说。改成「不得增删原文信息；遇到无法确定译法的专有名词，保留英文原词并在括号中标注」。</p>
+        <p><b>④ 格式层不可验证。</b>「清晰美观」查不了。改成「只输出译文，不加任何说明；保留原文的段落与列表层级」。</p>
+        <p><b>⑤ 示例层三个例子一模一样。</b>全是打招呼 → 你好，模型只学会了这一个模式。换成覆盖不同情况：一句陈述句、一句带术语的句子、一句长句。</p>
+        <p><b>⑥ 示例层缺失最重要的一类。</b>没有示例告诉模型「遇到专有名词怎么办」——而这恰恰是最容易出错的地方。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3>练习 5 · 搭你自己的五层模板（15 分钟，今天的产出物）</h3>
+    <p>写一个<b>通用模板</b>，以后写任何提示词都从它出发。要求：五层各写一句占位句 + 每层 3 条"可填内容"提示。下面是可以抄的骨架，你要做的是<b>按你的实际场景把它填实</b>。</p>
+    <pre><span class="k"># 角色层</span>
+你是【身份】，服务于【对象】。
+你的专业背景是【领域】，熟悉【具体规则/标准】。
+语气：【分寸描述，要能翻译成具体动作】。
+
+<span class="k"># 任务层</span>
+你的任务：【步骤1】→【步骤2】→【步骤3】。
+判断标准：【做到什么算达标，必须可观察】。
+不做的事：【明确排除】。
+
+<span class="k"># 约束层</span>
+禁止：【具体禁止项，2-3条】。
+边界：若【触发条件】，则【具体动作】。
+边界：若信息不足，【追问 / 停止 / 采用默认值】。
+
+<span class="k"># 格式层</span>
+输出结构：【几部分、各部分是什么】。
+长度限制：【字数 / 条数】。
+固定元素：【署名、标题、分隔符等】。
+只输出【什么】，不要输出【什么】。
+
+<span class="k"># 示例层</span>
+例1（常见情况）：输入… → 输出…
+例2（边界情况）：输入… → 输出…
+例3（棘手情况）：输入… → 输出…
+（所有示例格式必须与格式层严格一致）</pre>
+    <div class="note ok" style="margin-bottom:0;">
+      <b>把这份模板存到你能随时找到的地方。</b>本周后面四天都会用到它——Day 2 的结构化输出写在格式层，Day 3 的 Few-shot 写在示例层，Day 4 的 CoT 写在任务层。它就是你这一周的地基。
+    </div>
+  </div>
+</section>
+
+<!-- ========== 5. 三个必须记住的坑 ========== -->
+<section>
+  <h2><span class="idx">05</span>三个必须记住的坑</h2>
+
+  <div class="card">
+    <div class="num-step">
+      <div class="n">1</div>
+      <div class="c">
+        <h4>约束层压在最末尾</h4>
+        <p>很多人把"不要做什么"写在提示词最后一句。长提示词里靠后的内容容易被淡化。<b>把约束层放在中间或靠前，格式层放后面</b>——因为格式紧贴着输出，反而不容易丢。</p>
+      </div>
+    </div>
+    <div class="num-step">
+      <div class="n">2</div>
+      <div class="c">
+        <h4>示例和格式层打架</h4>
+        <p>格式层说"输出 JSON"，示例里给的是一段自然语言。<b>模型会跟着示例走</b>，格式层白写。写完示例，回头核一遍：示例的实际格式，和格式层描述的一致吗？</p>
+      </div>
+    </div>
+    <div class="num-step" style="margin-bottom:0;">
+      <div class="n">3</div>
+      <div class="c">
+        <h4>以为分层就是"分五个标题"</h4>
+        <p>加了 <code># 角色</code> <code># 任务</code> 五个标题，但每个标题下面塞的还是一大段混写内容——这不算分层。<b>判断标准不是有没有标题，是改一层时会不会碰到另一层。</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 6. 验收 ========== -->
+<section>
+  <h2><span class="idx">06</span>怎么算学懂了</h2>
+  <p class="sub">对应 Day 1 的通过标准。三条都要过，建议闭卷自测。</p>
+
+  <div class="finish">
+    <h3>今日达标清单</h3>
+    <ul class="checklist">
+      <li><b>能不看资料说出五层</b>：名称 + 每层回答什么问题 + 每层一个典型写法。五层全对才过，卡住一层就回去看第 01 节。</li>
+      <li><b>拿到陌生提示词能标层</b>：10 分钟内完成逐句标注，准确率 ≥ 80%。拿练习 3 那段自测，或者再找一段新的。</li>
+      <li><b>手上有一份自己的五层模板</b>：不是抄我给你的骨架，是按你的实际场景填过内容的版本。</li>
+      <li><b>能说出分层的三个好处</b>，并且每个能举出一个具体场景（不用背定义，说出"什么时候能感受到它有用"就行）。</li>
+    </ul>
+    <p style="margin:16px 0 0;font-size:14px;">
+      <b>最后一道检验题：</b>不看教程，解释一句话——<em>为什么"分层之后，改一处不会碰坏别处"？</em><br>
+      答得上来，今天这 45 分钟就没白花。答不上来，回到第 02 节把三个好处各看一遍。
+    </p>
+  </div>
+
+  <div class="note brand" style="margin-top:14px;">
+    <span class="nt">今天剩下的时间怎么安排</span>
+    学完这 45 分钟后：<b>练习 3（拆真实提示词，20 分钟）+ 练习 5（搭模板，15 分钟）+ 练习 1 和 2（10 分钟）</b>是必做的主线，约 45 分钟。
+    <br>练习 4 和"回头改自己上周的旧提示词"是加分项，时间够就做。<b>做不完不要拖到明天</b>——明天的结构化输出要建立在今天的模板上。
+  </div>
+</section>
+
+<footer>
+  系统提示词五层结构 · 手把手教程 · Day 1 第一个任务配套<br>
+  与《提示词四技巧五天掌握计划》Day 1 对齐 · 完成本教程后可进入 Day 1 剩余任务（练习拆真实提示词、搭个人模板、改上周旧提示词）
+</footer>
+
+</div>
+</body>
+</html>
