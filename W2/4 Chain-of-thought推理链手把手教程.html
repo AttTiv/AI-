@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chain-of-thought 推理链 · 手把手教程（Day 4）</title>
+<style>
+  :root{
+    --ink:#1a1d24; --ink-2:#4a5160; --ink-3:#7a8290;
+    --line:#e3e6ec; --bg:#f6f7f9; --card:#fff;
+    --brand:#2f5bd7; --brand-soft:#eef2fd;
+    --warn:#a96408; --warn-soft:#fdf3e3;
+    --ok:#1f7a52; --ok-soft:#e9f5ee;
+    --bad:#b3352f; --bad-soft:#fbeceb;
+    --teal:#0f6e7a; --teal-soft:#e5f4f6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:0 26px 90px;}
+
+  header.hero{
+    background:linear-gradient(140deg,#101e24 0%,#1c3a44 58%,#2a5560 100%);
+    color:#fff;margin:0 -26px 36px;padding:40px 26px 34px;
+  }
+  .hero-inner{max-width:888px;margin:0 auto;}
+  .kicker{display:inline-block;font-size:12.5px;letter-spacing:.13em;
+    background:rgba(255,255,255,.14);padding:5px 12px;border-radius:20px;margin-bottom:14px;}
+  h1{font-size:29px;line-height:1.35;margin:0 0 10px;font-weight:700;letter-spacing:-.01em;}
+  .lede{margin:0;color:#c4d6da;font-size:15px;max-width:700px;}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .meta-row span{font-size:12.5px;background:rgba(255,255,255,.11);
+    border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:5px 12px;color:#d4e6e9;}
+  .hero-quote{
+    margin-top:22px;background:rgba(255,255,255,.13);border-left:3px solid #6fd3c4;
+    border-radius:0 10px 10px 0;padding:14px 18px;font-size:14.5px;color:#e2f0f2;
+  }
+  .hero-quote b{color:#fff;}
+
+  section{margin-bottom:38px;}
+  h2{font-size:21px;margin:0 0 6px;font-weight:700;letter-spacing:-.01em;
+     display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  h2 .idx{font-size:12.5px;font-weight:600;color:var(--brand);background:var(--brand-soft);
+     border-radius:6px;padding:2px 9px;letter-spacing:.04em;}
+  .sub{color:var(--ink-3);font-size:13.5px;margin:0 0 16px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;}
+  .card+.card{margin-top:14px;}
+  h3{font-size:16.5px;margin:0 0 10px;font-weight:650;}
+  h4{font-size:14.5px;margin:18px 0 8px;font-weight:650;color:var(--ink-2);}
+  p{margin:0 0 11px;}
+  ul,ol{margin:0 0 11px;padding-left:21px;}
+  li{margin-bottom:7px;}
+  li:last-child{margin-bottom:0;}
+  b{font-weight:650;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.8px;background:#f0f2f6;color:#2b3550;padding:1.5px 6px;border-radius:5px;}
+  em{font-style:normal;background:linear-gradient(transparent 62%,#ffe9a8 62%);padding:0 1px;font-weight:600;}
+
+  pre{
+    background:#1e2433;color:#dfe4ee;border-radius:11px;padding:16px 18px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;line-height:1.72;overflow-x:auto;margin:0 0 12px;
+    white-space:pre-wrap;word-break:break-word;
+  }
+  pre .cm{color:#7f8ba3;}
+  pre .k{color:#7fd1a8;font-weight:600;}
+  pre .s{color:#e8c37a;}
+  pre .hl{color:#6fd3c4;font-weight:600;}
+  pre .bad{color:#f09a95;}
+  .cap{font-size:12.5px;color:var(--ink-3);margin:-6px 0 14px;}
+
+  .note{border-radius:12px;padding:14px 18px;font-size:14px;margin:14px 0;border:1px solid;}
+  .note.warn{background:var(--warn-soft);border-color:#f0dcbc;color:#6b4405;}
+  .note.ok{background:var(--ok-soft);border-color:#c9e6d7;color:#145639;}
+  .note.bad{background:var(--bad-soft);border-color:#f0ccc9;color:#7d211d;}
+  .note.brand{background:var(--brand-soft);border-color:#d5dffb;color:#233a75;}
+  .note.teal{background:var(--teal-soft);border-color:#bfe0e4;color:#0b5158;}
+  .note .nt{display:block;font-size:12.5px;font-weight:700;letter-spacing:.05em;margin-bottom:4px;opacity:.85;}
+
+  .stop{background:#fff8e6;border:1px dashed #e6c98a;border-radius:12px;padding:15px 19px;margin:18px 0;}
+  .stop .stop-h{font-size:12.5px;font-weight:700;color:var(--warn);letter-spacing:.06em;margin-bottom:6px;}
+  .stop p{margin:0 0 8px;font-size:14.5px;}
+  .stop p:last-child{margin-bottom:0;}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:6px;}
+  th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);}
+  th{background:#eef1f6;font-weight:650;font-size:13.5px;color:var(--ink-2);border-bottom:1px solid #d8dde6;}
+  tr:last-child td{border-bottom:none;}
+  td.k{font-weight:600;white-space:nowrap;}
+
+  details{background:#fafbfd;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:12px;}
+  summary{cursor:pointer;font-size:14px;font-weight:650;color:var(--brand);}
+  summary::marker{color:var(--brand);}
+  details[open] summary{margin-bottom:10px;}
+  details .ans{font-size:14px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px;margin-top:6px;}
+  details .ans p{margin:0 0 8px;}
+  details .ans p:last-child{margin-bottom:0;}
+  details .ans pre{margin-top:8px;}
+
+  .num-step{display:grid;grid-template-columns:32px 1fr;gap:14px;margin-bottom:16px;}
+  .num-step .n{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;
+    font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .num-step .c h4{margin:0 0 6px;font-size:15px;color:var(--ink);}
+  .num-step .c p{margin:0 0 8px;font-size:14.3px;}
+
+  /* 三种写法 */
+  .style{border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:12px;
+    background:var(--card);padding:16px 20px;margin-bottom:12px;}
+  .style-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:8px;}
+  .style-h .nm{font-size:16.5px;font-weight:700;}
+  .style-h .en{font-size:12.5px;color:var(--ink-3);}
+  .style .oneline{font-size:14px;color:var(--ink-2);margin:0 0 10px;}
+  .style .oneline b{color:var(--ink);}
+
+  .vs{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:720px){.vs{grid-template-columns:1fr;}}
+  .vs .box{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13.8px;}
+  .vs .box h5{margin:0 0 6px;font-size:12.5px;font-weight:700;letter-spacing:.04em;}
+  .vs .box.good{background:var(--ok-soft);border-color:#c9e6d7;}
+  .vs .box.good h5{color:var(--ok);}
+  .vs .box.bad{background:var(--bad-soft);border-color:#f0ccc9;}
+  .vs .box.bad h5{color:var(--bad);}
+  .vs .box ul{margin:0;padding-left:18px;}
+  .vs .box li{margin-bottom:5px;}
+
+  .depth{width:100%;border-collapse:collapse;font-size:14px;margin:0;}
+  .depth td{padding:9px 12px;}
+
+  .fail{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:10px;
+    background:var(--card);padding:14px 18px;margin-bottom:10px;}
+  .fail .fh{font-size:14.5px;font-weight:700;margin-bottom:4px;}
+  .fail .fx{font-size:13.8px;color:var(--ink-2);margin-bottom:8px;}
+  .fail .fx b{color:var(--bad);}
+  .fail .ff{font-size:13.8px;color:var(--ink);background:var(--ok-soft);
+    border-radius:8px;padding:8px 12px;}
+  .fail .ff b{color:var(--ok);}
+
+  .checklist{list-style:none;padding:0;}
+  .checklist li{padding-left:28px;position:relative;margin-bottom:9px;font-size:14.5px;}
+  .checklist li::before{content:"";position:absolute;left:0;top:6px;width:15px;height:15px;
+    border:1.5px solid #a8b0c0;border-radius:4px;}
+
+  .finish{background:linear-gradient(135deg,#e4f2ef,#f2faf8);border:1px solid #b9ded7;
+    border-radius:14px;padding:20px 24px;}
+  .finish h3{color:var(--teal);}
+
+  .rec-tpl{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .rec-tpl th{background:#eef1f6;}
+  .rec-tpl td{height:34px;}
+
+  footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:12.8px;color:var(--ink-3);}
+
+  @media print{
+    body{background:#fff;font-size:11pt;}
+    header.hero{background:#101e24 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .card,.style,.note,.fail,.finish{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="kicker">DAY 4 · 手把手教程</span>
+    <h1>Chain-of-thought 推理链</h1>
+    <p class="lede">搞懂三种写法、它到底在哪类任务上真的有用，以及——最重要的——什么时候不该用。</p>
+    <div class="meta-row">
+      <span>学习 60 分钟 + 练习 90 分钟</span>
+      <span>网页版即可完成</span>
+      <span>含 4 个练习 · 附参考答案</span>
+      <span>含 5 题 × 4 写法对比模板</span>
+    </div>
+    <div class="hero-quote">
+      <b>今日一句话：</b>CoT 不是万能增强器。<b>能判断"这题不该用 CoT"，才是真会了。</b>
+      研究显示它的收益高度集中在数学与符号推理，在其他任务上接近 0——只是更慢更贵。
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ========== 开场 ========== -->
+<section>
+  <h2><span class="idx">开场</span>先看一次"加了反而更糟"的情况</h2>
+  <p class="sub">大多数人学 CoT 的第一反应是"以后都加上"。先看这盆冷水。</p>
+
+  <div class="card">
+    <p>你有两道题，都用"请一步步思考"来触发 CoT。看看发生了什么：</p>
+
+    <h4>题 A（数学）：</h4>
+    <pre>一件商品先涨价 20%，再降价 20%，最终价格是原价的百分之几？
+
+<span class="cm"># 不加 CoT，模型直接答：</span>
+<span class="bad">100%（没变）。</span>
+
+<span class="cm"># 加 CoT：</span>
+设原价 100 元。
+涨价 20% 后：100 × 1.2 = 120 元。
+降价 20% 是在 120 元的基础上：120 × 0.8 = 96 元。
+所以最终是原价的 <span class="hl">96%</span>。</pre>
+    <p class="cap">↑ <b>CoT 救了这道题。</b>直接答会上那个经典的直觉陷阱。</p>
+
+    <h4>题 B（常识）：</h4>
+    <pre>把下面这句话改写得礼貌一些：「把文件发我。」
+
+<span class="cm"># 不加 CoT：</span>
+<span class="hl">麻烦您方便的时候把文件发给我，谢谢！</span>
+
+<span class="cm"># 加 CoT：</span>
+第一步：识别原句的语气。原句是祈使句，比较直接，缺少礼貌用语。
+第二步：确定改写方向。需要加入请求词和缓和语气。
+第三步：选择礼貌用语。"麻烦您"、"方便的时候"、"谢谢"都是合适的选择。
+第四步：组合成句，保持原意不变。
+最终结果：麻烦您方便的时候把文件发给我，谢谢！</pre>
+    <p class="cap">↑ <b>结果一模一样，但多了四行废话。</b>token 成本翻倍，延迟变长，输出还更啰嗦。</p>
+
+    <div class="stop">
+      <div class="stop-h">✋ 停 30 秒</div>
+      <p>这两道题的差别在哪？为什么 CoT 对 A 有效、对 B 无效？</p>
+    </div>
+
+    <details>
+      <summary>参考答案：差别在"需不需要中间计算"</summary>
+      <div class="ans">
+        <p><b>题 A 有真实的中间状态。</b>100 → 120 → 96，每一步的结果都是下一步的输入。模型一次性跳到答案时，容易走捷径直接给"20% 涨跌抵消 = 不变"。把它写下来，每一步都能被检查。</p>
+        <p><b>题 B 没有中间状态。</b>"把文件发我" → 礼貌版，这是一步到位的映射，模型直接就会。硬要它分步，它只能把"我打算怎么做"复述一遍——<b>这不是推理，是表演</b>。</p>
+        <p><b>关键分野：</b>CoT 的价值来自<em>把串行的中间计算外化出来</em>。任务本身没有需要外化的串行步骤时，CoT 就是纯开销。</p>
+        <p>这个判断（有没有真实中间步骤）就是你今天要练的核心能力。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="note brand">
+    <span class="nt">今天的目标不是"学会加 CoT"</span>
+    "请一步步思考"这句话谁都会加。今天的目标是：拿到一道题，能<b>先判断该不该加</b>，加的话知道用哪种写法。
+    盲测判断准确率 ≥ 4/6 才达标——注意这是判断准确率，不是做题正确率。
+  </div>
+</section>
+
+<!-- ========== 1. 三种写法 ========== -->
+<section>
+  <h2><span class="idx">01</span>三种写法，从弱到强</h2>
+  <p class="sub">同一个目的，三种可控性不同的实现方式。</p>
+
+  <div class="style">
+    <div class="style-h">
+      <span class="nm">写法一：Zero-shot CoT</span>
+      <span class="en">一句话触发</span>
+    </div>
+    <p class="oneline"><b>在提示词末尾加一句触发语。</b>成本最低，可控性最低。</p>
+    <pre>【你的任务描述】
+
+<span class="hl">请一步步思考，先分析再给出结论。</span></pre>
+    <div class="vs">
+      <div class="box good"><h5>✓ 优点</h5>
+        <ul><li>零成本，一句话的事</li><li>通用，任何任务都能试</li><li>适合快速验证"这题 CoT 有没有用"</li></ul>
+      </div>
+      <div class="box bad"><h5>✗ 缺点</h5>
+        <ul><li>模型怎么思考完全由它自己决定，你可能拿到一堆无关的分析</li><li>输出结构不可控，不好解析</li></ul>
+      </div>
+    </div>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>一个现实提醒：</b>如果你用的是较新的推理模型，它们在训练时已经内化了"先想再答"，额外加"请一步步思考"通常<b>测不出提升</b>，有时反而拖慢。用之前先跑一次对比。
+    </div>
+  </div>
+
+  <div class="style">
+    <div class="style-h">
+      <span class="nm">写法二：Few-shot CoT</span>
+      <span class="en">给带推理链的示例</span>
+    </div>
+    <p class="oneline"><b>示例里带上完整的推理过程。</b>这就是 Day 3 和 Day 4 的合体——示例传达"推理长什么样"。</p>
+    <pre>例：
+问题：一件商品先涨 20% 再降 20%，最终是原价的百分之几？
+思考：设原价 100。涨后 100×1.2=120。降 20% 基于 120，即 120×0.8=96。
+答案：96%
+
+问题：【你的题目】
+思考：</pre>
+    <div class="vs">
+      <div class="box good"><h5>✓ 优点</h5>
+        <ul><li>你通过示例<b>规定了思考的结构和粒度</b></li><li>输出可预测，比 Zero-shot CoT 稳</li></ul>
+      </div>
+      <div class="box bad"><h5>✗ 缺点</h5>
+        <ul><li>要写示例，成本高</li><li>token 消耗大（示例里的推理链很长）</li></ul>
+      </div>
+    </div>
+    <div class="note ok" style="margin-bottom:0;">
+      <b>什么时候值得用：</b>你需要控制推理的<b>结构</b>时——比如要求它"必须先列已知条件，再逐步推导，最后检查单位"。
+      纯靠一句"请一步步思考"做不到这个。
+    </div>
+  </div>
+
+  <div class="style">
+    <div class="style-h">
+      <span class="nm">写法三：手写步骤分解</span>
+      <span class="en">你规定第一步做什么</span>
+    </div>
+    <p class="oneline"><b>你自己把推理流程拆成固定步骤写进提示词。</b>可控性最高，也最省 token。</p>
+    <pre>按以下三步处理，每步一行：
+
+<span class="hl">第一步</span>：列出题目给出的已知条件（只列数字和事实）。
+<span class="hl">第二步</span>：写出计算过程，每步一行，标注用到的数字。
+<span class="hl">第三步</span>：给出最终答案，格式为「答案：XX」。
+
+题目：【你的题目】</pre>
+    <div class="vs">
+      <div class="box good"><h5>✓ 优点</h5>
+        <ul><li><b>最可控</b>——输出结构完全由你定义，下游好解析</li><li>不依赖示例，token 省</li><li>可以把"检查"这一步也规定进去（比如"最后一步：验算一遍"）</li></ul>
+      </div>
+      <div class="box bad"><h5>✗ 缺点</h5>
+        <ul><li>你得自己想清楚步骤怎么拆——拆错了会限制模型</li><li>只适用于你<b>知道正确解法路径</b>的任务</li></ul>
+      </div>
+    </div>
+    <div class="note teal" style="margin-bottom:0;">
+      <b>这条最容易被忽略但最实用。</b>很多人以为 CoT 就是"请一步步思考"，其实<b>手写步骤分解才是工程上最常用的一档</b>——
+      它把 CoT 从"祈祷模型想对"变成"规定模型按流程走"。而且它天然能和 Day 2 的结构化输出结合：每一步产出一个字段。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>三种写法怎么选</h3>
+    <table>
+      <thead><tr><th style="width:22%">场景</th><th style="width:26%">选哪种</th><th>理由</th></tr></thead>
+      <tbody>
+        <tr><td class="k">快速试探"有没有用"</td><td>Zero-shot CoT</td><td>一句话的成本，先验证再说</td></tr>
+        <tr><td class="k">要控制推理结构和粒度</td><td>Few-shot CoT</td><td>用示例示范"什么样的推理算合格"</td></tr>
+        <tr><td class="k">知道正确解法路径</td><td><b>手写步骤分解</b></td><td>最可控、最省、下游最好解析</td></tr>
+        <tr><td class="k">要接程序、要解析</td><td>手写步骤 + 结构化输出</td><td>每步一个字段，直接 JSON 输出</td></tr>
+        <tr><td class="k">用的是推理模型</td><td>先什么都不加</td><td>推理模型已内化 CoT，先测再加</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ========== 2. 适用边界 ========== -->
+<section>
+  <h2><span class="idx">02</span>适用边界：它到底在哪类任务上有效</h2>
+  <p class="sub">这一节是今天的核心。有硬数据，不是经验之谈。</p>
+
+  <div class="card">
+    <h3>证据一：meta 分析的结论</h3>
+    <p>一项覆盖 <b>100+ 篇论文、20 个数据集</b>的 meta 分析，加上 14 个当代模型的实验，结论很干脆：</p>
+    <table>
+      <thead><tr><th style="width:30%">任务类型</th><th style="width:26%">CoT 相对直接作答的增益</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td class="k">数学</td><td><b>+12.3 分</b></td><td>显著，稳定</td></tr>
+        <tr><td class="k">符号推理</td><td><b>+14.2 分</b></td><td>最受益的一类</td></tr>
+        <tr><td class="k">常识 / 软推理</td><td><b>+0.7 分</b>（56.8 vs 56.1）</td><td>基本等于没有</td></tr>
+        <tr><td class="k">MMLU 上的提升</td><td>95% 来自<b>含等号「=」</b>的题目</td><td>也就是说：不是"推理"在受益，是"符号运算"在受益</td></tr>
+      </tbody>
+    </table>
+    <div class="note bad" style="margin-bottom:0;">
+      <b>最扎心的一条：</b>MMLU 这个被广泛当作"推理能力"基准的测试上，CoT 带来的提升有 <b>95% 集中在带等号的计算题</b>。
+      去掉那些题，CoT 在其余题目上的贡献接近于零。这直接推翻了"CoT 提升推理能力"的流行说法。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>证据二：任务"深度"决定效果</h3>
+    <p>另一项研究给出更细的解释框架：<b>CoT 是"带宽旁路"</b>——当任务的串行计算量超过模型单次前向传播的能力时，把中间步骤写下来能绕开这个瓶颈。</p>
+    <table class="depth">
+      <thead><tr><th style="width:26%">任务深度</th><th style="width:26%">典型任务</th><th>CoT 效果</th></tr></thead>
+      <tbody>
+        <tr><td class="k">高深度</td><td>GSM8K、MATH</td><td><b>+54 到 +68 个百分点</b>——天壤之别</td></tr>
+        <tr><td class="k">中等</td><td>代码生成（HumanEval）</td><td><b>因模型而异</b>：大模型 +23 分，小模型 -29 分（可能反而变差）</td></tr>
+        <tr><td class="k">浅层</td><td>MMLU、ARC（常识/知识）</td><td><b>结构冗余</b>：0 到 +4.6 分，没有显著提升</td></tr>
+      </tbody>
+    </table>
+    <p style="margin:12px 0 0;font-size:14px;color:var(--ink-2);">
+      <b>中等深度那一栏要特别注意：</b>同样的任务，<b>大模型加 CoT 变好，小模型加 CoT 变差</b>。
+      这说明 CoT 不是无条件增益——模型能力不够时，让它写一堆中间步骤反而会暴露更多错误机会。
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>你的判断规则（背下这一句）</h3>
+    <div class="note teal">
+      <b>问自己：这道题的正确答案，需不需要"中间结果"才能得出来？</b>
+      <br><br>
+      <b>需要</b>（要算、要推、要跨多个条件权衡）→ 用 CoT。<br>
+      <b>不需要</b>（一步映射就能得到，比如改写、摘要、翻译、简单分类、常识问答）→ 别用。
+    </div>
+    <p style="margin-top:12px;">再补两条辅助判断：</p>
+    <ul>
+      <li><b>题目里有没有数字、公式、逻辑条件？</b>有 → 偏向用</li>
+      <li><b>你自己做这道题时会不会打草稿？</b>会 → 用；不会 → 别用</li>
+    </ul>
+    <p style="margin-bottom:0;">"你自己会不会打草稿"这条特别好用，它把抽象判断变成了身体记忆。</p>
+  </div>
+
+  <div class="card">
+    <h3>该用 vs 不该用</h3>
+    <div class="vs">
+      <div class="box good">
+        <h5>✓ 该用 CoT</h5>
+        <ul>
+          <li>数学题、算术应用题</li>
+          <li>符号运算、公式推导</li>
+          <li>多步逻辑推理（谁比谁高、谁先谁后）</li>
+          <li>需要跨多个条件做判断（满足 A 且 B 但不满足 C 时怎么办）</li>
+          <li>需要检查/验算的任务</li>
+        </ul>
+      </div>
+      <div class="box bad">
+        <h5>✗ 不该用 CoT</h5>
+        <ul>
+          <li>常识问答、知识性问题</li>
+          <li>摘要、改写、翻译、润色</li>
+          <li>简单分类（好/坏、是/否）</li>
+          <li>模型已经能直接做对的任务</li>
+          <li><b>对延迟敏感或成本敏感</b>的场景</li>
+          <li>用的是推理模型，且没有对比验证过</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>成本要算清楚：</b>CoT 的每一个推理 token 都是要付钱的。如果你每天跑一万次，加一句"请一步步思考"可能让成本翻好几倍，
+      而收益是 0.7 分。<b>批量场景务必先做 A/B 再决定。</b>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 3. 对比实验 ========== -->
+<section>
+  <h2><span class="idx">03</span>动手：5 题 × 4 写法对比</h2>
+  <p class="sub">今日主线，90 分钟。做完你就有自己的实证结论。</p>
+
+  <div class="card">
+    <h3>题目怎么选</h3>
+    <p>挑 5 道<b>真的需要多步推理</b>的题，类型混合：</p>
+    <ul>
+      <li><b>2 道算术应用题</b>（如：折扣叠加、行程问题、利率计算）</li>
+      <li><b>1 道逻辑推理题</b>（如：五个人排队，A 在 B 前面但不在第一位……）</li>
+      <li><b>2 道多条件判断题</b>（如：满足 X 且 Y 但不满足 Z 时，应该走哪个流程）</li>
+    </ul>
+    <p style="margin-bottom:0;"><b>再加 1 道"不该用 CoT"的题</b>（比如一句简单的改写），用作对照组——你会看到它上面 CoT 纯属浪费。</p>
+  </div>
+
+  <div class="card">
+    <h3>四种写法，每题都跑一遍</h3>
+    <table>
+      <thead><tr><th style="width:20%">写法</th><th style="width:40%">怎么改提示词</th><th>观察什么</th></tr></thead>
+      <tbody>
+        <tr><td class="k">① 直接问</td><td>只有题目本身</td><td>基线：能不能直接做对</td></tr>
+        <tr><td class="k">② Zero-shot CoT</td><td>题目 + "请一步步思考，先分析再给结论"</td><td>正确率有没有提升</td></tr>
+        <tr><td class="k">③ Few-shot CoT</td><td>给 2 个<b>带完整推理链</b>的示例 + 题目</td><td>推理结构是不是更规整</td></tr>
+        <tr><td class="k">④ 手写步骤</td><td>题目 + 你自己规定的三步（列条件→推导→给答案）</td><td>输出是不是最好解析</td></tr>
+      </tbody>
+    </table>
+    <p style="margin:12px 0 0;font-size:14px;"><b>每题记录三件事：</b>正确率（对/错）、输出长度（大致字数）、耗时（体感即可）。</p>
+  </div>
+
+  <div class="card">
+    <h3>对比表（照抄填）</h3>
+    <table class="rec-tpl">
+      <thead><tr><th style="width:18%">题目</th><th style="width:20%">① 直接问</th><th style="width:20%">② Zero-shot CoT</th><th style="width:20%">③ Few-shot CoT</th><th>④ 手写步骤</th></tr></thead>
+      <tbody>
+        <tr><td class="k">题1（算术）</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="k">题2（算术）</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="k">题3（逻辑）</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="k">题4（多条件）</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="k">题5（多条件）</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="k">题6（对照组）</td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-2);">
+      每格填"对/错 + 大致字数"，如 <code>✓ / 120字</code>。<b>重点看两个信号：</b>
+      ① 哪些题在"直接问"就对了（这些题 CoT 是白加的）；
+      ② 对照组那题，CoT 是不是只增加了字数没改变正确率。
+    </p>
+  </div>
+
+  <div class="note brand">
+    <span class="nt">时间不够时</span>
+    把题量减到 3 题（1 道算术 + 1 道逻辑 + 1 道对照），但<b>四种写法都要跑</b>，否则看不出差别。
+    如果连 3 题都做不完，至少保对照组那题——它能让你亲眼看到"CoT 只是变长没变准"。
+  </div>
+</section>
+
+<!-- ========== 4. 盲测 ========== -->
+<section>
+  <h2><span class="idx">04</span>盲测：该不该用 CoT（测试环节）</h2>
+  <p class="sub">今日通过标准：判断准确率 ≥ 4/6，做题正确率 ≥ 4/6。</p>
+
+  <div class="card">
+    <h3>怎么测</h3>
+    <ol>
+      <li>准备 6 道<b>新题</b>（没在上一节用过的），3 道符号/数学类、3 道常识/摘要类</li>
+      <li><b>先判断</b>每题该不该用 CoT，并把理由写下来——这一步必须在做题<b>之前</b>完成</li>
+      <li>再用你选定的方法做题</li>
+      <li>统计：<b>判断准确率</b>和<b>做题正确率</b></li>
+    </ol>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>关键在"先判断后做题"。</b>如果你做完题再回头说"我觉得该用"，那是马后炮，不算数。
+      判断必须发生在你不知道答案之前。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>6 道题（先自己判断，再看答案）</h3>
+    <table>
+      <thead><tr><th style="width:6%">#</th><th style="width:52%">题目</th><th>你的判断（用 / 不用）+ 理由</th></tr></thead>
+      <tbody>
+        <tr><td class="k">1</td><td>一个水池，甲管单独注满需 6 小时，乙管需 4 小时，两管同开需多久？</td><td></td></tr>
+        <tr><td class="k">2</td><td>把"这周报什么时候交"改写得委婉一些。</td><td></td></tr>
+        <tr><td class="k">3</td><td>A 比 B 高，C 比 A 高，D 比 B 矮。四人中谁最矮？</td><td></td></tr>
+        <tr><td class="k">4</td><td>用一句话概括这段新闻的主要内容。</td><td></td></tr>
+        <tr><td class="k">5</td><td>某商品原价 200，先打 8 折，再用满 150 减 30 的券，最后付多少？</td><td></td></tr>
+        <tr><td class="k">6</td><td>判断这条评论是正面还是负面："东西还行，就是等了五天。"</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <details>
+      <summary>参考答案与解析</summary>
+      <div class="ans">
+        <p><b>题 1 —— 用。</b>典型的算术应用题，有中间计算（1/6 + 1/4 = 5/12）。直接答容易给"5 小时"这种直觉错误。</p>
+        <p><b>题 2 —— 不用。</b>一步映射的改写任务。你自己会打草稿吗？不会。加 CoT 只会多出几行"第一步：分析语气……"。</p>
+        <p><b>题 3 —— 用。</b>需要串行推理：A&gt;B，C&gt;A 所以 C&gt;A&gt;B，D&lt;B 所以 D 最矮。中间结论是下一步的前提。</p>
+        <p><b>题 4 —— 不用。</b>摘要是一步到位的归纳。注意别被"主要内容"这个词骗了——它不涉及多步计算。</p>
+        <p><b>题 5 —— 用。</b>两次运算（200×0.8=160，160-30=130），而且<b>券的适用条件</b>本身需要判断（160 满 150 了，所以能用）。典型的"跨多条件"。</p>
+        <p><b>题 6 —— <span style="color:var(--warn);">有争议，算你判断对也行。</span></b>这是故意放的一道边界题。
+        严格按数据说话：情感分类属于"软推理"，CoT 增益接近 0 → <b>不该用</b>。
+        但实操中，这种"又褒又贬"的评论让模型说一句理由，往往能提升判断质量。
+        <b>所以更准确的说法是：</b>单纯为了提分不该用；但如果你要让模型输出 <code>reason</code> 字段（Day 2 那个 schema），那是有价值的——此时你用的是"手写步骤分解"，不是为了推理本身。</p>
+        <p><b>计分：</b>题 1、3、5 用，题 2、4、6 不用 = 6/6。答对 4 道以上即达标。</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ========== 5. 失败模式 ========== -->
+<section>
+  <h2><span class="idx">05</span>CoT 的四种失败模式</h2>
+  <p class="sub">今日通过标准要求记录这些。前三种你今天大概率会遇到。</p>
+
+  <div class="fail">
+    <div class="fh">失败一：不加区分地全用</div>
+    <div class="fx"><b>现象：</b>所有任务都加"请一步步思考"，成本翻倍，收益接近 0。<br>
+    <b>为什么：</b>把 CoT 当成了"万能增强器"——这恰恰是研究推翻的说法。</div>
+    <div class="ff"><b>修法：</b>先问"需不需要中间结果"。批量场景务必先 A/B 测一次再决定。<br>
+    <b>自检：</b>翻翻你写过的提示词，有多少是无脑加的？</div>
+  </div>
+
+  <div class="fail">
+    <div class="fh">失败二：推理链很长但答案没更准</div>
+    <div class="fx"><b>现象：</b>模型写了 800 字推理，最后答案是错的，或者和对直接问一模一样。<br>
+    <b>为什么：</b><b>写得多不等于想得对。</b>有研究发现，不忠实的推理链反而更长——模型在"合理化"而不是"推理"。</div>
+    <div class="ff"><b>修法：</b>看正确率，不看推理链长度。如果加了 CoT 正确率没变，立刻撤掉。<br>
+    <b>进阶：</b>如果推理链太长，试试"手写步骤分解"限制它的结构，或要求"每步不超过一句话"。</div>
+  </div>
+
+  <div class="fail">
+    <div class="fh">失败三：中间步骤是编造的</div>
+    <div class="fx"><b>现象：</b>推理链看起来完整严密，但其中某个"已知条件"是模型自己编的，或者某步计算是错的，后面全跟着错。<br>
+    <b>为什么：</b>CoT 只保证"有过程"，不保证"过程对"。</div>
+    <div class="ff"><b>修法：</b>① 用<b>手写步骤分解</b>，第一步强制"只列题目中出现的已知条件"，把编造空间堵在源头；
+    ② 加一步"最后验算一遍"；③ 关键场景下，让模型把中间结果填进 JSON 字段（Day 2 的做法），方便你程序化检查。</div>
+  </div>
+
+  <div class="fail">
+    <div class="fh">失败四：把推理链当成模型的真实想法</div>
+    <div class="fx"><b>现象：</b>你用推理链来"解释模型为什么这么答"，据此做审计或归因。<br>
+    <b>为什么：</b><b>推理链并不总是忠实的。</b>研究显示模型在推理中提及相关线索的比例可以低到 25%；
+    而且模型越大，忠实度反而可能越低。它可能先有了答案，再倒推一个看起来合理的推导过程。</div>
+    <div class="ff"><b>修法：</b>把 CoT 当<b>提高正确率的手段</b>，不要当<b>可解释性工具</b>。
+    需要知道"为什么"时，用别的方法（让它引用原文依据、给置信度、或直接检索证据）。<br>
+    <b>这条认知误区很多人带很久，今天记住就值了。</b></div>
+  </div>
+</section>
+
+<!-- ========== 6. 和前面几天的联动 ========== -->
+<section>
+  <h2><span class="idx">06</span>和前三天的关系</h2>
+  <p class="sub">Day 4 不是孤立的，它落在你 Day 1 的五层结构里。</p>
+
+  <div class="card">
+    <table>
+      <thead><tr><th style="width:20%">Day</th><th style="width:30%">知识点</th><th>和 CoT 怎么配合</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Day 1</td><td>五层结构</td><td>CoT 写在<b>任务层</b>——"先分析再给结论"是对做事方式的规定，不是格式也不是约束</td></tr>
+        <tr><td class="k">Day 2</td><td>结构化输出</td><td><b>最强组合。</b>用"手写步骤分解"把每一步变成一个 JSON 字段：<br><code>已知条件 / 推导步骤 / 最终答案</code>。既可控又可解析</td></tr>
+        <tr><td class="k">Day 3</td><td>Few-shot</td><td><b>Few-shot CoT</b> 就是两者合体：示例里带推理链。<br>而"该不该用"的判断规则不同：示例治"不知道长什么样"，CoT 治"没算对"</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>最能体现你水平的一个组合</h3>
+    <pre><span class="k"># 任务层（CoT：手写步骤分解）</span>
+按以下三步处理这个问题：
+第一步：只列出题目中明确给出的已知条件，不添加任何题目里没有的信息。
+第二步：逐步推导，每步一行，标注用到的数字。
+第三步：验算一遍，然后给出最终答案。
+
+<span class="k"># 格式层（Day 2：结构化输出）</span>
+只输出 JSON，第一个字符必须是 {：
+{
+  "known_conditions": ["题目中出现的条件，逐条列出"],
+  "steps": ["每步推导，每步一行"],
+  "verification": "验算过程，一句话",
+  "final_answer": "最终答案"
+}</pre>
+    <p class="cap">↑ 这份提示词同时用了 Day 1（分层）、Day 2（结构化）、Day 4（手写步骤 CoT），
+    而且<b>第三步"只列题目中出现的条件"直接堵住了失败三（编造中间步骤）</b>。这就是四天知识的合力。</p>
+  </div>
+</section>
+
+<!-- ========== 7. 验收 ========== -->
+<section>
+  <h2><span class="idx">07</span>怎么算学懂了</h2>
+  <p class="sub">对应 Day 4 的通过标准。</p>
+
+  <div class="finish">
+    <h3>今日达标清单</h3>
+    <ul class="checklist">
+      <li><b>能一句话说清 CoT 主要在哪类任务上有效。</b>标准答案："数学、符号运算、多步逻辑推理——研究显示在这些任务上有 +12～14 分的增益，在常识和软推理上接近 0。"</li>
+      <li><b>能说出至少两类不该用的场景。</b>比如：摘要/改写/翻译等一步映射的任务、简单分类、对延迟或成本敏感的批量场景、用推理模型且未经验证时。</li>
+      <li><b>盲测判断准确率 ≥ 4/6</b>（第 04 节那 6 道题，先判断后做题）。</li>
+      <li><b>失败清单已更新</b>：把今天遇到的失败并进 Day 2 那份清单里，至少 2 条。</li>
+    </ul>
+    <p style="margin:16px 0 0;font-size:14px;">
+      <b>最后三道检验题（闭卷）：</b><br>
+      ① 为什么"请一步步思考"对改写句子没用，对算术题有用？<br>
+      ② 模型写了一段很长、看起来很严密的推理，但答案是错的——这说明了什么？<br>
+      ③ 你能把模型的推理链当作"它为什么这么想"的证据吗？为什么？<br>
+      <em>三题都答得上来，今天就没白花。</em>
+    </p>
+  </div>
+
+  <details style="margin-top:14px;">
+    <summary>检验题参考答案</summary>
+    <div class="ans">
+      <p><b>①</b> 因为算术题有<b>真实的中间状态</b>（每步结果是下一步的输入），需要外化出来才能算对；改写句子是<b>一步映射</b>，没有中间状态可言，硬分步只能让它复述"我打算怎么做"，属于表演。</p>
+      <p><b>②</b> 说明<b>写得多不等于想得对</b>。研究发现不忠实的推理链反而更长——模型可能在合理化而不是推理。判断标准是<b>正确率</b>，不是推理链的长度或流畅度。如果加了 CoT 正确率没变，就该撤掉。</p>
+      <p><b>③</b> <b>不能。</b>推理链并不总是忠实的：研究显示模型在推理中提到相关线索的比例可以低到 25%，且模型越大忠实度可能越低。它可能是先有答案再倒推过程。所以 CoT 只能当"提高正确率的手段"，不能当"可解释性工具"。</p>
+    </div>
+  </details>
+
+  <div class="note brand" style="margin-top:14px;">
+    <span class="nt">今天剩下的时间怎么安排</span>
+    学习 60 分钟（本教程）→ <b>5 题 × 4 写法对比 90 分钟</b>（今日主线）→ <b>6 题盲测 30 分钟</b> → <b>更新失败清单 30 分钟</b>。
+    <br><b>时间不够时：</b>对比实验减到 3 题（必须包含对照组那道"不该用"的题），盲测 6 题别减——它直接对应通过标准。
+    <br><b>明天（Day 5）是混合分辨验收</b>，会把四天知识混着考。今天这份"手写步骤 + JSON 字段"的组合示例，就是明天最好的复习材料。
+  </div>
+</section>
+
+<footer>
+  Chain-of-thought 推理链 · 手把手教程 · Day 4 配套<br>
+  与《提示词四技巧五天掌握计划》Day 4 对齐 · 完成本教程后可进入 Day 4 剩余任务（5 题 × 4 写法对比、6 题判断盲测、更新失败清单）
+</footer>
+
+</div>
+</body>
+</html>

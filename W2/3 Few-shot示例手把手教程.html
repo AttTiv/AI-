@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Few-shot 示例 · 手把手教程（Day 3）</title>
+<style>
+  :root{
+    --ink:#1a1d24; --ink-2:#4a5160; --ink-3:#7a8290;
+    --line:#e3e6ec; --bg:#f6f7f9; --card:#fff;
+    --brand:#2f5bd7; --brand-soft:#eef2fd;
+    --warn:#a96408; --warn-soft:#fdf3e3;
+    --ok:#1f7a52; --ok-soft:#e9f5ee;
+    --bad:#b3352f; --bad-soft:#fbeceb;
+    --purple:#7c4dbe;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:0 26px 90px;}
+
+  header.hero{
+    background:linear-gradient(140deg,#1d2033 0%,#33305e 60%,#4a3f86 100%);
+    color:#fff;margin:0 -26px 36px;padding:40px 26px 34px;
+  }
+  .hero-inner{max-width:888px;margin:0 auto;}
+  .kicker{display:inline-block;font-size:12.5px;letter-spacing:.13em;
+    background:rgba(255,255,255,.14);padding:5px 12px;border-radius:20px;margin-bottom:14px;}
+  h1{font-size:29px;line-height:1.35;margin:0 0 10px;font-weight:700;letter-spacing:-.01em;}
+  .lede{margin:0;color:#cfd0ea;font-size:15px;max-width:700px;}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .meta-row span{font-size:12.5px;background:rgba(255,255,255,.11);
+    border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:5px 12px;color:#ded9f2;}
+  .hero-quote{
+    margin-top:22px;background:rgba(255,255,255,.13);border-left:3px solid #c6a8f0;
+    border-radius:0 10px 10px 0;padding:14px 18px;font-size:14.5px;color:#ebe6f8;
+  }
+  .hero-quote b{color:#fff;}
+
+  section{margin-bottom:38px;}
+  h2{font-size:21px;margin:0 0 6px;font-weight:700;letter-spacing:-.01em;
+     display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  h2 .idx{font-size:12.5px;font-weight:600;color:var(--brand);background:var(--brand-soft);
+     border-radius:6px;padding:2px 9px;letter-spacing:.04em;}
+  .sub{color:var(--ink-3);font-size:13.5px;margin:0 0 16px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;}
+  .card+.card{margin-top:14px;}
+  h3{font-size:16.5px;margin:0 0 10px;font-weight:650;}
+  h4{font-size:14.5px;margin:18px 0 8px;font-weight:650;color:var(--ink-2);}
+  p{margin:0 0 11px;}
+  ul,ol{margin:0 0 11px;padding-left:21px;}
+  li{margin-bottom:7px;}
+  li:last-child{margin-bottom:0;}
+  b{font-weight:650;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.8px;background:#f0f2f6;color:#2b3550;padding:1.5px 6px;border-radius:5px;}
+  em{font-style:normal;background:linear-gradient(transparent 62%,#ffe9a8 62%);padding:0 1px;font-weight:600;}
+
+  pre{
+    background:#1e2433;color:#dfe4ee;border-radius:11px;padding:16px 18px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;line-height:1.72;overflow-x:auto;margin:0 0 12px;
+    white-space:pre-wrap;word-break:break-word;
+  }
+  pre .cm{color:#7f8ba3;}
+  pre .k{color:#7fd1a8;font-weight:600;}
+  pre .s{color:#e8c37a;}
+  pre .n{color:#9db8f0;}
+  pre .bad{color:#f09a95;}
+  pre .hl{color:#c6a8f0;font-weight:600;}
+  .cap{font-size:12.5px;color:var(--ink-3);margin:-6px 0 14px;}
+
+  .note{border-radius:12px;padding:14px 18px;font-size:14px;margin:14px 0;border:1px solid;}
+  .note.warn{background:var(--warn-soft);border-color:#f0dcbc;color:#6b4405;}
+  .note.ok{background:var(--ok-soft);border-color:#c9e6d7;color:#145639;}
+  .note.bad{background:var(--bad-soft);border-color:#f0ccc9;color:#7d211d;}
+  .note.brand{background:var(--brand-soft);border-color:#d5dffb;color:#233a75;}
+  .note .nt{display:block;font-size:12.5px;font-weight:700;letter-spacing:.05em;margin-bottom:4px;opacity:.85;}
+
+  .stop{background:#fff8e6;border:1px dashed #e6c98a;border-radius:12px;padding:15px 19px;margin:18px 0;}
+  .stop .stop-h{font-size:12.5px;font-weight:700;color:var(--warn);letter-spacing:.06em;margin-bottom:6px;}
+  .stop p{margin:0 0 8px;font-size:14.5px;}
+  .stop p:last-child{margin-bottom:0;}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:6px;}
+  th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);}
+  th{background:#eef1f6;font-weight:650;font-size:13.5px;color:var(--ink-2);border-bottom:1px solid #d8dde6;}
+  tr:last-child td{border-bottom:none;}
+  td.k{font-weight:600;white-space:nowrap;}
+
+  details{background:#fafbfd;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:12px;}
+  summary{cursor:pointer;font-size:14px;font-weight:650;color:var(--brand);}
+  summary::marker{color:var(--brand);}
+  details[open] summary{margin-bottom:10px;}
+  details .ans{font-size:14px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px;margin-top:6px;}
+  details .ans p{margin:0 0 8px;}
+  details .ans p:last-child{margin-bottom:0;}
+  details .ans pre{margin-top:8px;}
+
+  .num-step{display:grid;grid-template-columns:32px 1fr;gap:14px;margin-bottom:16px;}
+  .num-step .n{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;
+    font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .num-step .c h4{margin:0 0 6px;font-size:15px;color:var(--ink);}
+  .num-step .c p{margin:0 0 8px;font-size:14.3px;}
+
+  /* 五维传达 */
+  .dim{border:1px solid var(--line);border-radius:11px;background:var(--card);
+    padding:14px 18px;margin-bottom:10px;border-left:4px solid var(--purple);}
+  .dim-h{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .dim-h span{font-size:12.5px;font-weight:500;color:var(--ink-3);margin-left:8px;}
+  .dim p{margin:0;font-size:13.8px;color:var(--ink-2);}
+  .dim .eg{margin-top:7px;font-size:13.5px;color:var(--ink);
+    background:#f7f5fc;border-radius:7px;padding:7px 11px;}
+
+  /* 坏例子 */
+  .fail{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:10px;
+    background:var(--card);padding:14px 18px;margin-bottom:10px;}
+  .fail .fh{font-size:14.5px;font-weight:700;margin-bottom:4px;}
+  .fail .fx{font-size:13.8px;color:var(--ink-2);margin-bottom:8px;}
+  .fail .fx b{color:var(--bad);}
+  .fail .ff{font-size:13.8px;color:var(--ink);background:var(--ok-soft);
+    border-radius:8px;padding:8px 12px;}
+  .fail .ff b{color:var(--ok);}
+
+  .checklist{list-style:none;padding:0;}
+  .checklist li{padding-left:28px;position:relative;margin-bottom:9px;font-size:14.5px;}
+  .checklist li::before{content:"";position:absolute;left:0;top:6px;width:15px;height:15px;
+    border:1.5px solid #a8b0c0;border-radius:4px;}
+
+  .finish{background:linear-gradient(135deg,#f1edfb,#f9f7fd);border:1px solid #d8cdf2;
+    border-radius:14px;padding:20px 24px;}
+  .finish h3{color:var(--purple);}
+
+  .rec-tpl{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .rec-tpl th{background:#eef1f6;}
+  .rec-tpl td{height:34px;}
+
+  .vs{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:720px){.vs{grid-template-columns:1fr;}}
+  .vs .box{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13.8px;}
+  .vs .box h5{margin:0 0 6px;font-size:12.5px;font-weight:700;letter-spacing:.04em;}
+  .vs .box.good{background:var(--ok-soft);border-color:#c9e6d7;}
+  .vs .box.good h5{color:var(--ok);}
+  .vs .box.bad{background:var(--bad-soft);border-color:#f0ccc9;}
+  .vs .box.bad h5{color:var(--bad);}
+  .vs .box ul{margin:0;padding-left:18px;}
+  .vs .box li{margin-bottom:5px;}
+
+  footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:12.8px;color:var(--ink-3);}
+
+  @media print{
+    body{background:#fff;font-size:11pt;}
+    header.hero{background:#1d2033 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .card,.dim,.note,.fail,.finish{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="kicker">DAY 3 · 手把手教程</span>
+    <h1>Few-shot 示例</h1>
+    <p class="lede">搞懂示例到底在传达什么、给几个、怎么选、怎么排，并能一眼看出别人示例集里的坏例子。</p>
+    <div class="meta-row">
+      <span>学习 45 分钟 + 练习 90 分钟</span>
+      <span>网页版即可完成</span>
+      <span>含 4 个练习 · 附参考答案</span>
+      <span>含对比实验操作模板</span>
+    </div>
+    <div class="hero-quote">
+      <b>今日一句话：</b>示例不是在「教模型正确答案」，而是在「<b>设定一个让它继续下去的模式</b>」。
+      想通这一句，你再看别人写的示例，就知道它想传达什么了。
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ========== 开场 ========== -->
+<section>
+  <h2><span class="idx">开场</span>先看一组"看起来没毛病"的示例</h2>
+  <p class="sub">这是初学者最常写出、也最没用的一类示例集。</p>
+
+  <div class="card">
+    <p>你要做一个商品评论的情感分类器。写了这样一组示例：</p>
+    <pre><span class="cm"># 你的提示词</span>
+判断下面评论的情感倾向，输出 正面 / 负面 / 中性。
+
+例 1：太好用了！ → <span class="hl">正面</span>
+例 2：非常满意，强烈推荐！ → <span class="hl">正面</span>
+例 3：物流快，做工精致，五星好评 → <span class="hl">正面</span>
+
+待分类：发货慢，客服态度差，但东西本身能用。
+输出：</pre>
+
+    <div class="stop">
+      <div class="stop-h">✋ 停 30 秒</div>
+      <p>猜一下，模型大概率会输出什么？为什么？</p>
+    </div>
+
+    <details>
+      <summary>参考答案：大概率输出「正面」——尽管这条是明显差评</summary>
+      <div class="ans">
+        <p><b>为什么？</b>模型压根没在"判断情感"。它看到的是：<b>前面三行都是「一句话 → 正面」这个形状</b>，于是延续这个形状，输出"正面"。</p>
+        <p>这就是今天最核心的认知：<em>模型从示例里学的是"模式"，不是"知识"</em>。</p>
+        <p>如果示例是在"教答案"，那模型应该知道"态度差 = 负面"——它在预训练里早就懂这个。但它输出了正面，说明驱动它的是<b>前面三行建立的模式</b>，跟内容对错无关。</p>
+        <p><b>推论：</b>你的示例集"长什么样"，比"说了什么"更重要。三个例子全是正面，就等于告诉模型"输出正面"。这就是为什么<b>多样性比数量重要</b>。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="note brand">
+    <span class="nt">把这个直觉记下来</span>
+    以后写示例时，先问自己一句：<b>我把这几个例子摆在一起，是在向模型展示一个什么"模式"？</b>
+    如果你的示例集全是一个类型，你展示的模式就是"永远输出这一类"。
+  </div>
+</section>
+
+<!-- ========== 1. 示例传达什么 ========== -->
+<section>
+  <h2><span class="idx">01</span>示例到底在传达什么</h2>
+  <p class="sub">五个维度。你写每个示例时，都要清楚它在传达其中哪一个（或几个）。</p>
+
+  <p>很多人以为示例只传达"正确答案"。实际上它同时传达五样东西——这也是为什么"给几个例子"能起那么大的作用：</p>
+
+  <div class="dim">
+    <div class="dim-h">① 输出格式 <span>长什么样</span></div>
+    <p>模型会精确模仿你示例的输出形状，包括标点、换行、字段顺序。</p>
+    <div class="eg">示例给 <code>正面</code>，输出就是 <code>正面</code>；示例给 <code>{"label":"正面"}</code>，输出就是 JSON。你不用额外描述格式。</div>
+  </div>
+
+  <div class="dim">
+    <div class="dim-h">② 判断粒度 <span>多细算"负面"</span></div>
+    <p>这是最容易被忽略、也最需要通过示例传达的一维。纯文字描述几乎说不清。</p>
+    <div class="eg">"有点小瑕疵但整体满意"算正面还是中性？你给一个这样的例子标成"正面"，模型就知道你的标准偏宽松；标成"中性"，它就知道你很严格。</div>
+  </div>
+
+  <div class="dim">
+    <div class="dim-h">③ 标签词表 <span>用什么词</span></div>
+    <p>你有自造的标签体系时，示例是唯一的传达方式。</p>
+    <div class="eg">你想让模型输出 <code>P1紧急 / P2重要 / P3一般</code>，光在提示词里写"按紧急程度分级"没用——模型不知道你的词表长这样。给三个例子，它立刻就懂。</div>
+  </div>
+
+  <div class="dim">
+    <div class="dim-h">④ 边界怎么判 <span>棘手情况归哪类</span></div>
+    <p>混合情感、信息不足、含糊其辞——这些情况你没有示例，模型就自己瞎编规则。</p>
+    <div class="eg">"东西不错但太贵了"这种又褒又贬的，专门给一个示例标成"中性"，模型才知道你的处理惯例。</div>
+  </div>
+
+  <div class="dim">
+    <div class="dim-h">⑤ 语气与长度 <span>输出多少字、什么调子</span></div>
+    <p>尤其是生成类任务（写回复、写摘要），示例长度直接决定输出长度。</p>
+    <div class="eg">你的示例回复都是 3 句话，模型就会输出 3 句话；示例是 200 字，它就不会给你 50 字。<b>想控制长度，最直接的办法是改示例长度，而不是写"请简短"。</b></div>
+  </div>
+
+  <div class="note ok">
+    <b>这个五维清单就是你的设计工具。</b>写示例前先想清楚：我这批示例要传达的是哪几维？
+    只要传达「格式」，一个例子就够；要传达「粒度 + 边界」，至少三个，而且必须覆盖不同情况。
+  </div>
+</section>
+
+<!-- ========== 2. 数量 ========== -->
+<section>
+  <h2><span class="idx">02</span>给几个：0 / 1 / 3 / 5 / 8 的经验值</h2>
+  <p class="sub">先给结论，再用你自己的实验验证它。</p>
+
+  <div class="card">
+    <table>
+      <thead><tr><th style="width:14%">数量</th><th style="width:34%">典型增益</th><th>什么时候用</th></tr></thead>
+      <tbody>
+        <tr><td class="k">0（zero-shot）</td><td>—</td><td><b>永远先试这个。</b>摘要、翻译、改写、明显标签的分类、基于清晰上下文的问答——这些 zero-shot 就够，加例子纯属浪费</td></tr>
+        <tr><td class="k">1</td><td>相比 0 有明显提升</td><td>只需要定格式时。风险：两个以下的例子容易被模型当成"硬规则"而不是"模式"</td></tr>
+        <tr><td class="k">3</td><td>相比 2 有明显提升，成本低于 5</td><td><b>默认甜点。</b>覆盖三类：常见情况 / 边界情况 / 棘手情况</td></tr>
+        <tr><td class="k">5</td><td>边际收益递减开始</td><td>字段多的结构化输出、需要钉死字段顺序和嵌套结构的任务</td></tr>
+        <tr><td class="k">8+</td><td>通常持平甚至变差</td><td>仅用于 5+ 字段的高度结构化输出，或 6+ 标签的分类（每个标签至少一个）。超过 8 个通常说明该换方法了</td></tr>
+      </tbody>
+    </table>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>为什么更多不一定更好：</b>① 例子多了会挤掉上下文里更重要的内容；② <b>顺序敏感性随数量增长</b>——例子越多，换一下顺序结果越可能变。所以"多加几个保险"这个直觉是错的。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>判断流程：到底该给几个</h3>
+    <div class="num-step">
+      <div class="n">1</div>
+      <div class="c">
+        <h4>先写 zero-shot，拿 5 条真实输入跑一遍</h4>
+        <p>如果已经能用，<b>停在这里</b>。Few-shot 是开销，不是装饰。</p>
+      </div>
+    </div>
+    <div class="num-step">
+      <div class="n">2</div>
+      <div class="c">
+        <h4>找出具体的失败模式</h4>
+        <p>用错标签词表？漏字段？语气不对？多次运行结果不一致？<b>每种失败对应不同类型的示例</b>，别盲目加数量。</p>
+      </div>
+    </div>
+    <div class="num-step">
+      <div class="n">3</div>
+      <div class="c">
+        <h4>从 3 个开始，按需加减</h4>
+        <p>3 个是默认起点。只传达格式 → 减到 1；字段多、结构复杂 → 加到 5。</p>
+      </div>
+    </div>
+    <div class="num-step" style="margin-bottom:0;">
+      <div class="n">4</div>
+      <div class="c">
+        <h4>A/B 对比后再决定</h4>
+        <p>在同一批测试输入上比较 zero-shot 和 few-shot。<b>如果提升不到 5%，用 zero-shot。</b>别为了"感觉更稳"多付 token。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stop">
+    <div class="stop-h">✋ 动手：0 / 1 / 3 / 5-shot 对比实验（90 分钟，今日主线）</div>
+    <p>这是今天最花时间也最值钱的一步。<b>按下面的模板做，不要自己随便跑。</b></p>
+    <p><b>选一个任务：</b>推荐客服意图分类（咨询 / 投诉 / 退款 / 建议 / 闲聊），或商品评论情感分类。选你真正会遇到的那种。</p>
+    <p><b>准备 10 条测试输入：</b>覆盖常见、边界、棘手三类，<b>故意包含几条和你的示例长得不像的</b>。</p>
+    <p><b>写四个版本：</b>0-shot（只给指令）/ 1-shot / 3-shot / 5-shot。四个版本的<b>指令部分完全一样</b>，只改示例部分——这样才能归因。</p>
+    <p><b>同一批 10 条输入，每个版本各跑一遍</b>，记录三件事：</p>
+    <ul>
+      <li><b>格式一致性</b>：10 条输出里，格式统一的占几条（有没有突然冒出"这条评论的情感是：正面"这种）</li>
+      <li><b>判断一致性</b>：同一条输入，重复跑 2 次，结果是否稳定</li>
+      <li><b>加第几个例子开始稳定</b>：从 0→1→3→5，哪一步之后正确率不再提升</li>
+    </ul>
+    <p>把结果填进下面的表。填完你就有了"我这个任务该给几个例子"的<b>实证结论</b>，而不是听别人的经验值。</p>
+  </div>
+
+  <div class="card">
+    <h3>对比实验记录表（直接照抄填）</h3>
+    <table class="rec-tpl">
+      <thead><tr><th style="width:14%">版本</th><th style="width:22%">格式一致（/10）</th><th style="width:22%">判断一致（/10）</th><th style="width:22%">正确率（/10）</th><th>观察与备注</th></tr></thead>
+      <tbody>
+        <tr><td class="k">0-shot</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="k">1-shot</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="k">3-shot</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="k">5-shot</td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-2);">
+      <b>重点看这两个信号：</b>① 哪个版本之后正确率不再涨——那就是你这个任务的拐点；
+      ② 格式一致性是不是在 0-shot 就崩了——如果是，说明真正缺的是 Day 2 的格式约束，而不是示例。
+    </p>
+  </div>
+
+  <div class="note bad">
+    <span class="nt">最常见的实验错误</span>
+    <b>测试输入和示例长得太像。</b>如果你拿"很像示例"的输入去测，正确率会虚高，你会误以为模型学会了。
+    <b>至少要留几条明显不像示例的输入</b>——真正检验泛化能力的就是那几条。
+  </div>
+</section>
+
+<!-- ========== 3. 怎么选例子 ========== -->
+<section>
+  <h2><span class="idx">03</span>怎么选例子</h2>
+  <p class="sub">选什么例子，比选几个例子影响更大。</p>
+
+  <div class="card">
+    <div class="num-step">
+      <div class="n">1</div>
+      <div class="c">
+        <h4>多样性优先于数量</h4>
+        <p>三个各不相同的例子，胜过五个长得一样的。混合容易、中等、棘手三档难度。</p>
+      </div>
+    </div>
+    <div class="num-step">
+      <div class="n">2</div>
+      <div class="c">
+        <h4>每个标签至少一个例子</h4>
+        <p>分类任务里，<b>没有示例的标签几乎永远不会被预测出来</b>。这是硬规律，不是概率问题。</p>
+      </div>
+    </div>
+    <div class="num-step">
+      <div class="n">3</div>
+      <div class="c">
+        <h4>格式必须完全一致</h4>
+        <p>所有示例用<b>完全相同</b>的结构、标签、分隔符、输出形状。<b>哪怕有一个例外，模型就会开始漂移。</b></p>
+      </div>
+    </div>
+    <div class="num-step">
+      <div class="n">4</div>
+      <div class="c">
+        <h4>匹配真实输入分布</h4>
+        <p>生产环境里 40% 是混合情感，你的示例里就该有混合情感。示例集应该是真实数据的<b>迷你版</b>。</p>
+      </div>
+    </div>
+    <div class="num-step">
+      <div class="n">5</div>
+      <div class="c">
+        <h4>每个例子保持简短</h4>
+        <p>示例太长会烧 token 并<b>稀释模式信号</b>。如果你的真实输入是 200 字，示例就用 200 字，别用 2000 字。</p>
+      </div>
+    </div>
+    <div class="num-step" style="margin-bottom:0;">
+      <div class="n">6</div>
+      <div class="c">
+        <h4>标注质量比选择质量更致命</h4>
+        <p>有研究明确指出：<b>示例标错，是 few-shot 失效的最大单一因素</b>，影响超过"例子选得不够好"。
+        例子少的时候（3–5 个），一个错标就能把模型带偏。<b>加例子之前，先检查已有的例子标没标错。</b></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>一组好示例 vs 一组坏示例</h3>
+    <div class="vs">
+      <div class="box bad">
+        <h5>✗ 坏（全同质）</h5>
+        <pre style="margin:0;background:#2a1f1f;font-size:12.5px;">太好用了！ → 正面
+非常满意！ → 正面
+强烈推荐！ → 正面</pre>
+        <ul style="margin-top:8px;">
+          <li>三个都长一样，只传达了"输出正面"</li>
+          <li>负面、中性标签完全没有示例 → 永远不会被预测</li>
+          <li>没有边界情况示例</li>
+        </ul>
+      </div>
+      <div class="box good">
+        <h5>✓ 好（覆盖三类）</h5>
+        <pre style="margin:0;background:#1a2a20;font-size:12.5px;">物流很快，东西也好用 → 正面
+屏幕有划痕，很失望 → 负面
+还行吧，没什么特别 → 中性
+质量不错但价格偏高 → 中性</pre>
+        <ul style="margin-top:8px;">
+          <li>三个标签都有示例</li>
+          <li>第 4 条专门定"又褒又贬"的边界</li>
+          <li>格式完全一致（同样箭头、同样标签词）</li>
+        </ul>
+      </div>
+    </div>
+    <p class="cap" style="margin-top:12px;">↑ 差别不在数量（3 vs 4），在于<b>覆盖了哪些情况</b>。</p>
+  </div>
+</section>
+
+<!-- ========== 4. 顺序 ========== -->
+<section>
+  <h2><span class="idx">04</span>顺序：一个被低估的变量</h2>
+  <p class="sub">同样几个例子，换一下顺序，结果可能就变了。</p>
+
+  <div class="card">
+    <h3>两个已知偏差</h3>
+    <ul>
+      <li><b>首因偏差（primacy）：</b>靠前的例子权重更高，它们建立了初始框架</li>
+      <li><b>近因偏差（recency）：</b>紧贴着真实输入的那一个例子，拉力最强</li>
+    </ul>
+    <p>不同模型偏向不同，你不需要知道你的模型偏向哪边——只需要知道<b>顺序会改变结果</b>这件事本身。</p>
+
+    <h4>三种排列策略</h4>
+    <table>
+      <thead><tr><th style="width:26%">任务类型</th><th>怎么排</th></tr></thead>
+      <tbody>
+        <tr><td class="k">分类任务</td><td><b>标签交错排列</b>。五个正面接五个负面，会让输出偏向最后那个标签。打散成 正/负/正/负/中</td></tr>
+        <tr><td class="k">格式敏感任务</td><td><b>最有代表性的那个放最后</b>。它锚定模型紧邻的工作上下文</td></tr>
+        <tr><td class="k">高 stakes 场景</td><td><b>至少测 3 种排序</b>。若结果差异超过 10%，说明你有顺序敏感问题，上线前必须修</td></tr>
+      </tbody>
+    </table>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>最后一个例子要特别小心：</b>如果它恰好很短、用了罕见标签、或格式有点特殊，模型会<b>过度放大</b>这个特征。
+      检查你的示例集最后一条——它是不是你最想让模型模仿的那种？
+    </div>
+  </div>
+</section>
+
+<!-- ========== 5. 什么时候不该用 ========== -->
+<section>
+  <h2><span class="idx">05</span>什么时候不该用 Few-shot</h2>
+  <p class="sub">会判断"不该用"，才算真的懂了。</p>
+
+  <div class="card">
+    <div class="vs">
+      <div class="box good">
+        <h5>✓ 该用 Few-shot</h5>
+        <ul>
+          <li><b>输出格式特殊或领域专属</b>（你想让它照着某种内部模板输出）</li>
+          <li><b>标签词表是自造的</b>（P1/P2/P3、自定业务分类）</li>
+          <li><b>需要跨几百次调用保持一致</b>（口径不能飘）</li>
+          <li><b>zero-shot 只有 60–80 分，你要 90 分以上</b></li>
+          <li><b>语气光靠描述定不住</b>（"专业一点"说了没用，给个样板立刻见效）</li>
+        </ul>
+      </div>
+      <div class="box bad">
+        <h5>✗ 不该用 / 该换招</h5>
+        <ul>
+          <li><b>摘要、翻译、改写、润色</b>——zero-shot 足够</li>
+          <li><b>明显标签的分类</b>（好/坏、是/否）</li>
+          <li><b>大部分基于清晰上下文的问答</b></li>
+          <li><b>算术、多步推理</b>——这时候该用 <b>CoT</b>（Day 4），堆示例没用</li>
+          <li><b>需要上千条例子才够的知识</b>，或知识会持续变化——该考虑 RAG 或微调</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note brand" style="margin-bottom:0;">
+      <b>一句话判断：</b>你的失败是<b>"模型不知道该长什么样"</b>→ 用 Few-shot；
+      是<b>"模型没算对"</b>→ 用 CoT；是<b>"模型不知道这件事"</b>→ 该给它资料（RAG）。三种病，三种药。
+    </div>
+  </div>
+</section>
+
+<!-- ========== 6. 坏例子识别 ========== -->
+<section>
+  <h2><span class="idx">06</span>一眼看出坏例子</h2>
+  <p class="sub">今日通过标准要求：能一眼指出别人示例集里的三类坏例子。下面给你四类，前三类是核心。</p>
+
+  <div class="fail">
+    <div class="fh">坏例子一：同质化 —— 几个例子长得太像</div>
+    <div class="fx"><b>长什么样：</b>三个示例都是同一种情况、同一个标签、差不多的长度和句式。<br>
+    <b>后果：</b>模型只学会了这一个模式，遇到别的类型就瞎猜。这就是开场那个"全正面"的案例。</div>
+    <div class="ff"><b>怎么修：</b>按"常见 / 边界 / 棘手"三档各挑一条；分类任务确保每个标签至少一个。<br>
+    <b>快速检查：</b>把你的示例集遮住标签看——如果几条输入看起来像同一个模子刻的，就是同质化。</div>
+  </div>
+
+  <div class="fail">
+    <div class="fh">坏例子二：格式不一致 —— 示例之间前后打架</div>
+    <div class="fx"><b>长什么样：</b>例 1 输出 <code>正面</code>，例 2 输出 <code>这条评论是正面的</code>，例 3 输出 <code>{"label":"正面"}</code>。或者分隔符一会儿用箭头一会儿用冒号。<br>
+    <b>后果：</b><b>这是 few-shot 最常见的失败原因。</b>模型看到三种格式，不知道该跟哪个，于是漂移。</div>
+    <div class="ff"><b>怎么修：</b>所有示例用<b>完全相同</b>的结构、标签、分隔符。<br>
+    <b>快速检查：</b>把几条示例的"输出部分"单独列出来并排看——它们应该像复制粘贴出来的。</div>
+  </div>
+
+  <div class="fail">
+    <div class="fh">坏例子三：标错了 —— 示例本身的答案是错的</div>
+    <div class="fx"><b>长什么样：</b>示例里有一条明显的错误标注，比如"物流慢，很失望 → 正面"。<br>
+    <b>后果：</b><b>比选错例子更致命。</b>例子只有 3–5 个时，一个错标就能显著带偏模型，而且你很难察觉——因为格式看起来都对。</div>
+    <div class="ff"><b>怎么修：</b>加例子之前，先把现有例子<b>逐条人工核对</b>一遍。<br>
+    <b>快速检查：</b>把每条示例的"输入"和"输出"分开，只看输出猜输入——如果对不上，就是标错了。</div>
+  </div>
+
+  <div class="fail">
+    <div class="fh">坏例子四（附加）：同类扎堆 —— 标签按顺序排列</div>
+    <div class="fx"><b>长什么样：</b>正面、正面、正面、负面、负面、负面、中性、中性。<br>
+    <b>后果：</b>触发首因/近因偏差，输出会偏向某一类。换一下顺序结果就变。</div>
+    <div class="ff"><b>怎么修：</b>标签交错排列（正/负/中/正/负/中）。<br>
+    <b>快速检查：</b>看示例集的标签序列，是不是连着三个都一样。</div>
+  </div>
+
+  <div class="stop">
+    <div class="stop-h">✋ 动手：拆解别人的示例（30 分钟，对"分辨"贡献最大）</div>
+    <p>找 3 段<b>带示例的真实提示词</b>（GitHub 上的 prompt 仓库、公开的智能体指令、别人分享的提示词合集都可以，中英文各来几段）。</p>
+    <p>对每个示例，标注它<b>主要在传达五维里的哪一个</b>（格式 / 粒度 / 词表 / 边界 / 语气）。</p>
+    <p>然后找出其中的坏例子——用上面四类对照。<b>每段限时 10 分钟</b>，练的是直觉，不是做标注作业。</p>
+    <p>把找到的坏例子记进下面的清单。</p>
+  </div>
+
+  <div class="card">
+    <h3>坏例子识别清单（今天要填）</h3>
+    <table class="rec-tpl">
+      <thead><tr><th style="width:6%">#</th><th style="width:26%">来自哪个提示词</th><th style="width:20%">属于哪类坏例子</th><th style="width:24%">具体表现</th><th>你会怎么改</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>2</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>3</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>4</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>5</td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-2);">
+      至少找满 3 条，并覆盖至少 2 种不同类型。<b>找不到坏例子怎么办？</b>说明你找的提示词质量都很高——
+      那就去看几段新手写的（论坛、群里分享的），那里一抓一把。
+    </p>
+  </div>
+</section>
+
+<!-- ========== 7. 限时实战 ========== -->
+<section>
+  <h2><span class="idx">07</span>限时实战（测试环节）</h2>
+  <p class="sub">对应 Day 3 的测试任务：换一个没写过的任务，20 分钟内写出 3-shot 提示词。</p>
+
+  <div class="card">
+    <h3>题目</h3>
+    <p>把用户反馈归类到 5 个产品模块：<code>登录注册</code> / <code>支付下单</code> / <code>内容展示</code> / <code>消息通知</code> / <code>性能卡顿</code>。</p>
+    <p><b>要求：</b>20 分钟内写出完整的 3-shot 提示词，然后拿 10 条反馈测试。</p>
+    <p><b>通过线：</b>10 条里，格式与口径一致 ≥ 8 条。</p>
+
+    <div class="stop">
+      <div class="stop-h">✋ 先自己写，再看参考</div>
+      <p>计时 20 分钟。写完用 10 条反馈（其中<b>至少 3 条故意做得含糊或跨界</b>）跑一遍，统计格式一致率。</p>
+    </div>
+
+    <details>
+      <summary>参考写法（以及为什么这么写）</summary>
+      <div class="ans">
+        <pre><span class="k"># 任务</span>
+把用户反馈归类到指定模块。只输出模块名，不要任何解释。
+
+<span class="k"># 模块词表</span>
+只能从以下五个中选一个：登录注册 / 支付下单 / 内容展示 / 消息通知 / 性能卡顿
+
+<span class="k"># 示例</span>
+反馈：收不到验证码，登不进去 → <span class="hl">登录注册</span>
+反馈：加购之后一直加载，最后闪退了 → <span class="hl">性能卡顿</span>
+反馈：首页推荐的内容全是看过的 → <span class="hl">内容展示</span>
+
+<span class="k"># 待分类</span>
+反馈：【此处放测试输入】
+输出：</pre>
+        <p><b>为什么三个例子这么挑：</b></p>
+        <p>① <b>三个不同标签</b>，避免同质化；</p>
+        <p>② 第 2 条（加购加载 + 闪退）<b>跨了两个模块</b>——它传达的是边界规则："加载慢和闪退归为性能，不归为支付"；</p>
+        <p>③ 格式<b>完全一致</b>：同样的"反馈：… → 模块名"结构；</p>
+        <p>④ 只给 3 个，但<b>词表在指令里列全了</b>——所以剩下两个标签（支付下单、消息通知）不会因为没有示例就完全不出现。</p>
+        <p><b>还有一处可以改进：</b>再加一条<b>含糊反馈</b>的示例，比如"用起来不太顺"标成某个兜底模块，并说明"无法确定时选最贴近的一个"。这就是"边界 + 兜底"。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="note warn">
+    <span class="nt">做这道题时注意一个现象</span>
+    如果你发现 5 个模块里，有 2 个<b>从来没被预测出来</b>——回想第 03 节第 2 条：
+    <b>没有示例的标签几乎永远不会被预测。</b>这时要么补示例，要么像参考写法那样把词表在指令里列死并强调"只能从这五个里选"。
+  </div>
+</section>
+
+<!-- ========== 8. 验收 ========== -->
+<section>
+  <h2><span class="idx">08</span>怎么算学懂了</h2>
+  <p class="sub">对应 Day 3 的三条通过标准，逐条自测。</p>
+
+  <div class="finish">
+    <h3>今日达标清单</h3>
+    <ul class="checklist">
+      <li><b>能说清「示例 = 设模式」而不是「示例 = 教答案」。</b>
+      检验方式：不看资料解释——为什么开场那组"全正面"的示例，会让模型把明显差评判成正面？答得上来就是真懂了。</li>
+      <li><b>给出 0/1/3/5-shot 在自己任务上的对比结论。</b>
+      不是背"3 个是甜点"，而是能说出：<b>在我这个任务上，加到第几个开始稳定，为什么</b>。</li>
+      <li><b>能一眼指出别人示例集里的三类坏例子</b>：同质化 / 格式不一致 / 标错了。
+      识别清单里至少 3 条记录，覆盖至少 2 种类型。</li>
+      <li><b>附加：</b>限时实战的 10 条测试里，格式与口径一致 ≥ 8 条。</li>
+    </ul>
+    <p style="margin:16px 0 0;font-size:14px;">
+      <b>最后三道检验题（闭卷）：</b><br>
+      ① 你的分类器从来不输出"中性"这个标签，最可能的原因是什么？<br>
+      ② 示例集里有一条标错了，和示例选得不够好，哪个后果更严重？<br>
+      ③ 什么情况下你<b>不该</b>用 Few-shot？说出两个场景。<br>
+      <em>三题都答得上来，今天就没白花。</em>
+    </p>
+  </div>
+
+  <details style="margin-top:14px;">
+    <summary>检验题参考答案</summary>
+    <div class="ans">
+      <p><b>①</b> 最可能是<b>示例集里根本没有"中性"的例子</b>。没有示例的标签几乎永远不会被预测。次可能的原因是示例里中性例子放在最末尾且格式特殊，被模型放大了某种偏差。</p>
+      <p><b>②</b> <b>标错了更严重。</b>研究表明标注错误是 few-shot 失效的最大单一因素，影响超过"例子选得不够好"。尤其在只有 3–5 个例子时，一个错标就能显著带偏。</p>
+      <p><b>③</b> 任意两个即可：摘要、翻译、改写、润色等 zero-shot 就够的任务；明显标签的分类（好/坏、是/否）；算术或多步推理（这时该用 CoT）；需要上千条例子才够的知识（该考虑 RAG 或微调）。</p>
+    </div>
+  </details>
+
+  <div class="note brand" style="margin-top:14px;">
+    <span class="nt">今天剩下的时间怎么安排</span>
+    学习 45 分钟（本教程）→ <b>0/1/3/5-shot 对比实验 90 分钟</b>（今日主线，别省）→ <b>限时实战 30 分钟</b> → <b>拆别人的示例 30 分钟</b>。
+    <br><b>时间不够时优先保对比实验</b>——你的验收标准第 2 条要靠它。对比实验可以缩减测试输入到 6 条，但四个版本都要跑，否则看不出拐点。
+  </div>
+</section>
+
+<footer>
+  Few-shot 示例 · 手把手教程 · Day 3 配套<br>
+  与《提示词四技巧五天掌握计划》Day 3 对齐 · 完成本教程后可进入 Day 3 剩余任务（0/1/3/5-shot 对比实验、限时实战、拆解他人示例并整理坏例子清单）
+</footer>
+
+</div>
+</body>
+</html>

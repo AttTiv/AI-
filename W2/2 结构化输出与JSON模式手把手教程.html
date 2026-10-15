@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>结构化输出 / JSON mode · 手把手教程（Day 2）</title>
+<style>
+  :root{
+    --ink:#1a1d24; --ink-2:#4a5160; --ink-3:#7a8290;
+    --line:#e3e6ec; --bg:#f6f7f9; --card:#fff;
+    --brand:#2f5bd7; --brand-soft:#eef2fd;
+    --warn:#a96408; --warn-soft:#fdf3e3;
+    --ok:#1f7a52; --ok-soft:#e9f5ee;
+    --bad:#b3352f; --bad-soft:#fbeceb;
+    --purple:#7c4dbe;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+    font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:0 26px 90px;}
+
+  header.hero{
+    background:linear-gradient(140deg,#1a2338 0%,#2c3d63 60%,#3a5099 100%);
+    color:#fff;margin:0 -26px 36px;padding:40px 26px 34px;
+  }
+  .hero-inner{max-width:888px;margin:0 auto;}
+  .kicker{display:inline-block;font-size:12.5px;letter-spacing:.13em;
+    background:rgba(255,255,255,.14);padding:5px 12px;border-radius:20px;margin-bottom:14px;}
+  h1{font-size:29px;line-height:1.35;margin:0 0 10px;font-weight:700;letter-spacing:-.01em;}
+  .lede{margin:0;color:#c9d2ea;font-size:15px;max-width:700px;}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .meta-row span{font-size:12.5px;background:rgba(255,255,255,.11);
+    border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:5px 12px;color:#dbe2f2;}
+  .hero-quote{
+    margin-top:22px;background:rgba(255,255,255,.13);border-left:3px solid #7fd1a8;
+    border-radius:0 10px 10px 0;padding:14px 18px;font-size:14.5px;color:#e8edf9;
+  }
+  .hero-quote b{color:#fff;}
+
+  section{margin-bottom:38px;}
+  h2{font-size:21px;margin:0 0 6px;font-weight:700;letter-spacing:-.01em;
+     display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  h2 .idx{font-size:12.5px;font-weight:600;color:var(--brand);background:var(--brand-soft);
+     border-radius:6px;padding:2px 9px;letter-spacing:.04em;}
+  .sub{color:var(--ink-3);font-size:13.5px;margin:0 0 16px;}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;}
+  .card+.card{margin-top:14px;}
+  h3{font-size:16.5px;margin:0 0 10px;font-weight:650;}
+  h4{font-size:14.5px;margin:18px 0 8px;font-weight:650;color:var(--ink-2);}
+  p{margin:0 0 11px;}
+  ul,ol{margin:0 0 11px;padding-left:21px;}
+  li{margin-bottom:7px;}
+  li:last-child{margin-bottom:0;}
+  b{font-weight:650;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.8px;background:#f0f2f6;color:#2b3550;padding:1.5px 6px;border-radius:5px;}
+  em{font-style:normal;background:linear-gradient(transparent 62%,#ffe9a8 62%);padding:0 1px;font-weight:600;}
+
+  pre{
+    background:#1e2433;color:#dfe4ee;border-radius:11px;padding:16px 18px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;line-height:1.72;overflow-x:auto;margin:0 0 12px;
+    white-space:pre-wrap;word-break:break-word;
+  }
+  pre .cm{color:#7f8ba3;}
+  pre .k{color:#7fd1a8;font-weight:600;}
+  pre .s{color:#e8c37a;}
+  pre .n{color:#9db8f0;}
+  pre .bad{color:#f09a95;}
+  .cap{font-size:12.5px;color:var(--ink-3);margin:-6px 0 14px;}
+
+  .note{border-radius:12px;padding:14px 18px;font-size:14px;margin:14px 0;border:1px solid;}
+  .note.warn{background:var(--warn-soft);border-color:#f0dcbc;color:#6b4405;}
+  .note.ok{background:var(--ok-soft);border-color:#c9e6d7;color:#145639;}
+  .note.bad{background:var(--bad-soft);border-color:#f0ccc9;color:#7d211d;}
+  .note.brand{background:var(--brand-soft);border-color:#d5dffb;color:#233a75;}
+  .note .nt{display:block;font-size:12.5px;font-weight:700;letter-spacing:.05em;margin-bottom:4px;opacity:.85;}
+
+  .stop{background:#fff8e6;border:1px dashed #e6c98a;border-radius:12px;padding:15px 19px;margin:18px 0;}
+  .stop .stop-h{font-size:12.5px;font-weight:700;color:var(--warn);letter-spacing:.06em;margin-bottom:6px;}
+  .stop p{margin:0 0 8px;font-size:14.5px;}
+  .stop p:last-child{margin-bottom:0;}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:6px;}
+  th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line);}
+  th{background:#eef1f6;font-weight:650;font-size:13.5px;color:var(--ink-2);border-bottom:1px solid #d8dde6;}
+  tr:last-child td{border-bottom:none;}
+  td.k{font-weight:600;white-space:nowrap;}
+
+  /* 三档对比 */
+  .tier{border:1px solid var(--line);border-radius:12px;background:var(--card);
+    padding:18px 22px;margin-bottom:12px;}
+  .tier.t1{border-left:4px solid var(--bad);}
+  .tier.t2{border-left:4px solid var(--warn);}
+  .tier.t3{border-left:4px solid var(--ok);}
+  .tier-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:8px;}
+  .tier-h .lv{font-size:11.5px;font-weight:700;color:#fff;border-radius:6px;padding:2px 9px;}
+  .t1 .lv{background:var(--bad);} .t2 .lv{background:var(--warn);} .t3 .lv{background:var(--ok);}
+  .tier-h .nm{font-size:17px;font-weight:700;}
+  .tier-h .en{font-size:12.5px;color:var(--ink-3);}
+  .tier .oneline{font-size:14px;color:var(--ink-2);margin:0 0 12px;}
+  .tier .oneline b{color:var(--ink);}
+
+  details{background:#fafbfd;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-top:12px;}
+  summary{cursor:pointer;font-size:14px;font-weight:650;color:var(--brand);}
+  summary::marker{color:var(--brand);}
+  details[open] summary{margin-bottom:10px;}
+  details .ans{font-size:14px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px;margin-top:6px;}
+  details .ans p{margin:0 0 8px;}
+  details .ans p:last-child{margin-bottom:0;}
+  details .ans pre{margin-top:8px;}
+
+  .num-step{display:grid;grid-template-columns:32px 1fr;gap:14px;margin-bottom:16px;}
+  .num-step .n{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;
+    font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .num-step .c h4{margin:0 0 6px;font-size:15px;color:var(--ink);}
+  .num-step .c p{margin:0 0 8px;font-size:14.3px;}
+
+  .checklist{list-style:none;padding:0;}
+  .checklist li{padding-left:28px;position:relative;margin-bottom:9px;font-size:14.5px;}
+  .checklist li::before{content:"";position:absolute;left:0;top:6px;width:15px;height:15px;
+    border:1.5px solid #a8b0c0;border-radius:4px;}
+
+  .finish{background:linear-gradient(135deg,#eaf5ef,#f4fbf7);border:1px solid #c3e5d4;
+    border-radius:14px;padding:20px 24px;}
+  .finish h3{color:var(--ok);}
+
+  .fail-row{display:grid;grid-template-columns:1fr;gap:0;}
+  .fail{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:10px;
+    background:var(--card);padding:14px 18px;margin-bottom:10px;}
+  .fail .fh{font-size:14.5px;font-weight:700;margin-bottom:4px;}
+  .fail .fx{font-size:13.8px;color:var(--ink-2);margin-bottom:8px;}
+  .fail .fx b{color:var(--bad);}
+  .fail .ff{font-size:13.8px;color:var(--ink);background:var(--ok-soft);
+    border-radius:8px;padding:8px 12px;}
+  .fail .ff b{color:var(--ok);}
+
+  .rec-tpl{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .rec-tpl th{background:#eef1f6;}
+  .rec-tpl td{height:34px;}
+
+  footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:12.8px;color:var(--ink-3);}
+
+  @media print{
+    body{background:#fff;font-size:11pt;}
+    header.hero{background:#1a2338 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .card,.tier,.note,.fail,.finish{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="kicker">DAY 2 · 手把手教程</span>
+    <h1>结构化输出 / JSON mode</h1>
+    <p class="lede">搞懂「能解析」和「字段对」是两件事，分清三种强度，并能给自己任何一个任务写出可验证的输出契约。</p>
+    <div class="meta-row">
+      <span>学习 60 分钟 + 练习 45 分钟</span>
+      <span>网页版为主 · 代码侧选做</span>
+      <span>含 4 个练习 · 附参考答案</span>
+      <span>不需要 API key 也能做完</span>
+    </div>
+    <div class="hero-quote">
+      <b>今日一句话：</b>JSON mode 保证「能解析」，Structured Outputs 保证「字段对」。
+      今天所有内容，都是为了让这句话从<b>背下来</b>变成<b>真正理解</b>。
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ========== 开场 ========== -->
+<section>
+  <h2><span class="idx">开场</span>先看一次"成功的失败"</h2>
+  <p class="sub">这是初学者最容易掉进去的坑：输出看起来是 JSON，其实已经废了。</p>
+
+  <div class="card">
+    <p>你让模型从一段新闻里抽取信息，要求输出 JSON，字段是 <code>time</code> / <code>location</code> / <code>persons</code> / <code>event_type</code>。模型返回了这个：</p>
+    <pre>好的，根据您提供的新闻内容，我为您提取了以下信息：
+{
+  "时间": "2026年10月14日",
+  "地点": "成都",
+  "涉及人员": ["张某", "李某"],
+  "event_type": "事故"
+}</pre>
+    <p class="cap">↑ 这是<b>合法的 JSON</b>，能被 <code>json.loads</code> 解析。但你的程序要的是 <code>time</code>，拿到的是 <code>时间</code>——取值为 None，下游直接崩。</p>
+
+    <div class="stop">
+      <div class="stop-h">✋ 停 30 秒</div>
+      <p>这份输出里，<b>有几处不满足你的要求</b>？把它们找出来再往下读。</p>
+    </div>
+
+    <details>
+      <summary>参考答案：有 4 处问题</summary>
+      <div class="ans">
+        <p><b>① 前面夹带了废话。</b>"好的，根据您提供的新闻内容……"——这行不是 JSON 的一部分，直接导致整个字符串解析失败。（严格说这个例子里连"能解析"都没做到。）</p>
+        <p><b>② 字段名被翻译了。</b>你要 <code>time</code>，它给 <code>时间</code>；<code>location</code> 变成 <code>地点</code>，<code>persons</code> 变成 <code>涉及人员</code>。</p>
+        <p><b>③ 字段名不统一。</b>前三个翻成中文，<code>event_type</code> 却还是英文——模型自己都没拿定主意。</p>
+        <p><b>④ 枚举值不可控。</b>你规定了事件类型只能是 <code>事故/会议/发布</code> 之一，它给了"事故"，这次蒙对了，但下次可能给"意外事故"。</p>
+        <p><b>关键认知：</b>这四个问题里，<b>只有①是"能不能解析"的问题，②③④全是"字段对不对"的问题</b>。而这两类问题，需要两种不同强度的手段来解决。这就是今天的核心。</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ========== 1. 三种强度 ========== -->
+<section>
+  <h2><span class="idx">01</span>三种强度：从"看运气"到"不可能错"</h2>
+  <p class="sub">把输出约束想象成三档开关。档位越高，模型"做错的空间"越小。</p>
+
+  <div class="tier t1">
+    <div class="tier-h">
+      <span class="lv">第 1 档</span>
+      <span class="nm">纯文本 + 描述</span>
+      <span class="en">Prompt only</span>
+    </div>
+    <p class="oneline"><b>什么都不保证。</b>你只在提示词里说"输出 JSON，字段有……"，模型照做算运气好。</p>
+    <pre><span class="cm"># 你写的</span>
+请从新闻中提取时间和地点，用 JSON 输出。
+
+<span class="cm"># 模型可能返回</span>
+<span class="bad">好的：{"时间": "10月14日"}</span>   <span class="cm">← 带废话 + 字段名被改</span></pre>
+    <table>
+      <tr><td class="k" style="width:26%">保证什么</td><td>什么都不保证</td></tr>
+      <tr><td class="k">失败率</td><td>行业经验值：纯提示词约束的 JSON，约 15–25% 的返回无法直接解析</td></tr>
+      <tr><td class="k">什么时候够用</td><td>你自己肉眼看输出、不需要程序处理</td></tr>
+    </table>
+  </div>
+
+  <div class="tier t2">
+    <div class="tier-h">
+      <span class="lv">第 2 档</span>
+      <span class="nm">JSON mode</span>
+      <span class="en">response_format: json_object</span>
+    </div>
+    <p class="oneline"><b>只保证"能解析"。</b>输出一定是语法合法的 JSON，但<b>字段可能缺、可能改名、枚举可能非法</b>。</p>
+    <pre><span class="cm"># 代码侧写法</span>
+response_format={"type": "json_object"}
+
+<span class="cm"># 保证：一定是合法 JSON，不会有前后废话</span>
+<span class="cm"># 不保证：字段名对不对、字段在不在、枚举合不合法</span>
+<span class="n">{"时间": "10月14日"}</span>   <span class="cm">← 合法，但字段名错了，它照样返回</span></pre>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>这是今天第一个要记住的事实：</b>JSON mode 的合同范围比大多数人以为的窄得多。它只管"括号配不配、引号对不对"，<b>完全不管里面装的是什么</b>。
+    </div>
+  </div>
+
+  <div class="tier t3">
+    <div class="tier-h">
+      <span class="lv">第 3 档</span>
+      <span class="nm">Structured Outputs</span>
+      <span class="en">response_format: json_schema, strict: true</span>
+    </div>
+    <p class="oneline"><b>保证"字段对"。</b>在生成层面屏蔽非法 token——<em>模型不是"不太可能写错"，而是"写不出来"</em>。</p>
+    <pre><span class="cm"># 代码侧写法</span>
+response_format={
+  "type": "json_schema",
+  "json_schema": {"name": "news", "schema": {...}, "strict": True}
+}
+
+<span class="cm"># 官方评测：复杂 schema 遵循率 100%</span>
+<span class="cm"># 原理：受限解码 —— 每一步生成时，把所有会让输出违反 schema 的</span>
+<span class="cm">#       token 直接屏蔽掉，模型根本选不到它们</span></pre>
+    <div class="note ok" style="margin-bottom:0;">
+      <b>打个比方：</b>JSON mode 是"考完卷子再批改"，Structured Outputs 是"把答题卡做成填空题，错误答案压根填不进去"。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>三档横向对比</h3>
+    <table>
+      <thead><tr><th style="width:22%">维度</th><th style="width:26%">纯文本</th><th style="width:26%">JSON mode</th><th>Structured Outputs</th></tr></thead>
+      <tbody>
+        <tr><td class="k">保证</td><td>无</td><td>合法 JSON</td><td>完全符合 schema</td></tr>
+        <tr><td class="k">字段缺失</td><td>会</td><td><b>会</b></td><td>不会</td></tr>
+        <tr><td class="k">字段名被改</td><td>会</td><td><b>会</b></td><td>不会</td></tr>
+        <tr><td class="k">枚举出非法值</td><td>会</td><td><b>会</b></td><td>不会</td></tr>
+        <tr><td class="k">下游还要校验吗</td><td>必须</td><td><b>必须</b></td><td>建议仍校验（防业务级错误）</td></tr>
+        <tr><td class="k">官方评测符合率</td><td>约 75–85% 可解析</td><td>低于 Structured Outputs</td><td><b>100%</b></td></tr>
+      </tbody>
+    </table>
+    <p style="margin:12px 0 0;font-size:14px;color:var(--ink-2);">
+      <b>注意最后一列仍写着"建议校验"：</b>Structured Outputs 保证的是<b>形状对</b>，不是<b>内容对</b>。字段都有、类型都对，但"地点"填了个错误的地方——它管不了。内容正确性要靠别的方法（这属于 Day 4 的范畴）。
+    </p>
+  </div>
+</section>
+
+<!-- ========== 2. 网页版怎么做 ========== -->
+<section>
+  <h2><span class="idx">02</span>网页版：你能做到的最强约束是第 2 档</h2>
+  <p class="sub">先说清楚一个事实，免得你白费力气。</p>
+
+  <div class="note brand">
+    <span class="nt">重要前提</span>
+    在 ChatGPT / DeepSeek / 豆包这类<b>网页版对话框</b>里，你<b>无法开启真正的 Structured Outputs</b>——那是 API 侧的参数。网页版能达到的最强水平是<b>第 2 档</b>：通过把提示词写得足够死，让模型"大概率"输出正确字段。
+    <br><br>所以网页版的策略是：<b>用第 1 档的工具，逼近第 2 档的效果</b>，并且<b>自己做好校验</b>。
+  </div>
+
+  <div class="card">
+    <h3>网页版"逼近第 2 档"的四条写法</h3>
+
+    <h4>① 字段名用英文，并明确禁止翻译</h4>
+    <pre><span class="bad">✗ 提取：时间、地点、人物</span>
+<span class="k">✓ 字段名必须使用英文：time、location、persons。不得翻译或改写字段名。</span></pre>
+
+    <h4>② 给出完整结构，而不是描述结构</h4>
+    <pre><span class="bad">✗ 请以 JSON 格式输出时间和地点</span>
+<span class="k">✓ 严格按以下结构输出：
+{
+  "time": "字符串，YYYY-MM-DD 格式",
+  "location": "字符串，城市名",
+  "persons": ["字符串数组，人物姓名"]
+}</span></pre>
+    <p class="cap">差别在于：前者是"描述"，后者是"样板"。模型模仿样板的能力远强于理解描述。</p>
+
+    <h4>③ 明确"只输出 JSON，不要任何前后文字"</h4>
+    <pre><span class="k">✓ 只输出 JSON 本身。不要输出任何解释、前缀、后缀、或 markdown 代码块标记。
+   第一个字符必须是 {，最后一个字符必须是 }。</span></pre>
+    <p class="cap">"第一个字符必须是 {" 这句特别有效——它把要求变成了可检查的硬指标。</p>
+
+    <h4>④ 枚举值列死，并说明越界怎么办</h4>
+    <pre><span class="k">✓ event_type 只能是以下之一："事故"、"会议"、"发布"、"其他"。
+   若无法确定，填 "其他"，不得自行创造新值。</span></pre>
+    <p class="cap">"不得自行创造新值" + "给出兜底选项"，这两句配套使用——只禁止不给出路，模型还是会编。</p>
+  </div>
+
+  <div class="card">
+    <h3>网页版完整示例（可直接复制使用）</h3>
+    <pre><span class="k"># 任务</span>
+从下面这段新闻中提取信息。
+
+<span class="k"># 输出格式</span>
+只输出 JSON 本身，不要任何解释文字，不要用 markdown 代码块包裹。
+第一个字符必须是 {，最后一个字符必须是 }。
+严格使用以下结构（字段名不得翻译、改名、增删）：
+
+{
+  "time": "事件发生日期，YYYY-MM-DD 格式；若文中未提及则填 null",
+  "location": "发生城市，不带省名；若未提及则填 null",
+  "persons": ["文中出现的人物姓名，若无则填空数组"],
+  "event_type": "只能是 事故/会议/发布/其他 之一"
+}
+
+<span class="k"># 新闻</span>
+【此处粘贴新闻正文】</pre>
+    <p class="cap">↑ 这四段正好对应你 Day 1 学的五层：任务层 / 格式层 / 约束层，一气呵成。<b>格式层写死了，就是结构化输出。</b></p>
+  </div>
+
+  <div class="stop">
+    <div class="stop-h">✋ 现在动手：网页版对比实验（20 分钟）</div>
+    <p>找一段新闻（或任何含多个信息的文本），用同一个抽取任务跑两遍：</p>
+    <p><b>写法 A（弱）：</b>"请从这段新闻里提取时间、地点、人物、事件类型。"<br>
+       <b>写法 B（强）：</b>用上面那个完整示例。</p>
+    <p>各跑 3 次，共 6 次。统计：<b>能直接解析的次数 / 字段名完全正确的次数</b>。</p>
+    <p>你会看到 A 大概率夹带废话或被翻译字段名，B 明显更稳——但<b>B 也可能偶尔翻车</b>。记住这个"偶尔"，它就是第 2 档的天花板。</p>
+  </div>
+</section>
+
+<!-- ========== 3. 代码侧 ========== -->
+<section>
+  <h2><span class="idx">03</span>代码侧：第 3 档是怎么做到的（了解即可）</h2>
+  <p class="sub">没有 API key 也能看懂这一节。目标是"知道有这条路"，不是今天必须跑通。</p>
+
+  <div class="card">
+    <h3>原理一句话：受限解码</h3>
+    <p>Structured Outputs 不是"生成完再检查"，而是<b>在生成的每一步就屏蔽掉非法选项</b>。</p>
+    <p>具体来说：模型每生成一个 token 前，系统会算出"哪些 token 会让输出违反 schema"，然后把它们<b>直接从候选里划掉</b>。所以如果 <code>event_type</code> 定义成只能是「事故/会议/发布」，模型<b>在结构上就不可能</b>在这个位置输出"意外"——不是"被劝阻"，是"选不到"。</p>
+    <div class="note ok" style="margin-bottom:0;">
+      这也解释了为什么它<b>快</b>：不需要重试。第 1、2 档遇到错格式要重跑一遍，而重跑的成本远高于 schema 校验那点开销。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Python 最小示例</h3>
+    <pre><span class="k">from</span> pydantic <span class="k">import</span> BaseModel
+<span class="k">from</span> openai <span class="k">import</span> OpenAI
+
+client = OpenAI()
+
+<span class="cm"># 1. 用类定义结构（比手写 JSON Schema 省事）</span>
+<span class="k">class</span> <span class="n">NewsExtraction</span>(BaseModel):
+    time: str          <span class="cm"># 事件发生日期</span>
+    location: str
+    persons: list[str]
+    event_type: str    <span class="cm"># 事故 / 会议 / 发布</span>
+
+<span class="cm"># 2. 发起请求，让 SDK 自动解析成对象</span>
+completion = client.chat.completions.parse(
+    model=<span class="s">"gpt-4o-2024-08-06"</span>,
+    messages=[
+        {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: <span class="s">"从新闻中提取信息。"</span>},
+        {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: news_text},
+    ],
+    response_format=NewsExtraction,
+)
+
+result = completion.choices[<span class="n">0</span>].message.parsed
+<span class="k">print</span>(result.event_type)   <span class="cm"># 直接是对象属性，不用 json.loads</span></pre>
+    <p class="cap">↑ <code>.parse()</code> 这个方法是关键：它把"定义结构 → 转 schema → 解析返回"三步都包了。</p>
+  </div>
+
+  <div class="card">
+    <h3>第 3 档的代价：只支持 schema 子集</h3>
+    <p>100% 符合率是有条件的。超出下面这些边界，要么报错，要么静默降级：</p>
+    <table>
+      <thead><tr><th style="width:30%">限制</th><th>具体是什么 / 怎么绕</th></tr></thead>
+      <tbody>
+        <tr><td class="k">嵌套上限</td><td>约 5 层。树形数据别嵌套，改成扁平列表 + 父 ID 引用</td></tr>
+        <tr><td class="k">字段必须全 required</td><td>strict 模式下不能"可选"。真要可选，把类型写成允许 null（如 <code>str | None</code>），而不是省略这个字段</td></tr>
+        <tr><td class="k">部分关键字不支持</td><td><code>minLength</code> / <code>maxLength</code> 等字符串约束不支持——想限制长度，写在字段<b>描述</b>里让模型照做，或在代码里二次校验</td></tr>
+        <tr><td class="k">跨字段逻辑管不了</td><td>"如果 A 成立则 B 必须有值"这类，schema 表达不了，只能靠代码校验</td></tr>
+        <tr><td class="k">模型白名单</td><td>并非所有模型都支持 strict。老模型、部分开源模型只到 JSON mode</td></tr>
+        <tr><td class="k">首次请求有延迟</td><td>新 schema 第一次请求会编译，之后缓存复用</td></tr>
+      </tbody>
+    </table>
+    <div class="note warn" style="margin-bottom:0;">
+      <b>还有一条容易忽略：</b>模型可以<b>拒绝请求</b>。此时返回的是 refusal 而不是 JSON。代码里要判断这个状态——否则你会拿到一个 None 然后困惑半天。
+    </div>
+  </div>
+
+  <div class="note brand">
+    <span class="nt">选做练习（有 API key 才做，限时 45 分钟）</span>
+    ① 跑通一次 <code>json_object</code>；② 跑通一次 <code>json_schema + strict</code>；③ <b>故意写错一次 schema，看报错长什么样</b>。
+    <br>第③步最有价值——记住那个报错的样子，以后排查能省半小时。
+    <br><b>没有 key 就跳过</b>，读一遍文档、抄一遍代码即可。别在装环境上调超过 45 分钟，那是时间黑洞，今天的重点是概念不是工程。
+  </div>
+</section>
+
+<!-- ========== 4. 怎么写好 schema ========== -->
+<section>
+  <h2><span class="idx">04</span>怎么写好一个 schema</h2>
+  <p class="sub">这是今天真正要练的手艺——不管在网页版还是代码侧，都用得上。</p>
+
+  <div class="card">
+    <h3>四条规则</h3>
+
+    <div class="num-step">
+      <div class="n">1</div>
+      <div class="c">
+        <h4>字段名：简短、英文、稳定</h4>
+        <p>用 <code>time</code> 不用 <code>事件发生的具体时间</code>；用 <code>event_type</code> 不用 <code>type</code>（太泛）。
+        字段名会被程序引用，一旦定了别轻易改。</p>
+      </div>
+    </div>
+    <div class="num-step">
+      <div class="n">2</div>
+      <div class="c">
+        <h4>给每个字段写一句"人话描述"</h4>
+        <p>别指望字段名自解释。写清楚口径：<code>location: 发生城市，不带省名</code> 就比光秃秃的 <code>location</code> 强得多。
+        <b>描述是给模型看的，字段名是给程序看的</b>，两者都要。</p>
+      </div>
+    </div>
+    <div class="num-step">
+      <div class="n">3</div>
+      <div class="c">
+        <h4>能枚举就枚举</h4>
+        <p>分类、状态、类型这类字段，尽量列死可选值。这是把"开放题"变成"选择题"——模型做选择题的可靠性远高于开放题。</p>
+      </div>
+    </div>
+    <div class="num-step" style="margin-bottom:0;">
+      <div class="n">4</div>
+      <div class="c">
+        <h4>每个字段都要有"兜底路径"</h4>
+        <p>信息缺失时怎么办？明确写出来：<code>若文中未提及则填 null</code> / <code>填"其他"</code> / <code>填空数组</code>。
+        <b>没有兜底，模型就会编</b>——这是新手最容易漏的一条。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>对照：一个字段的三种写法</h3>
+    <pre><span class="bad">✗ 差</span>
+{"event_type": "string"}
+
+<span class="cm">~ 一般</span>
+{"event_type": {"type": "string", "description": "事件类型"}}
+
+<span class="k">✓ 好</span>
+{"event_type": {
+   "type": "string",
+   "enum": ["事故", "会议", "发布", "其他"],
+   "description": "事件类型。只能是枚举值之一；若无法确定，填 '其他'，不得创造新值"
+ }}</pre>
+    <p class="cap">从"差"到"好"，加的其实只有两样东西：<b>枚举</b>和<b>兜底</b>。</p>
+  </div>
+
+  <div class="stop">
+    <div class="stop-h">✋ 动手：三个任务，各写一个 schema（30 分钟，今日重点）</div>
+    <p>下面三个任务，先<b>自己写</b>，写完再对答案。每个限时 8 分钟——别追求完美，追求能跑通。</p>
+    <p><b>任务 1 · 分类：</b>判断一条用户评论的情感倾向，输出标签 + 置信度</p>
+    <p><b>任务 2 · 抽取：</b>从一段产品介绍里抽取 产品名 / 价格 / 主要卖点（多值）/ 是否有折扣</p>
+    <p><b>任务 3 · 多字段摘要：</b>把一篇长文压成 一句话摘要 / 三个要点 / 目标读者 / 字数</p>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>任务 1 参考（分类）</summary>
+      <div class="ans">
+        <pre>{
+  "sentiment": {
+    "type": "string",
+    "enum": ["正面", "负面", "中性", "无法判断"],
+    "description": "情感倾向。无法确定时填'无法判断'"
+  },
+  "confidence": {
+    "type": "number",
+    "description": "置信度，0到1之间的小数，保留两位"
+  },
+  "reason": {
+    "type": "string",
+    "description": "判断依据，引用评论中的原话，不超过30字"
+  }
+}</pre>
+        <p><b>要点：</b>① 加了"无法判断"兜底；② 置信度写清了范围和精度；③ 加 <code>reason</code> 字段强制模型给出依据——这能显著提高判断质量（属于 Day 4 的思路，先用上没关系）。</p>
+      </div>
+    </details>
+    <details>
+      <summary>任务 2 参考（抽取）</summary>
+      <div class="ans">
+        <pre>{
+  "product_name": {"type": "string", "description": "产品全称；若未提及填 null"},
+  "price": {"type": "number", "description": "价格数字，不含货币符号；若未提及填 null"},
+  "currency": {"type": "string", "enum": ["CNY","USD","EUR","其他"], "description": "货币代码"},
+  "selling_points": {
+    "type": "array",
+    "items": {"type": "string"},
+    "description": "主要卖点，每条不超过20字，最多5条；无则填空数组"
+  },
+  "has_discount": {"type": "boolean", "description": "是否有折扣；无法判断填 false"}
+}</pre>
+        <p><b>要点：</b>① 价格和货币拆成两个字段，避免"99元"这种字符串污染数值字段；② 数组给了条数上限；③ 布尔值不能填 null，所以明确"无法判断填 false"。</p>
+      </div>
+    </details>
+    <details>
+      <summary>任务 3 参考（多字段摘要）</summary>
+      <div class="ans">
+        <pre>{
+  "one_line": {"type": "string", "description": "一句话摘要，不超过50字"},
+  "key_points": {
+    "type": "array",
+    "items": {"type": "string"},
+    "description": "三个要点，每条不超过30字；必须恰好3条"
+  },
+  "target_reader": {"type": "string", "description": "目标读者群体，如'产品经理'"},
+  "word_count": {"type": "integer", "description": "原文总字数"}
+}</pre>
+        <p><b>要点：</b>① "恰好 3 条"是硬约束，比"大约三条"有效得多；② 字数限制写在描述里（因为 strict 模式不支持 maxLength）。</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="note ok">
+    <b>写完怎么验证：</b>每个 schema 拿去跑一次，检查两件事——
+    ① 能不能被 <code>json.loads</code> 解析；
+    ② 字段名和你要的<b>一字不差</b>、字段<b>一个不少</b>。
+    <br>今日通过标准就是这三个任务 <b>3/3 全过</b>。网页版跑的话，把输出粘到任意 JSON 校验工具里验一下即可。
+  </div>
+</section>
+
+<!-- ========== 5. 失败清单 ========== -->
+<section>
+  <h2><span class="idx">05</span>三种典型失败与修法</h2>
+  <p class="sub">今日通过标准要求"失败清单里有至少 3 条记录"。下面三条是最常见的，你还要加上自己踩到的。</p>
+
+  <div class="fail-row">
+    <div class="fail">
+      <div class="fh">失败一：输出夹带前后废话</div>
+      <div class="fx"><b>现象：</b>返回 <code>好的，以下是提取结果：\n{...}</code>，或整个 JSON 被 ```json ``` 代码块包住。<br>
+      <b>为什么：</b>模型默认把"先说一句再给结果"当成礼貌/完整。</div>
+      <div class="ff"><b>修法：</b>加硬约束——"只输出 JSON 本身，第一个字符必须是 <code>{</code>，最后一个字符必须是 <code>}</code>，不要用 markdown 代码块包裹"。<br>
+      <b>根治：</b>用第 2 档 JSON mode 或第 3 档 Structured Outputs，让它在结构上没法夹带。</div>
+    </div>
+
+    <div class="fail">
+      <div class="fh">失败二：字段名被改名或翻译</div>
+      <div class="fx"><b>现象：</b>你要 <code>location</code>，它给 <code>地点</code>；或者 <code>persons</code> 变成 <code>people</code>。<br>
+      <b>为什么：</b>模型把字段名当成"要表达的意思"而不是"固定的标识符"，尤其在你用中文描述任务时。</div>
+      <div class="ff"><b>修法：</b>提示词里写死——"字段名必须严格使用：<code>time</code>、<code>location</code>、<code>persons</code>。不得翻译、改名、增删字段"。<br>
+      <b>根治：</b>只有第 3 档能真正杜绝。</div>
+    </div>
+
+    <div class="fail">
+      <div class="fh">失败三：嵌套层级或枚举值不符合要求</div>
+      <div class="fx"><b>现象：</b>要 <code>{"a": {"b": "c"}}</code>，它给 <code>{"a": "c"}</code>；枚举规定"事故/会议"，它给"意外事故"。<br>
+      <b>为什么：</b>结构复杂时模型会"自作主张简化"；枚举没有兜底选项时它会创造新值。</div>
+      <div class="ff"><b>修法：</b>① 在提示词里贴出<b>完整的目标结构样板</b>（不是描述，是样板）；② 枚举一定要配一个"其他/无法判断"兜底，并写明"不得创造新值"；③ 嵌套超过 5 层就改扁平结构。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>你的失败清单模板（今天要填）</h3>
+    <table class="rec-tpl">
+      <thead><tr><th style="width:6%">#</th><th style="width:26%">失败现象</th><th style="width:32%">触发原因</th><th style="width:36%">修法 / 验证是否生效</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td></td><td></td><td></td></tr>
+        <tr><td>2</td><td></td><td></td><td></td></tr>
+        <tr><td>3</td><td></td><td></td><td></td></tr>
+        <tr><td>4</td><td></td><td></td><td></td></tr>
+        <tr><td>5</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-2);">
+      前三条抄上面的。第 4、5 条必须是你<b>今天自己踩到的</b>——做对比实验时多跑几次，一定会遇到新的。
+      <b>每记一条，都要回来验证"修法是否真的生效"</b>，写进最后一列。没验证过的修法不算数。
+    </p>
+  </div>
+</section>
+
+<!-- ========== 6. 什么时候不该用 ========== -->
+<section>
+  <h2><span class="idx">06</span>什么时候不该用结构化输出</h2>
+  <p class="sub">会判断"不该用"，才算真的懂了。</p>
+
+  <div class="card">
+    <table>
+      <thead><tr><th style="width:20%">场景</th><th style="width:40%">为什么不该用</th><th>该用什么</th></tr></thead>
+      <tbody>
+        <tr><td class="k">答案给人读</td><td>用户要看的是文章、解释、故事。逼模型吐 JSON，人读起来是灾难</td><td>直接输出自然文本</td></tr>
+        <tr><td class="k">需要自由发挥</td><td>头脑风暴、创意写作。schema 会把可能性框死</td><td>纯文本，最多给个宽松的段落结构</td></tr>
+        <tr><td class="k">结构还没想清楚</td><td>你自己都不知道要哪些字段，写出来的 schema 明天就得推翻</td><td>先跑几轮自由输出，看模型都给了什么，再归纳成 schema</td></tr>
+        <tr><td class="k">一次性、只跑一遍</td><td>写 schema 的时间比手工整理结果还长</td><td>直接问，肉眼挑</td></tr>
+        <tr><td class="k">字段间有复杂逻辑</td><td>schema 表达不了"A 成立则 B 必须有值"这类约束</td><td>schema 管形状，代码管逻辑校验</td></tr>
+      </tbody>
+    </table>
+    <div class="note brand" style="margin-bottom:0;">
+      <b>一句话判断标准：</b>这份输出的<b>下一个读者是谁</b>？是程序 → 用结构化输出；是人 → 别用。
+    </div>
+  </div>
+</section>
+
+<!-- ========== 7. 验收 ========== -->
+<section>
+  <h2><span class="idx">07</span>怎么算学懂了</h2>
+  <p class="sub">对应 Day 2 的三条通过标准，逐条自测。</p>
+
+  <div class="finish">
+    <h3>今日达标清单</h3>
+    <ul class="checklist">
+      <li><b>能一句话说清两者的区别。</b>不看资料说出："JSON mode 保证能解析，Structured Outputs 保证字段对。"
+      能再补一句"后者是受限解码，屏蔽非法 token"更好。</li>
+      <li><b>三个任务的输出 3/3 可被解析且字段齐全。</b>分类、抽取、多字段摘要各写一个 schema，实际跑一次。
+      判据：① <code>json.loads</code> 不报错；② 字段名一字不差；③ 字段一个不少。三条全满足才算过。</li>
+      <li><b>失败清单里有至少 3 条记录</b>，且第 4、5 条是自己今天踩到的，并验证过修法有效。</li>
+    </ul>
+    <p style="margin:16px 0 0;font-size:14px;">
+      <b>最后三道检验题（闭卷）：</b><br>
+      ① 模型返回了一个合法 JSON，但字段名全被翻译成中文了——这说明当前处在第几档？该怎么修？<br>
+      ② 你想让某个字段"可选"（可以没有），在 strict 模式下该怎么写？<br>
+      ③ 什么情况下你不该用结构化输出？说出两个场景。<br>
+      <em>三题都答得上来，今天这 60 分钟就没白花。</em>
+    </p>
+  </div>
+
+  <details style="margin-top:14px;">
+    <summary>检验题参考答案</summary>
+    <div class="ans">
+      <p><b>①</b> 处在<b>第 2 档或更低</b>（JSON mode 或纯提示词）。因为"能解析但字段不对"正是第 2 档的典型特征。修法：提示词里写死"字段名不得翻译"；要根治就升级到第 3 档 Structured Outputs。</p>
+      <p><b>②</b> strict 模式下所有字段必须 required，不能省略。做法是<b>把类型写成允许 null</b>（Python 里 <code>str | None</code>，JSON Schema 里 <code>{"type": ["string","null"]}</code>），并在描述里说明"无信息时填 null"。</p>
+      <p><b>③</b> 任意两个即可：答案给人读时、需要自由发挥时、结构还没想清楚时、只跑一遍的一次性任务、字段间有复杂逻辑时。</p>
+    </div>
+  </details>
+
+  <div class="note brand" style="margin-top:14px;">
+    <span class="nt">今天剩下的时间怎么安排</span>
+    学习 60 分钟（本教程）→ <b>对比实验 20 分钟</b>（网页版 A/B 各跑 3 次）→ <b>三个任务写 schema 30 分钟</b> → <b>填失败清单 20 分钟</b>。
+    <br>代码路径是<b>选做</b>，整块可砍。<b>如果三个任务跑不通，不要带着债进 Day 3</b>——先把 schema 写得更死（字段名加英文、加枚举、加兜底、加"第一个字符必须是 {"），补完再往下走。
+  </div>
+</section>
+
+<footer>
+  结构化输出 / JSON mode · 手把手教程 · Day 2 配套<br>
+  与《提示词四技巧五天掌握计划》Day 2 对齐 · 完成本教程后可进入 Day 2 剩余任务（网页版对比实验、三个任务写 schema、整理失败清单）
+</footer>
+
+</div>
+</body>
+</html>
