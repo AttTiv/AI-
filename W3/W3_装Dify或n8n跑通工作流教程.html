@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W3 任务二 · 装 Dify/n8n 跑通第一个工作流</title>
+<style>
+  :root {
+    --bg:#f5f7fa; --card:#fff; --ink:#1f2937; --muted:#6b7280;
+    --line:#e5e7eb; --accent:#2563eb; --ok:#16a34a; --warn:#d97706; --bad:#dc2626;
+    --code-bg:#f3f4f6; --chip:#eef2ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0f141b; --card:#161d27; --ink:#e5e7eb; --muted:#9aa4b2;
+      --line:#2a3340; --accent:#60a5fa; --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+      --code-bg:#1c2530; --chip:#1e293b; }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;padding:30px 18px 70px;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    line-height:1.75;max-width:980px;margin-left:auto;margin-right:auto;}
+  h1{font-size:27px;margin:0 0 4px;}
+  h2{font-size:21px;margin:38px 0 12px;padding-left:11px;border-left:4px solid var(--accent);}
+  h3{font-size:16.5px;margin:22px 0 8px;color:var(--accent);}
+  p{margin:9px 0;}
+  .sub{color:var(--muted);font-size:14.5px;margin-top:0;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0;}
+  .lead{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:16px 20px;margin:16px 0;font-size:15.5px;}
+  .tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;margin-right:6px;vertical-align:middle;}
+  .tag.ok{background:rgba(22,163,74,.15);color:var(--ok);}
+  .tag.warn{background:rgba(217,119,6,.15);color:var(--warn);}
+  .tag.bad{background:rgba(220,38,38,.15);color:var(--bad);}
+  .tag.info{background:rgba(37,99,235,.15);color:var(--accent);}
+  code,.code{font-family:"Cascadia Code","Consolas","SFMono-Regular",Menlo,monospace;background:var(--code-bg);padding:1px 6px;border-radius:5px;font-size:13px;}
+  pre.code{background:var(--code-bg);padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.6;font-size:13px;border:1px solid var(--line);}
+  .ana{color:var(--muted);font-style:italic;font-size:14px;background:var(--chip);border-radius:8px;padding:8px 12px;margin:10px 0;}
+  .ana b{color:var(--accent);font-style:normal;}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+  th{background:var(--code-bg);font-weight:600;}
+  .diagram{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:16px 0;}
+  ul{margin:8px 0;padding-left:22px;} li{margin:6px 0;}
+  .stepnum{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:14px;margin-right:8px;}
+  .quiz{background:var(--card);border:1px dashed var(--accent);border-radius:12px;padding:16px 20px;margin:18px 0;}
+  .quiz b{color:var(--accent);}
+  .footer{color:var(--muted);font-size:13px;margin-top:44px;border-top:1px solid var(--line);padding-top:16px;}
+  .rec{background:linear-gradient(135deg,var(--chip),var(--card));border:1px solid var(--accent);border-radius:12px;padding:16px 20px;margin:16px 0;}
+</style>
+</head>
+<body>
+
+<h1>W3 任务二 · 装 Dify / n8n，跑通第一个工作流</h1>
+<p class="sub">主线：选一个工具 → 装好（本地 Docker 或云端）→ 拖出第一个工作流 → 点一下能跑出结果。目标：一次看懂"工作流"是什么、怎么落地。</p>
+
+<div class="lead">
+💡 <b>一句话先入脑</b>：<b>工作流（Workflow）就是你画的一条"自动化产线"</b>——把一个个"工位"（节点）用"传送带"（连线）串起来：上一个工位的产出，自动喂给下一个工位。Dify / n8n / 扣子，就是三种不同档次的"产线控制台"。你这周的任务，就是任选一个，把产线搭起来、让第一个产品（数据）走通。
+</div>
+
+<h2>零、先回答你的问题：扣子能不能用？</h2>
+<div class="card">
+<p><b>能用，而且是你"最快跑通"的一条路。</b> 扣子（字节跳动的 Coze）本质就是一个<b>云端、零安装、中文界面</b>的可视化工作流 + AI 智能体平台，拖节点连线的玩法和 Dify/n8n 一模一样。</p>
+<p>但三家定位不同，给你一张"选谁"速查表：</p>
+<table>
+  <tr><th>维度</th><th>Dify（开源）</th><th>n8n（开源）</th><th>扣子（字节 SaaS）</th></tr>
+  <tr><td><b>装不装</b></td><td>本地 Docker 或 云端版</td><td>本地 Docker 或 云端版</td><td><b>不用装，开网页就用</b></td></tr>
+  <tr><td><b>擅长</b></td><td>造 AI 应用（自带知识库 RAG、模型管理）</td><td><b>通用自动化</b>（连 API/数据库/定时，AI 只是其中一类节点）</td><td>造 AI 对话机器人 / 智能体</td></tr>
+  <tr><td><b>数据在哪</b></td><td>本地/你自己的服务器</td><td>本地/你自己的服务器</td><td><span class="tag bad">在字节云端</span></td></tr>
+  <tr><td><b>要 API Key 吗</b></td><td>AI 步骤要（如 DeepSeek）</td><td>看接什么，AI 步骤要</td><td><b>基础不用</b>（内置豆包模型）</td></tr>
+  <tr><td><b>上手难度</b></td><td>中（要会 Docker）</td><td>中（要会 Docker）</td><td><span class="tag ok">最低</span></td></tr>
+</table>
+<div class="rec">
+<p><b>巴蒂的推荐（结论先行）：</b></p>
+<ul>
+  <li><b>只想最快建立"工作流"直觉、零门槛</b> → 先用<b>扣子</b>跑通第一个，10 分钟见效。</li>
+  <li><b>想练"自己拥有、数据不出厂"的真部署能力</b>（这更贴合你"硬件/制造+AI"、以后要把 EMC 案例库本地化的目标）→ 用 <b>Dify 本地 Docker</b>。</li>
+  <li><b>想做的是"连数据库、定时抓数、调各种 API"这种通用自动化</b>（不止 AI）→ 用 <b>n8n</b>。</li>
+</ul>
+<p class="ana"><b>⚠️ 一条硬规矩（给你记死）：</b>你的 <b>EMC 专有案例数据属于公司资产，别往扣子或任何纯云端免费版里喂</b>。那等于把涉密数据传出境。先用扣子练手感、用假数据；真要接 EMC 数据，等本地 Dify 搭好、数据留在你自己机器上再说。</p>
+</div>
+</ul>
+</div>
+
+<h2>一、三个比喻，先建立画面</h2>
+<div class="card">
+<ul>
+  <li><b>工作流 = 一条产线</b>：开始 → 工序1 → 工序2 → … → 结束，产品（数据）从头走到尾。</li>
+  <li><b>节点（Node）= 一个工位 / 一道工序</b>：比如"调用大模型""发 HTTP 请求""写数据库""发企业微信"，每个节点干一件具体活。</li>
+  <li><b>连线 = 传送带</b>：上一个节点的输出，自动成为下一个节点的输入。</li>
+  <li><b>Docker = 把整套车间连同地基一起打包</b>：你不用逐个装依赖，拉来一个"集装箱"里面啥都齐了，开机即用。这就是为什么本地装推荐 Docker——省掉一堆环境坑。</li>
+</ul>
+<div class="diagram">
+<svg viewBox="0 0 700 150" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC',sans-serif">
+  <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#2563eb"></path></marker></defs>
+  <rect x="20" y="55" width="110" height="46" rx="9" fill="#161d27" stroke="#16a34a" stroke-width="2"></rect>
+  <text x="75" y="83" fill="#4ade80" font-size="13" font-weight="700" text-anchor="middle">开始</text>
+  <rect x="195" y="55" width="130" height="46" rx="9" fill="#161d27" stroke="#2563eb" stroke-width="2"></rect>
+  <text x="260" y="75" fill="#60a5fa" font-size="12.5" font-weight="700" text-anchor="middle">节点① 调模型</text>
+  <text x="260" y="92" fill="#9aa4b2" font-size="10.5" text-anchor="middle">（一道工序）</text>
+  <rect x="395" y="55" width="130" height="46" rx="9" fill="#161d27" stroke="#2563eb" stroke-width="2"></rect>
+  <text x="460" y="75" fill="#60a5fa" font-size="12.5" font-weight="700" text-anchor="middle">节点② 存库/通知</text>
+  <text x="460" y="92" fill="#9aa4b2" font-size="10.5" text-anchor="middle">（下一道工序）</text>
+  <rect x="580" y="55" width="100" height="46" rx="9" fill="#161d27" stroke="#d97706" stroke-width="2"></rect>
+  <text x="630" y="83" fill="#fbbf24" font-size="13" font-weight="700" text-anchor="middle">结束</text>
+  <line x1="130" y1="78" x2="193" y2="78" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ar)"></line>
+  <line x1="325" y1="78" x2="393" y2="78" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ar)"></line>
+  <line x1="525" y1="78" x2="578" y2="78" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ar)"></line>
+  <text x="350" y="40" fill="#9aa4b2" font-size="12" text-anchor="middle">传送带：上一工位的产出 → 自动喂给下一工位</text>
+</svg>
+</div>
+</div>
+
+<h2>二、路线 A：Dify（本地 Docker，最贴合你目标）</h2>
+<div class="card">
+<p class="ana"><b>前提：</b>装好 <b>Docker Desktop</b>（Windows 用 WSL2 后端）。先跑 <code>docker compose version</code> 确认 ≥ 2.24.0；机器至少 <b>2 核 / 4GB 内存</b>（你的 VDI 若带不动，就改用下面的"云端版"，任务说"本地或云端都行"）。</p>
+<h3>安装步骤</h3>
+<pre class="code"># 1) 拉代码
+git clone https://github.com/langgenius/dify.git
+cd dify/docker
+
+# 2) 生成配置
+cp .env.example .env
+
+# 3) 一键启动（会拉起 7 个核心服务 + 8 个依赖组件，首次较慢）
+docker compose up -d
+
+# 4) 看是否都起来了（状态应为 Up / healthy，init_permissions 显示 Exited 是正常的）
+docker compose ps</pre>
+<p>启动后浏览器开 <code>http://localhost/install</code> 设管理员账号 → 登录 <code>http://localhost</code>。</p>
+<h3>跑通第一个工作流</h3>
+<ul>
+  <li>左侧"工作室"→ 创建应用 → 选 <b>工作流（Workflow）</b> 或 <b>聊天流（Chatflow）</b>。</li>
+  <li>画一条最简链：<code>开始</code> → <code>LLM（大模型）</code> → <code>结束</code>。</li>
+  <li>先去"设置 → 模型供应商"配一个模型（填 <b>DeepSeek</b> 或 OpenAI 兼容的 API Key）。</li>
+  <li>点右上角<b>运行 / 预览</b>，输入一句话（如"用一句话解释 EMC"），看到 AI 回复 = <b>跑通 ✅</b>。</li>
+</ul>
+<p class="ana"><b>想接你的 EMC 知识？</b> Dify 自带"知识库（RAG）"：把文档传上去，工作流里加一个"知识检索"节点，AI 就能基于你的资料回答。这正是你转型目标的第一步——但<b>先在本地跑、别用云端</b>。</p>
+</div>
+
+<h2>三、路线 B：n8n（本地 Docker，通用自动化首选）</h2>
+<div class="card">
+<p class="ana"><b>⚠️ 重要变化（2026-10 起）：</b>n8n 从 v3 开始<b>弃用 npm 安装</b>，新装一律走 Docker。所以别再用 <code>npx n8n</code> 了，下面是正确的 Docker 姿势。</p>
+<pre class="code"># 1) 建一个持久化数据卷（你的工作流存这里，容器重启也不丢）
+docker volume create n8n_data
+
+# 2) 启动（后台 -d，映射到 5678 端口）
+docker run -d --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n</pre>
+<p>浏览器开 <code>http://localhost:5678</code> 设 owner 账号。</p>
+<h3>跑通第一个工作流</h3>
+<ul>
+  <li>新建 Workflow → 拖一个 <code>Manual Trigger</code>（手动触发，方便调试）。</li>
+  <li>再拖一个 <code>HTTP Request</code> 节点：方法 GET，URL 填一个公开接口（如 <code>https://api.chucknorris.io/jokes/random</code> 这种免 key 的测试接口）。</li>
+  <li>连起来，点<b>Execute Workflow（执行）</b>，下方能看到 HTTP 返回的 JSON = <b>跑通 ✅</b>。</li>
+  <li>想加 AI：再拖 <code>OpenAI / DeepSeek</code> 节点，配 Key 即可。</li>
+</ul>
+<p class="ana"><b>硬件比喻：</b>n8n 就像一台"万能接线排"——不光能接 AI，还能接数据库、Excel、定时器、企业微信。你以后要做"BOM 审核自动跑、结果发群里"这种杂活，n8n 最顺手。</p>
+</div>
+
+<h2>四、路线 C：扣子（云端零安装，最快见效）</h2>
+<div class="card">
+<p class="ana"><b>适合：</b>只想立刻看到"工作流长啥样"，不想碰 Docker/命令行。打开网页就能干。</p>
+<ul>
+  <li>打开 <a href="https://www.coze.cn" style="color:var(--accent)">coze.cn</a> 注册登录（国内版；海外是 coze.com）。</li>
+  <li>"创建 Bot" → 进入编排页，点"工作流"添加一条。</li>
+  <li>拖节点：<code>开始</code> → <code>大模型</code> → <code>结束</code>。</li>
+  <li>大模型节点默认用内置<b>豆包</b>模型，<b>不用填 Key</b>。</li>
+  <li>点"试运行"，输入测试内容，看到输出 = <b>跑通 ✅</b>。</li>
+</ul>
+<p class="ana"><b>提醒回扣前面：</b>扣子练手用假数据；真接 EMC 专有数据前，请回到路线 A 的本地 Dify。</p>
+</div>
+
+<h2>五、"跑通"的通用验收标准</h2>
+<div class="card">
+<ul>
+  <li><span class="stepnum">1</span> <b>能跑</b>：点执行不报错，节点变绿/显示成功。</li>
+  <li><span class="stepnum">2</span> <b>能看到结果</b>：输出的内容是你预期的（AI 回了话 / API 回了数据）。</li>
+  <li><span class="stepnum">3</span> <b>能改</b>：你调一下节点参数（换个提问、换个接口），再跑一次结果跟着变——说明你真懂了这条链，不是瞎蒙。</li>
+</ul>
+</div>
+
+<h2>六、新手最常踩的坑</h2>
+<div class="card">
+<ul>
+  <li><span class="tag bad">坑1</span> <b>Docker 没装 / 版本太低</b>：Dify 要 Compose ≥ 2.24.0。先 <code>docker compose version</code> 自查。</li>
+  <li><span class="tag bad">坑2</span> <b>机器带不动</b>：Dify 吃 4GB+ 内存，VDI 资源紧就改用云端版（Dify Cloud / n8n Cloud / 扣子）。</li>
+  <li><span class="tag warn">坑3</span> <b>端口被占</b>：5678 / 80 被别的程序占了，启动报错。换端口或关掉占用的程序。</li>
+  <li><span class="tag warn">坑4</span> <b>AI 节点没配 Key</b>：Dify/n8n 的模型节点空白报错，先去填 DeepSeek/OpenAI Key；扣子用内置模型可跳过。</li>
+  <li><span class="tag bad">坑5</span> <b>把涉密数据喂云端</b>：再强调一次，EMC 专有案例别进扣子/免费云端。</li>
+</ul>
+</div>
+
+<h2>七、验收自测（能答出＝这任务过关）</h2>
+<div class="quiz">
+  <p><b>第 1 题</b>：工作流里的"节点"和"连线"分别比喻成车间里的什么？</p>
+  <p class="ana"><b>答：</b>节点 = 一个工位 / 一道工序（干一件具体活）；连线 = 传送带（上一工位的产出自动喂给下一工位）。</p>
+  <p><b>第 2 题</b>：Dify 和 n8n 各最擅长什么？用 Docker 装 n8n 为什么别用 <code>npx n8n</code> 了？</p>
+  <p class="ana"><b>答：</b>Dify 擅长造 AI 应用（自带知识库/模型管理）；n8n 擅长通用自动化（连 API/数据库/定时）。n8n 从 v3（2026-10）起弃用 npm，新装只走 Docker。</p>
+  <p><b>第 3 题</b>：扣子能不能替代它们？你打算怎么选？</p>
+  <p class="ana"><b>答：</b>能，用于"最快跑通/零门槛"；但数据在字节云端。我的建议：练手用扣子（假数据），真做 EMC 本地化用 Dify 本地 Docker，通用自动化用 n8n。</p>
+</div>
+
+<div class="footer">
+  配套你的 W3 学习计划任务二。安装命令以官方文档为准（已按 2026-10 当前版本核实：Dify Docker Compose、n8n v3 Docker-only）。<br>
+  生成日期：2026-10-19 · 巴蒂
+</div>
+
+</body>
+</html>

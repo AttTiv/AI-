@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W3 任务一 · API 调用主线讲解</title>
+<style>
+  :root {
+    --bg: #f5f7fa; --card: #ffffff; --ink: #1f2937; --muted: #6b7280;
+    --line: #e5e7eb; --accent: #2563eb; --ok: #16a34a; --warn: #d97706; --bad: #dc2626;
+    --code-bg: #f3f4f6; --chip: #eef2ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f141b; --card: #161d27; --ink: #e5e7eb; --muted: #9aa4b2;
+      --line: #2a3340; --accent: #60a5fa; --ok: #4ade80; --warn: #fbbf24; --bad: #f87171;
+      --code-bg: #1c2530; --chip: #1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 30px 18px 70px; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    line-height: 1.75; max-width: 960px; margin-left: auto; margin-right: auto;
+  }
+  h1 { font-size: 27px; margin: 0 0 4px; }
+  h2 { font-size: 21px; margin: 38px 0 12px; padding-left: 11px; border-left: 4px solid var(--accent); }
+  h3 { font-size: 16.5px; margin: 22px 0 8px; color: var(--accent); }
+  p { margin: 9px 0; }
+  .sub { color: var(--muted); font-size: 14.5px; margin-top: 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0; }
+  .lead { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; padding: 16px 20px; margin: 16px 0; font-size: 15.5px; }
+  .tag { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 999px; margin-right: 6px; vertical-align: middle; }
+  .tag.ok { background: rgba(22,163,74,.15); color: var(--ok); }
+  .tag.warn { background: rgba(217,119,6,.15); color: var(--warn); }
+  .tag.bad { background: rgba(220,38,38,.15); color: var(--bad); }
+  .tag.info { background: rgba(37,99,235,.15); color: var(--accent); }
+  code, .code { font-family: "Cascadia Code","Consolas","SFMono-Regular",Menlo,monospace; background: var(--code-bg); padding: 1px 6px; border-radius: 5px; font-size: 13px; }
+  pre.code { background: var(--code-bg); padding: 14px 16px; border-radius: 10px; overflow-x: auto; line-height: 1.6; font-size: 13px; border: 1px solid var(--line); }
+  .ana { color: var(--muted); font-style: italic; font-size: 14px; background: var(--chip); border-radius: 8px; padding: 8px 12px; margin: 10px 0; }
+  .ana b { color: var(--accent); font-style: normal; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 9px 11px; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; }
+  .diagram { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 16px 0; }
+  ul { margin: 8px 0; padding-left: 22px; } li { margin: 6px 0; }
+  .kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 7px; font-family: monospace; font-size: 12px; }
+  .quiz { background: var(--card); border: 1px dashed var(--accent); border-radius: 12px; padding: 16px 20px; margin: 18px 0; }
+  .quiz b { color: var(--accent); }
+  .footer { color: var(--muted); font-size: 13px; margin-top: 44px; border-top: 1px solid var(--line); padding-top: 16px; }
+  .stepnum { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; margin-right: 8px; }
+</style>
+</head>
+<body>
+
+<h1>W3 任务一 · API 调用主线讲解</h1>
+<p class="sub">主线：<b>发请求 → 拿响应 → 解析 JSON → 落库 / 发通知</b>。目标：一次看懂"程序是怎么跟外部系统对话的"。</p>
+
+<div class="lead">
+💡 <b>一句话先入脑</b>：调用 API，本质上和你用<b>上位机通过串口给一台智能传感器发"读数据"指令、传感器回你一帧数据、你拆包后记到台账或拉警报</b>，是一模一样的事。只是"线路"换成了网络，"协议帧"换成了 URL + JSON。下面全程用这个比喻，你闭眼都能想到画面。
+</div>
+
+<h2>一、先搞懂：API 到底是什么？</h2>
+<div class="card">
+<p><b>API（应用程序接口）</b>就是别人家系统开的一个"<b>服务窗口</b>"。你按它规定的格式问，它就按规定的格式答；你不按格式问，它不理你或报错。</p>
+<p class="ana"><b>硬件比喻：</b>你车间里那台带网口的智能电表，约定"发 <code>01 03 00 00 00 01</code> 这帧 Modbus 指令，它就回当前电压"。这个"约定好的问法 + 回法"，就是那台电表的 API。只不过互联网上的 API 用文字（URL + JSON）而不是十六进制帧。</p>
+<p>所以"调 API" = <b>按约定，向一个网址发一句话，等它回一句话</b>。就这么简单，后面四步全是这句话的细化。</p>
+</div>
+
+<h2>二、主线全景图（先存这张图）</h2>
+<div class="diagram">
+<svg viewBox="0 0 700 250" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC',sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#2563eb"></path></marker>
+    <marker id="ag" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#16a34a"></path></marker>
+  </defs>
+  <!-- 你 -->
+  <rect x="20" y="95" width="120" height="60" rx="10" fill="#161d27" stroke="#2563eb" stroke-width="2"></rect>
+  <text x="80" y="120" fill="#60a5fa" font-size="14" font-weight="700" text-anchor="middle">你的程序</text>
+  <text x="80" y="140" fill="#9aa4b2" font-size="11" text-anchor="middle">（上位机）</text>
+  <!-- 服务器 -->
+  <rect x="560" y="95" width="120" height="60" rx="10" fill="#161d27" stroke="#16a34a" stroke-width="2"></rect>
+  <text x="620" y="120" fill="#4ade80" font-size="14" font-weight="700" text-anchor="middle">对方服务器</text>
+  <text x="620" y="140" fill="#9aa4b2" font-size="11" text-anchor="middle">（智能设备）</text>
+  <!-- 发请求 -->
+  <line x1="140" y1="120" x2="555" y2="120" stroke="#2563eb" stroke-width="2.5" marker-end="url(#ar)"></line>
+  <text x="347" y="108" fill="#60a5fa" font-size="12.5" text-anchor="middle">① 发请求（问：URL+参数）</text>
+  <!-- 拿响应 -->
+  <line x1="555" y1="135" x2="142" y2="135" stroke="#16a34a" stroke-width="2.5" marker-end="url(#ag)"></line>
+  <text x="347" y="153" fill="#4ade80" font-size="12.5" text-anchor="middle">② 拿响应（答：状态码+JSON）</text>
+  <!-- 解析+落库 框 -->
+  <rect x="170" y="185" width="360" height="48" rx="10" fill="#161d27" stroke="#d97706" stroke-width="2"></rect>
+  <text x="350" y="205" fill="#fbbf24" font-size="13" font-weight="700" text-anchor="middle">③④ 解析 JSON → 落库 / 发通知（程序内部处理）</text>
+  <line x1="200" y1="155" x2="260" y2="183" stroke="#d97706" stroke-width="2" stroke-dasharray="4 3"></line>
+  <text x="180" y="178" fill="#9aa4b2" font-size="11">程序拿到回答后自己消化</text>
+</svg>
+</div>
+<p class="ana"><b>怎么记：</b>①② 是"<b>你和设备之间的通信</b>"（一问一答）；③④ 是"<b>你拿到数据后在自己这边干的事</b>"（拆包 + 处置）。前两步是"对外说话"，后两步是"对内消化"。</p>
+
+<h2>三、第一步：发请求（"写一张带地址的查询单"）</h2>
+<div class="card">
+<p>发请求 = 你告诉对方三件事：<b>发给谁、用什么动作、问什么</b>。</p>
+<table>
+  <tr><th>要素</th><th>是什么</th><th>硬件比喻</th><th>例子</th></tr>
+  <tr><td><b>URL</b><br>（网址/接口）</td><td>对方的"窗口地址"——具体找哪个功能</td><td>设备的<b>站址 + 寄存器地址</b></td><td><code>https://api.xxx.com/env/ENV-01</code><br>"查 ENV-01 这台设备"</td></tr>
+  <tr><td><b>方法</b><br>（动作）</td><td>GET=查询（我要看）<br>POST=提交（我塞数据给你）</td><td>读指令 vs 写指令</td><td><code>GET</code> 读温度；<code>POST</code> 上报报警</td></tr>
+  <tr><td><b>参数 / 请求体</b></td><td>具体问什么、或提交什么内容</td><td>指令里的<b>数据域</b></td><td><code>?from=2026-10-19</code>（问哪天的数据）</td></tr>
+</table>
+<p class="ana"><b>一句话：</b>发请求就像你填好一张"<b>收件人地址 + 我要查什么</b>"的单子，递给窗口。URL 是地址，方法是"查还是写"，参数是"查哪条"。</p>
+</div>
+
+<h2>四、第二步：拿响应（"等回执单，先看成不成功"）</h2>
+<div class="card">
+<p>对方回你的东西分两部分：<b>状态码</b>（这单子成没成）+ <b>响应体</b>（真正的数据，通常是 JSON）。</p>
+<table>
+  <tr><th>状态码</th><th>含义</th><th>硬件比喻</th><th>你该咋办</th></tr>
+  <tr><td><span class="tag ok">200</span></td><td>成功，数据在响应体里</td><td>设备回帧、校验通过</td><td>继续下一步解析</td></tr>
+  <tr><td><span class="tag warn">404</span></td><td>找不到这个地址/接口</td><td>站址写错，没人应答</td><td>检查 URL 拼错没</td></tr>
+  <tr><td><span class="tag bad">500</span></td><td>对方服务器自己炸了</td><td>设备死机/内部错</td><td>稍后重试，不是你的锅</td></tr>
+  <tr><td><span class="tag bad">超时</span></td><td>等了很久没回音</td><td>线路断了/设备没回</td><td>设超时时间，失败重试</td></tr>
+</table>
+<p class="ana"><b>关键习惯：</b>拿到响应<b>第一件事先看状态码是不是 200</b>，不是 200 就不要去解析后面的数据（后面可能是错误信息甚至空包）。这就像你收到回执先看清"成功/失败"，失败的包裹别急着拆。</p>
+</div>
+
+<h2>五、第三步：解析 JSON（"拆快递盒，按标签取东西"）</h2>
+<div class="card">
+<p><b>JSON</b> 就是互联网上通用的"<b>带标签的数据包裹</b>"。它用 <code>"键": 值</code> 的形式，让每个数据都有自己的名字，人和程序都好看懂。</p>
+<p>给你看一个真实样子的响应（环境监测设备回的数据）：</p>
+<pre class="code">{
+  "device": "ENV-01",
+  "timestamp": "2026-10-19T21:30:00",
+  "readings": [
+    {"sensor": "temp", "value": 25.3, "unit": "°C"},
+    {"sensor": "humi", "value": 60,   "unit": "%"}
+  ],
+  "status": "normal"
+}</pre>
+<p>逐字段拆给你看（这就是"解析"）：</p>
+<table>
+  <tr><th>片段</th><th>什么意思</th><th>比喻</th></tr>
+  <tr><td><code>"device": "ENV-01"</code></td><td>这是哪台设备回的</td><td>包裹上写的"发件人"</td></tr>
+  <tr><td><code>"readings": [ ... ]</code></td><td>一个<b>数组</b>（方括号），里面是一组传感器</td><td>一个盒子里装了<b>多件货</b></td></tr>
+  <tr><td><code>{"sensor":"temp","value":25.3,...}</code></td><td>数组里的第 1 件：温度 25.3°C</td><td>盒子里第 1 个小格</td></tr>
+  <tr><td><code>"status": "normal"</code></td><td>总状态：正常</td><td>设备自诊断结论</td></tr>
+</table>
+<p class="ana"><b>三种"容器"记牢：</b><br>
+• <code>{ }</code> 花括号 = 一个"<b>物件</b>"，里面是一堆 <code>键:值</code>（像一台设备的属性袋）<br>
+• <code>[ ]</code> 方括号 = 一个"<b>列表</b>"，里面可放多个物件/值（像一排传感器）<br>
+• <code>"键": 值</code> = 标签 + 内容（像台账的"列名: 数值"）</p>
+<p>解析这一步，就是把上面那串"文字"变成程序里能直接用的变量，比如 <code>温度 = 数据["readings"][0]["value"]</code> —— 翻译过来就是"取 readings 列表里第 1 个的 value"。</p>
+</div>
+
+<h2>六、第四步：落库 / 发通知（"记台账 或 拉警报"）</h2>
+<div class="card">
+<p>数据拆出来了，总得"用"它。两条最常见去处：</p>
+<table>
+  <tr><th>去处</th><th>干什么</th><th>硬件比喻</th></tr>
+  <tr><td><b>落库</b><br>（存数据库）</td><td>把解析出的值写进表格/数据库，留痕、可查历史</td><td>把读数<b>记到值班台账</b>本上</td></tr>
+  <tr><td><b>发通知</b><br>（告警/推送）</td><td>超阈值或异常时，调另一个 API 发消息（企业微信/邮件/短信）</td><td>温度超标→<b>亮报警灯 / 继电器动作</b></td></tr>
+</table>
+<p class="ana"><b>注意：</b>"发通知"本质也是一次<b>新的 API 调用</b>——你又去敲另一个窗口的门。所以整条主线可以"<b>串起来</b>"：查设备 → 解析 → 发现超标 → 再调企业微信的 API 发警报。一条主线的出口，可以是下一条主线的入口。</p>
+</div>
+
+<h2>七、把四步连成一个完整故事</h2>
+<div class="card">
+<p>用"环境监测"走一遍，你就能在脑子里完整放电影：</p>
+<ol>
+  <li><b>① 发请求</b>：上位机向 <code>api.xxx.com/env/ENV-01</code> 发一个 <code>GET</code>，问"ENV-01 现在啥情况"。</li>
+  <li><b>② 拿响应</b>：对方回 <span class="tag ok">200</span> + 上面那段 JSON。</li>
+  <li><b>③ 解析 JSON</b>：拆出 <code>温度=25.3°C、湿度=60%、状态=normal</code>。</li>
+  <li><b>④ 落库 / 发通知</b>：把这三个值写进数据库一行；因为状态是 normal、没超标，<b>不</b>发通知。如果哪天温度变成 35°C，这一步就会改走"发企业微信报警"。</li>
+</ol>
+<p class="ana"><b>这就是完整主线。</b>你后面做 AI 项目（比如 EMC 案例库查询、器件选型接口）全是这个套路，只是"问的内容"和"存的地方"不同。</p>
+</div>
+
+<h2>八、一段"读着玩"的示意（你不用写，看懂流程就够）</h2>
+<div class="card">
+<pre class="code"># 伪代码：把四步串起来，读得懂即可，不必会写
+响应 = 发请求(方法=GET, 地址="https://api.xxx.com/env/ENV-01")
+
+如果 响应.状态码 == 200:
+    数据 = 解析JSON(响应.正文)          # 第三步
+    温度 = 数据["readings"][0]["value"]
+    写进数据库(数据)                    # 第四步·落库
+    如果 温度 > 30:
+        发企业微信("ENV-01 温度过高: " + 温度)   # 第四步·通知（又是一次API）
+否则:
+    记录错误("请求失败，状态码=" + 响应.状态码)  # 第二步判失败</pre>
+<p class="ana"><b>读这段的要点：</b>看 <code>如果...否则</code> 怎么对应"第二步先判 200"；看 <code>解析JSON</code> 之后怎么"<b>按路径取值</b>"；看最后的 <code>发企业微信</code> 怎么变成"再调一次 API"。逻辑和你写测试用例的分支一模一样。</p>
+</div>
+
+<h2>九、新手最容易踩的 3 个坑</h2>
+<div class="card">
+<ul>
+  <li><span class="tag bad">坑1</span> <b>不看状态码就解析</b>：对方回 500 时响应体可能是错误信息，硬解析会报错。→ 先 <code>if 200</code> 再解析。</li>
+  <li><span class="tag bad">坑2</span> <b>以为 JSON 字段永远在</b>：某天接口少回了 <code>humi</code>，你取 <code>["humi"]</code> 就空指针。→ 取之前先判断字段存在不存在。</li>
+  <li><span class="tag warn">坑3</span> <b>不设超时</b>：对方卡死，你的程序就一直干等（还记得 doc2docx 那个"卡 30 分钟"的教训吗？）。→ 请求一定带超时，超时走重试/报错。</li>
+</ul>
+</div>
+
+<h2>十、验收自测（能答出＝这任务过关）</h2>
+<div class="quiz">
+  <p><b>第 1 题</b>：发请求要告诉对方哪三件事？</p>
+  <p class="ana"><b>答：</b>发给谁（URL）、用什么动作（GET 查 / POST 写）、问/提交什么（参数/请求体）。</p>
+  <p><b>第 2 题</b>：拿到响应后，第一件该做的事是什么？为什么？</p>
+  <p class="ana"><b>答：</b>先看<b>状态码是不是 200</b>；不是 200 说明这单没成功，响应体可能是错误信，硬解析会出错。</p>
+  <p><b>第 3 题</b>：JSON 里 <code>{ }</code>、<code>[ ]</code>、<code>"键":值</code> 分别代表什么容器？</p>
+  <p class="ana"><b>答：</b><code>{ }</code>=物件（属性袋）、<code>[ ]</code>=列表（多个元素）、<code>"键":值</code>=带标签的一项数据。</p>
+</div>
+
+<div class="footer">
+  配套你的 W3 学习计划任务一。本文档只讲"<b>主线直觉</b>"，不要求写代码；真动手时再用 Python <code>requests</code> 之类落地即可。<br>
+  生成日期：2026-10-19 · 巴蒂
+</div>
+
+</body>
+</html>
