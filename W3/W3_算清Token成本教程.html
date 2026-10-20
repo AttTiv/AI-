@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W3 任务三 · 算清楚 Token 成本 · 教程</title>
+<style>
+  :root{
+    --bg:#f6f6f4; --panel:#ffffff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dd;
+    --accent:#2b6cb0; --ok:#1d9e75; --warn:#b7791f; --code:#f1efe8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141414; --panel:#1c1c1c; --text:#ececec; --muted:#a0a09a; --line:#2e2e2c;
+      --accent:#7fb3e8; --ok:#5bceaa; --warn:#e0b25c; --code:#242424;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.75}
+  .wrap{max-width:880px;margin:0 auto}
+  h1{font-size:23px;font-weight:600;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:8px}
+  h2{font-size:17px;font-weight:600;margin:34px 0 12px;padding-left:10px;border-left:3px solid var(--accent)}
+  h3{font-size:15px;font-weight:600;margin:18px 0 8px}
+  p{margin:8px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:right;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--muted);font-weight:500;font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  tr.total td{font-weight:600;border-top:2px solid var(--line)}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px;
+    font-family:ui-monospace,Consolas,monospace}
+  pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto;font-size:12.5px;
+    font-family:ui-monospace,Consolas,monospace;line-height:1.6;margin:10px 0}
+  .ok{color:var(--ok);font-weight:600}
+  .note{border-left:3px solid var(--warn);padding:2px 0 2px 14px;color:var(--muted);margin:14px 0;font-size:13.5px}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--accent);
+    color:var(--accent);margin-left:6px;vertical-align:2px}
+  .foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  .big{font-size:17px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>W3 任务三 · 算清楚 Token 成本<span class="pill">教程</span></h1>
+  <div class="sub">目标：做一张表，列清每个功能的「输入/输出 token + 单价」，算出月成本　·　记录日期：2026-10-20</div>
+
+  <h2>一、先把"token"想明白</h2>
+  <p>模型不是按"字"收费，是按"<strong>token</strong>"收费。token 是模型眼里的最小计量块——可以是一个词、一个数字、一个标点，中文里大约 <strong>1~2 个汉字 = 1 个 token</strong>（粗略记：1 token ≈ 1 字多）。</p>
+  <p>用硬件工程师的话说：<strong>token 就像零件的"最小计量单位"（比如"颗"），不是"个"</strong>。</p>
+  <div class="card">
+    <div class="big">一次调用 = 进料（输入 token）＋ 出料（输出 token），各自乘单价</div>
+    <p style="margin-bottom:0;color:var(--muted)">＝ 上料用了多少料 × 进料价　＋　产出用了多少料 × 出料价</p>
+  </div>
+  <p>所以"成本"这件事，本质就是给 API 调用主线（W3 任务一）的每一步都贴上价签。</p>
+
+  <h2>二、核心公式（请照着验算，别直接信）</h2>
+  <pre>单次调用成本 = 输入token × 输入单价 ＋ 输出token × 输出单价
+
+月成本       = 单次调用成本 × 月调用次数
+             （也等于：月输入token总量 × 输入单价 ＋ 月输出token总量 × 输出单价）
+
+单价单位   = 元 / 百万 token
+             → 计算时务必换算：单价 = 标称价 ÷ 1,000,000</pre>
+  <p><strong>验算小样</strong>（照抄一遍你就懂了）：输入 1000 token、输出 500 token，输入价 3 元/百万、输出价 16 元/百万。</p>
+  <pre>单次 = 1000 × (3 ÷ 1,000,000) ＋ 500 × (16 ÷ 1,000,000)
+     = 0.003 ＋ 0.008 ＝ 0.011 元/次
+月成本（调用 1000 次）= 0.011 × 1000 ＝ 11 元</pre>
+
+  <h2>三、任务三要的"那张表"，长这样</h2>
+  <table>
+    <thead><tr>
+      <th>功能</th><th>模型</th><th>平均输入<br>token</th><th>平均输出<br>token</th>
+      <th>输入单价<br>元/百万</th><th>输出单价<br>元/百万</th><th>单次成本<br>元</th><th>月调用<br>次数</th><th>月成本<br>元</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>① 文本总结</td><td>Doubao 2.0 Pro</td><td>50</td><td>40</td><td>3.2</td><td>16</td><td>0.0008</td><td>1000</td><td>0.80</td></tr>
+      <tr><td>② 长文档问答</td><td>Doubao 2.0 Pro</td><td>8000</td><td>1000</td><td>3.2</td><td>16</td><td>0.0416</td><td>500</td><td>20.8</td></tr>
+      <tr><td>③ 短句翻译</td><td>Doubao 2.0 Mini</td><td>30</td><td>40</td><td>0.2</td><td>2</td><td>0.000086</td><td>3000</td><td>0.26</td></tr>
+      <tr><td>④ 数据抽取(批量)</td><td>DeepSeek V4-Flash 低谷</td><td>2000</td><td>300</td><td>1.5</td><td>4.5</td><td>0.00435</td><td>2000</td><td>8.70</td></tr>
+      <tr class="total"><td colspan="8">月成本合计（示例假设值）</td><td>≈ 30.56</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:13px">上面 4 行是<strong>示例假设值</strong>（含你已建好的"文本总结"工作流），演示怎么填。换成你自己的真实功能、真实调用量，照列即可。</p>
+
+  <h3>表头九列，各是什么</h3>
+  <ul>
+    <li><strong>功能</strong>：你工作流里的每个场景（总结、问答、翻译、抽取…），一个功能一行</li>
+    <li><strong>模型</strong>：这个功能用哪个模型（省钱/省钱模型分开列，因为它们单价差很多）</li>
+    <li><strong>平均输入/输出 token</strong>：实测几次取平均（别瞎估，见第五节怎么取）</li>
+    <li><strong>输入/输出单价</strong>：查官网"元/百万 token"，注意输入和输出通常是两个价</li>
+    <li><strong>单次成本</strong>：用第二节公式算</li>
+    <li><strong>月调用次数</strong>：你估计这功能一个月跑多少次</li>
+    <li><strong>月成本</strong>：单次 × 次数</li>
+  </ul>
+
+  <h2>四、拿你自己的"文本总结"工作流算一笔（实锤）</h2>
+  <p>你那个工作流配置：<code>model = doubao-seed-2-0-pro</code>，<code>thinking = disabled</code>。按 2026-10 官网最短输入档单价：输入 <strong>3.2 元/百万</strong>、输出 <strong>16 元/百万</strong>。</p>
+  <p>一句文本约 50 token 进，摘要约 40 token 出：</p>
+  <pre>单次 = 50×3.2/1e6 ＋ 40×16/1e6 ＝ 0.00016 ＋ 0.00064 ＝ 0.0008 元（约 0.8 厘/次）
+月调用 1000 次 → 0.8 元/月</pre>
+  <p>结论很直观：<strong>这种"短进短出"的轻量功能，几乎不花钱，月成本在"毛"级</strong>。真正烧钱的是"长进长出"——比如第②行长文档问答，一下子就到 20 元/月。</p>
+
+  <h2>五、真实 token 数从哪来（别瞎估）</h2>
+  <ul>
+    <li><strong>扣子编程</strong>：对话/运行结果里会显示「积分消耗」，反向可推 token（或看 <code>usage</code>）</li>
+    <li><strong>直接调 API</strong>：响应里带 <code>usage.prompt_tokens</code>（输入）和 <code>usage.completion_tokens</code>（输出），最准</li>
+    <li><strong>没接 API 时</strong>：同一功能手动跑 3~5 次，看字数量级 × 1.5（中文粗略）取平均</li>
+  </ul>
+
+  <h2>六、五个坑（算漏一个，月成本能差几倍）</h2>
+  <table>
+    <thead><tr><th>坑</th><th>说明</th><th>对你的影响</th></tr></thead>
+    <tbody>
+      <tr><td>① 输入≠输出价</td><td>输出单价通常是输入的 2~5 倍</td><td>只算一个价会严重低估（你那个 16 vs 3.2，输出贵 5 倍）</td></tr>
+      <tr><td>② 思考模式吃 token</td><td>开 <code>thinking</code> 会额外产生"推理 token"</td><td>你设了 <code>thinking=disabled</code>，是对的——总结不该开</td></tr>
+      <tr><td>③ 输入越长越贵</td><td>豆包按输入长度分档，最长档≈最短档的 3 倍</td><td>长上下文（第②行）要单独估，不能套短文本单价</td></tr>
+      <tr><td>④ 缓存命中更便宜</td><td>相同前缀反复调用，命中缓存单价低至 1/5</td><td>批量雷同任务（第④行）用缓存能省不少</td></tr>
+      <tr><td>⑤ 峰谷定价</td><td>DeepSeek 高峰价≈低谷的 2 倍，周末全低谷</td><td>批量任务挪到低谷/周末跑，立省一半</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>价格口径提醒 ❓</strong>：本教程单价取自 2026-10-20 各官网（豆包火山方舟、DeepSeek API 文档）的<strong>最短输入档</strong>。
+    模型厂商会调价、且按输入长度分档，<strong>真实数字请以你跑任务当天的官网价格页为准</strong>。
+    方法是铁打的，数字是流水的——掌握算法比背价格重要。
+  </div>
+
+  <h2>七、自查三问（能答出即过关）</h2>
+  <ul>
+    <li>"单次 0.0008 元"是怎么算出来的？<br><span style="color:var(--muted)">答：50×3.2÷1,000,000 ＋ 40×16÷1,000,000 ＝ 0.0008</span></li>
+    <li>为什么"长文档问答"比"短句翻译"贵那么多？<br><span style="color:var(--muted)">答：输入 token 量级差几百倍（8000 vs 30），而输出价又是输入的几倍，相乘放大</span></li>
+    <li>想再省一半，最该调哪个旋钮？<br><span style="color:var(--muted)">答：① 关 thinking；② 换更便宜的小模型（Mini/Lite）；③ 批量挪到低谷或开缓存命中</span></li>
+  </ul>
+
+  <div class="foot">
+    关联：本表是 W3 任务一"API 调用主线"的成本化延伸——发请求(输入 token)、拿响应(输出 token) 每一步都有价。<br>
+    关联：W3 任务二"文本总结"工作流即本教程第①行示例，已实跑验证。<br>
+    数据红线不变：EMC/公司专有语料不要喂进云端模型做成本测试，示例均为公开语境文本或假设值。
+  </div>
+
+</div>
+</body>
+</html>

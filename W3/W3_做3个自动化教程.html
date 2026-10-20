@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W3 任务四 · 做 3 个自动化 · 教程（扣子网页版）</title>
+<style>
+  :root{
+    --bg:#f6f6f4; --panel:#ffffff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dd;
+    --accent:#2b6cb0; --ok:#1d9e75; --warn:#b7791f; --code:#f1efe8; --bad:#c0392b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141414; --panel:#1c1c1c; --text:#ececec; --muted:#a0a09a; --line:#2e2e2c;
+      --accent:#7fb3e8; --ok:#5bceaa; --warn:#e0b25c; --code:#242424; --bad:#e57373;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.75}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:23px;font-weight:600;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:8px}
+  h2{font-size:17px;font-weight:600;margin:34px 0 12px;padding-left:10px;border-left:3px solid var(--accent)}
+  h3{font-size:15px;font-weight:600;margin:18px 0 8px}
+  p{margin:8px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0}
+  .ans{background:var(--panel);border:1px solid var(--accent);border-radius:10px;padding:16px 20px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px;
+    font-family:ui-monospace,Consolas,monospace}
+  pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto;font-size:12.5px;
+    font-family:ui-monospace,Consolas,monospace;line-height:1.6;margin:10px 0}
+  .ok{color:var(--ok);font-weight:600}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--accent);
+    color:var(--accent);margin-left:6px;vertical-align:2px}
+  .note{border-left:3px solid var(--warn);padding:2px 0 2px 14px;color:var(--muted);margin:14px 0;font-size:13.5px}
+  .danger{border-left:3px solid var(--bad);padding:2px 0 2px 14px;margin:14px 0;font-size:13.5px;color:var(--text)}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  .chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0}
+  .node{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:13px}
+  .tri{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:13px}
+  .land{background:var(--ok);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:13px}
+  .arrow{color:var(--muted);font-size:16px}
+  .foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>W3 任务四 · 做 3 个自动化<span class="pill">教程 · 扣子网页版</span></h1>
+  <div class="sub">目标：① 消息/邮件 → AI 摘要 → 归档　② 日报素材自动汇总　③ 文档批量格式转换　·　记录日期：2026-10-20</div>
+
+  <div class="ans">
+    <strong>先回答你的疑问：任务四是不是"做工作流"？</strong><br>
+    是。但它 = <strong>工作流 + 触发器 + 收尾落地</strong>。任务二你跑通的那条"文本总结"只差这两端——加上"什么时候跑"和"结果存哪"，它就是个自动化了。所以你任务二的手艺（节点、prompt、json 配置）全部能复用。
+  </div>
+
+  <h2>一、自动化是什么（硬件比喻）</h2>
+  <p>把"人手动点 N 步"变成"触发一次自己跑完"。想象一条<strong>产线</strong>：</p>
+  <div class="card">
+    <div class="chain">
+      <span class="tri">开关（触发器）</span><span class="arrow">→</span>
+      <span class="node">工位1 取料</span><span class="arrow">→</span>
+      <span class="node">工位2 AI 质检/加工</span><span class="arrow">→</span>
+      <span class="node">工位3 …</span><span class="arrow">→</span>
+      <span class="land">成品入库（落地）</span>
+    </div>
+    <p style="margin:10px 0 0;color:var(--muted);font-size:13px">触发器 = 传送带开关（定时 / 收到事件）；工位 = 工作流节点；入库 = 写库 / 发消息 / 存文件。</p>
+  </div>
+
+  <h2>二、三个自动化的"节点图"</h2>
+
+  <h3>① 消息 / 邮件 → AI 摘要 → 归档</h3>
+  <div class="card">
+    <div class="chain">
+      <span class="tri">定时 / 新邮件事件</span><span class="arrow">→</span>
+      <span class="node">读取邮件或消息</span><span class="arrow">→</span>
+      <span class="node">大模型摘要（复用任务二）</span><span class="arrow">→</span>
+      <span class="land">写入归档表 / 知识库</span>
+    </div>
+    <p style="margin:10px 0 0"><strong>扣子实现要点：</strong></p>
+    <ul>
+      <li>触发器：编排页找「触发器 / 定时」入口，选"定时每 30 分钟"或"邮件/消息事件"（❓ 具体按钮名随 3.0 UI 略有差异，认准"触发"二字）</li>
+      <li>读取：用邮件/即时消息的<strong>连接器或插件</strong>节点拉内容（没有就加一个 HTTP 节点调你自己的接口）</li>
+      <li>摘要：直接把任务二那个 <code>summarize</code> 节点接进来，不用重写</li>
+      <li>归档：用「写入数据表」或「写入知识库」节点，把 <code>summary</code> 存下来</li>
+    </ul>
+  </div>
+
+  <h3>② 日报素材自动汇总</h3>
+  <div class="card">
+    <div class="chain">
+      <span class="tri">每天 18:00（定时）</span><span class="arrow">→</span>
+      <span class="node">拉取多来源（消息/笔记/项目）</span><span class="arrow">→</span>
+      <span class="node">大模型归纳成日报</span><span class="arrow">→</span>
+      <span class="land">发到群 / 写入文档</span>
+    </div>
+    <p style="margin:10px 0 0"><strong>扣子实现要点：</strong></p>
+    <ul>
+      <li>触发器：定时 <code>cron</code> 每天 18:00（扣子里一般叫"定时触发"）</li>
+      <li>多来源：多个"读取"节点并行，把各自内容拼成一个大输入</li>
+      <li>归纳：大模型节点 <code>sp</code> 里写死日报模板（"按 今日进展/风险/明日计划 三段输出"），这样每次格式统一</li>
+      <li>落地：发到指定群聊，或写入一篇共享文档</li>
+    </ul>
+  </div>
+
+  <h3>③ 文档批量格式转换</h3>
+  <div class="card">
+    <div class="chain">
+      <span class="tri">手动 / 新文件落入目录</span><span class="arrow">→</span>
+      <span class="node">列出待转换文件清单</span><span class="arrow">→</span>
+      <span class="node">循环：逐个转换</span><span class="arrow">→</span>
+      <span class="land">输出到目标目录</span>
+    </div>
+    <p style="margin:10px 0 0"><strong>扣子实现要点 + 一个重要提醒：</strong></p>
+    <ul>
+      <li>批量 = 一个<strong>循环 / 批处理节点</strong>，对清单里每个文件跑一遍转换逻辑</li>
+      <li>转换逻辑：用一个<strong>代码节点</strong>（写 python，调用转换库），或装一个转换<strong>插件</strong></li>
+      <li><strong>⚠️ 别误会</strong>：你之前那个本地 <code>doc2docx</code> 工具是靠本机 Word 转的，扣子云端<strong>摸不到你电脑上的 Word</strong>。所以云端版要改用"代码节点调用转换库（如 python-docx / LibreOffice 命令）"，不能把本地工具直接搬上去</li>
+      <li><strong>务实建议</strong>：你自己的 .doc 批量转 .docx，本地那个 <code>doc2docx</code> 工具其实最顺手；扣子这条自动化更适合"云端文件（已上传到云存储）批量转"的场景</li>
+    </ul>
+  </div>
+
+  <h2>三、通用五步搭法（三个都适用）</h2>
+  <table>
+    <thead><tr><th style="width:8%">步</th><th style="width:20%">动作</th><th>在扣子里怎么做</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>定触发器</td><td>编排页加「触发器」：定时 / 事件（新邮件、新文件…）</td></tr>
+      <tr><td>2</td><td>拉输入</td><td>连接器的"读取"节点，或 HTTP 节点调你自己的接口</td></tr>
+      <tr><td>3</td><td>接 AI 处理</td><td>复用任务二 summarize 节点，或新加大模型节点（写好 sp/up）</td></tr>
+      <tr><td>4</td><td>收尾落地</td><td>「写入数据表 / 知识库 / 发消息 / 写文档」节点</td></tr>
+      <tr><td>5</td><td>试运行 + 定时</td><td>先点试运行确认链路通，再开触发器让它自动跑</td></tr>
+    </tbody>
+  </table>
+
+  <h2>四、和任务二、任务三的关系（串联起来）</h2>
+  <ul>
+    <li><strong>任务二</strong>给了你"AI 处理"这个核心节点——三个自动化全都复用它</li>
+    <li><strong>任务三</strong>的 token 成本表，直接能算这三个自动化的月花费：<code>月成本 = 单次成本 × 月触发次数</code>。比如日报每天 1 次、30 天，把长文档那种"单次 0.04 元"×30 ≈ 1.2 元/月，几乎可忽略</li>
+  </ul>
+
+  <h2>五、五个坑</h2>
+  <table>
+    <thead><tr><th>坑</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>① 触发器没配就以为"自动化好了"</td><td>只搭工作流不算自动化，必须接触发器 + 开"启用"，否则永远等你手动点</td></tr>
+      <tr><td>② 邮件/消息权限没授权</td><td>连接器要你先登录授权，没授权读取节点会报错</td></tr>
+      <tr><td>③ 批量转换没设"失败跳过"</td><td>一个坏文件卡住会让整批失败；循环节点要配"出错继续"</td></tr>
+      <tr><td>④ 忘记算触发频率的成本</td><td>定时每 5 分钟跑一次，一天就 288 次——用任务三公式乘一下，别被累积吓到</td></tr>
+      <tr><td>⑤ 把本地工具当云端用</td><td>如③所说，本机 Word 云端摸不到；云端自动化要改用代码节点/插件</td></tr>
+    </tbody>
+  </table>
+
+  <div class="danger">
+    <strong>数据红线（和前几篇一致，这里最要命）</strong>：① 和 ② 会碰你的<strong>邮件、消息、公司内部资料</strong>。这些若走扣子纯云端，等于把内容交给云端处理——<strong>公司专有 / EMC 案例 / 客户信息不要喂</strong>。练手用个人无关内容。真要处理公司数据，要么本地部署（任务二提过的 Dify 本地），要么确认平台有合规数据协议。
+  </div>
+
+  <h2>六、自查三问（能答出即过关）</h2>
+  <ul>
+    <li>任务四和任务二的区别是什么？<br><span style="color:var(--muted)">答：多了"触发器"（什么时候跑）和"落地"（结果存哪）。中间 AI 处理一样。</span></li>
+    <li>日报自动化为什么"定时 18:00 + 固定模板"最稳？<br><span style="color:var(--muted)">答：定时保证每天跑；固定 sp 模板保证输出格式统一、可归档。</span></li>
+    <li>文档批量转换，为什么不能直接搬你本地 doc2docx 工具？<br><span style="color:var(--muted)">答：扣子云端访问不到你本机 Word；要用代码节点调转换库或装插件。</span></li>
+  </ul>
+
+  <div class="foot">
+    关联：本任务 = 任务二（核心节点）× 任务三（成本估算）的落地延伸。<br>
+    平台：扣子网页版（coze.cn）/ 扣子编程。触发器入口名称随 3.0 UI 微调，以你界面实际按钮为准（标 ❓ 处）。<br>
+    数据红线不变：邮件/公司/EMC 专有资料勿喂云端。
+  </div>
+
+</div>
+</body>
+</html>
