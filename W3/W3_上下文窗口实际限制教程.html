@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W3 任务五 · 上下文窗口的实际限制 · 教程</title>
+<style>
+  :root{
+    --bg:#f6f6f4; --panel:#ffffff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dd;
+    --accent:#2b6cb0; --ok:#1d9e75; --warn:#b7791f; --code:#f1efe8; --bad:#c0392b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141414; --panel:#1c1c1c; --text:#ececec; --muted:#a0a09a; --line:#2e2e2c;
+      --accent:#7fb3e8; --ok:#5bceaa; --warn:#e0b25c; --code:#242424; --bad:#e57373;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.75}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:23px;font-weight:600;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:8px}
+  h2{font-size:17px;font-weight:600;margin:34px 0 12px;padding-left:10px;border-left:3px solid var(--accent)}
+  h3{font-size:15px;font-weight:600;margin:18px 0 8px}
+  p{margin:8px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:right;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--muted);font-weight:500;font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px;
+    font-family:ui-monospace,Consolas,monospace}
+  pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto;font-size:12.5px;
+    font-family:ui-monospace,Consolas,monospace;line-height:1.6;margin:10px 0}
+  .ok{color:var(--ok);font-weight:600}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--accent);
+    color:var(--accent);margin-left:6px;vertical-align:2px}
+  .note{border-left:3px solid var(--warn);padding:2px 0 2px 14px;color:var(--muted);margin:14px 0;font-size:13.5px}
+  .danger{border-left:3px solid var(--bad);padding:2px 0 2px 14px;margin:14px 0;font-size:13.5px;color:var(--text)}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  .foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  svg{display:block;margin:14px auto;max-width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>W3 任务五 · 上下文窗口的实际限制<span class="pill">教程</span></h1>
+  <div class="sub">目标：理解"长文档怎么塞、超了怎么办"　·　记录日期：2026-10-25　·　数字以各模型官网为准（❓ 见文末）</div>
+
+  <h2>一、先搞懂：上下文窗口是什么</h2>
+  <p>模型每次回答时，面前摊着一份<strong>有大小限制的完整档案</strong>。这份档案里装着：系统规则（你的人设/prompt）+ 你们之前所有的对话 + 它之前调用工具读到的内容 + 本次你新发的输入 + 它正在"思考"的过程。</p>
+  <p>这份档案的容量上限，就是<strong>上下文窗口（context window）</strong>，用 token 计量。</p>
+  <div class="card">
+    <strong>硬件比喻（三个任选）：</strong>
+    <ul style="margin:6px 0">
+      <li><strong>一块 RAM / FIFO 缓冲区的深度</strong>——深度定了，超过就装不下</li>
+      <li><strong>示波器的屏幕</strong>——一屏只能显示那么多采样点，超出的历史直接滚出视野</li>
+      <li><strong>一张有字数限制的草稿纸</strong>——写满了，后面的内容要么挤掉前面的，要么写不进去</li>
+    </ul>
+  </div>
+  <p>还有一个反直觉但极重要的点：<strong>每问一轮，它都要把这份档案从头到尾重读一遍</strong>再回答。所以聊得越长 → 每轮要重发的档案越大 → 越慢、越贵、越容易在长尾处"变笨"。这正好接上你任务三算的成本：窗口越大、历史越长，token 越费钱。</p>
+
+  <svg viewBox="0 0 680 150" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>上下文窗口是一份有上限的档案，输入和输出都要在里面占位置</title>
+    <desc>外层框是窗口容量上限，内部被系统规则、历史对话、本次输入、思考、输出依次占满，剩余空间有限。</desc>
+    <rect x="40" y="28" width="600" height="74" rx="10" fill="var(--panel)" stroke="var(--accent)" stroke-width="1"/>
+    <text x="50" y="22" font-family="var(--font-sans)" font-size="12" fill="var(--muted)">上下文窗口容量（上限 = N 万 token）</text>
+    <rect x="50" y="48" width="60" height="34" rx="4" fill="#378ADD" opacity="0.25"/>
+    <text x="80" y="68" font-family="var(--font-sans)" font-size="11" fill="var(--text)" text-anchor="middle">系统</text>
+    <rect x="110" y="48" width="110" height="34" rx="4" fill="#5F5E5A" opacity="0.22"/>
+    <text x="165" y="68" font-family="var(--font-sans)" font-size="11" fill="var(--text)" text-anchor="middle">历史对话</text>
+    <rect x="220" y="48" width="160" height="34" rx="4" fill="#1D9E75" opacity="0.3"/>
+    <text x="300" y="68" font-family="var(--font-sans)" font-size="11" fill="var(--text)" text-anchor="middle">本次输入</text>
+    <rect x="380" y="48" width="40" height="34" rx="4" fill="#BA7517" opacity="0.3"/>
+    <text x="400" y="68" font-family="var(--font-sans)" font-size="11" fill="var(--text)" text-anchor="middle">思考</text>
+    <rect x="420" y="48" width="120" height="34" rx="4" fill="#534AB7" opacity="0.3"/>
+    <text x="480" y="68" font-family="var(--font-sans)" font-size="11" fill="var(--text)" text-anchor="middle">输出</text>
+    <rect x="540" y="48" width="90" height="34" rx="4" fill="none" stroke="var(--line)" stroke-dasharray="3 3"/>
+    <text x="585" y="68" font-family="var(--font-sans)" font-size="11" fill="var(--muted)" text-anchor="middle">剩余</text>
+    <text x="340" y="124" font-family="var(--font-sans)" font-size="12" fill="var(--muted)" text-anchor="middle">输入 + 思考 + 输出 都得塞进这同一个框——输入塞太满，就没地方给输出了</text>
+  </svg>
+
+  <h2>二、典型量级（2026-10 官方口径核验）</h2>
+  <table>
+    <thead><tr><th>模型</th><th>最大上下文</th><th>约等于中文</th></tr></thead>
+    <tbody>
+      <tr><td>豆包 Seed 2.1 Pro / Lite</td><td>25.6 万 起，部分档至 102.4 万</td><td>约 13 万 ~ 50 万字</td></tr>
+      <tr><td>DeepSeek V4 Pro / Flash</td><td>25.6 万 ~ 100 万</td><td>约 13 万 ~ 50 万字</td></tr>
+      <tr><td>Kimi K3 / Qwen 3.8 Max</td><td>约 105 万 / 113 万</td><td>约 50 万+ 字</td></tr>
+      <tr><td>ChatGPT / Claude Opus 5 / Gemini 3.1 Pro</td><td>约 100 万 ~ 105 万</td><td>约 50 万字</td></tr>
+      <tr><td>Llama 4.5 Scout（开源）</td><td>1000 万</td><td>约 500 万字（极端）</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    关键提醒：<strong>中文约 1 token ≈ 1~2 字</strong>。一篇几千字的技术文档，在任何一路模型里都"只占一格"，普通长文根本碰不到上限。<br>
+    真正让长文"白写"的，通常不是字数超限，而是下面第三节讲的<strong>三件事</strong>。数字会变、且按长度/档位分档，<strong>以你跑任务当天官网为准 ❓</strong>。
+  </div>
+
+  <h2>三、长文档"塞不进/塞进也白搭"的三个真相</h2>
+  <ul>
+    <li><strong>① 抓取侧单页截断</strong>：很多系统把网页/文档搬进来时，对单页长度有实际上限，超出的部分<strong>这轮根本没进档案</strong>，不是"以后爬"，是"没写进去"。</li>
+    <li><strong>② 切块后只取靠前候选</strong>：进来的长文会被切成块，问答时按相关度取 Top-K（常见 5~20 块）。关键句若落在后排块、相关度又不突出，照样进不了答案。</li>
+    <li><strong>③ 中段衰减（lost in the middle）</strong>：即使窗口够大，模型对<strong>长文本中间部分</strong>的有效注意力也会下降——两头强、中段弱。中间那些"承上启下"的过渡段，模型眼里信息密度接近零。</li>
+  </ul>
+  <div class="card">
+    <strong>可操作结论：</strong>单篇正文压到 <strong>约 3000 中文字（6000~8000 token）</strong>，把<strong>结论和前三句放在前 800 字内</strong>，比单纯纠结总字数有用得多。这也是为什么要把长文拆成多篇——不是为了缩短，是为了让每篇都能被完整吃进检索。
+  </div>
+
+  <h2>四、长文档怎么塞（四种办法，按需选）</h2>
+  <table>
+    <thead><tr><th style="width:18%">办法</th><th style="width:30%">怎么做</th><th>适用场景</th></tr></thead>
+    <tbody>
+      <tr><td>① 直接塞</td><td>全文直接进上下文（文档 &lt; 窗口的 60%）</td><td>短文档、单次问答，最省事</td></tr>
+      <tr><td>② 切块 (chunking)</td><td>切成不超过窗口的块，逐块处理再汇总</td><td>中等长文，本地脚本就能做</td></tr>
+      <tr><td>③ 检索增强 (RAG)</td><td>先建索引/向量库，用时<strong>只取相关片段</strong>进窗口</td><td>知识库、文档海量、要长期复用</td></tr>
+      <tr><td>④ 摘要前置 + 长窗口</td><td>先压成摘要再进窗口；或换 1M 窗口模型</td><td>要保全局观、且预算够</td></tr>
+    </tbody>
+  </table>
+  <div class="card" style="border-color:var(--ok)">
+    <strong>和你最相关的一条：</strong>你规划里的 <strong>EMC 案例库</strong>，本质就是方法 <strong>③ RAG</strong> 的最佳实践——22 条 EMC 案例先建向量库，问答时只把"最相关那几条"喂进窗口，既不超窗口，又避开中段衰减。<strong>方法 ③ 比硬塞全文，对你这个场景是降维打击。</strong>
+  </div>
+
+  <h2>五、超了怎么办（超限的处理 + 自己怎么防）</h2>
+  <h3>平台怎么处理超限</h3>
+  <ul>
+    <li><strong>截断</strong>：不同平台丢的位置不同——有的丢<strong>最早</strong>的历史（保留最新），有的丢<strong>中间</strong>，有的只保留首尾。这会让"中段衰减"雪上加霜。</li>
+    <li><strong>直接报错</strong>：不少 API 超出上限直接返回 400，调用失败。</li>
+    <li><strong>自动压缩</strong>：少数平台把超长历史自动摘要压缩，但压缩会丢细节。</li>
+  </ul>
+  <h3>你自己必须做的四件事</h3>
+  <ul>
+    <li><strong>估算 token</strong>：用任务三的方法（中文 ×1.5 粗估，或看 API 返回的 <code>usage</code>）先算，别凭感觉。</li>
+    <li><strong>留余量</strong>：窗口只用到 <strong>60~70%</strong>，别顶满——还要给输出留位置（看第一节那张图）。</li>
+    <li><strong>关键信息放头尾</strong>：结论、约束、最关键的指令写在前 800 字和结尾，避开中间遗忘区。</li>
+    <li><strong>监控 usage</strong>：调用后看 <code>prompt_tokens / completion_tokens / total_tokens</code>，超阈值就切 RAG 或切块。</li>
+  </ul>
+
+  <h2>六、和前几篇串起来</h2>
+  <ul>
+    <li><strong>任务一（API 主线）</strong>：上下文窗口限制直接卡在"发请求"那一步——请求体（输入）大小受窗口约束。</li>
+    <li><strong>任务三（token 成本）</strong>：长文档 = 输入 token 暴涨（还可能触发分档更贵），窗口越大越贵。算月成本时别漏了历史对话的累积。</li>
+    <li><strong>任务四③（文档批量转换）</strong>：批量处理长文档的工程化，正是"切块 / RAG"的前置步骤。</li>
+    <li><strong>你的 EMC 案例库目标</strong>：= 方法③ RAG 的落地，完美避开本篇所有坑。</li>
+  </ul>
+
+  <h2>七、自查三问（能答出即过关）</h2>
+  <ul>
+    <li>为什么说"普通长文碰不到窗口上限，却还是白写"？<br><span style="color:var(--muted)">答：因为瓶颈常是抓取截断、切块只取 Top-K、中段衰减，不是字数超限。</span></li>
+    <li>窗口 25 万 token，为什么不能把 25 万全用来放输入？<br><span style="color:var(--muted)">答：窗口 = 系统+历史+输入+思考+输出 的总和；输入塞满就没地方放输出，且历史越长越贵越慢。</span></li>
+    <li>EMC 案例库为什么该用 RAG 而不是全文硬塞？<br><span style="color:var(--muted)">答：只取最相关片段进窗口，既不超窗口，又避开中段衰减，还能长期复用、成本可控。</span></li>
+  </ul>
+
+  <div class="foot">
+    数据口径：上下文窗口数字取自 2026-10-24 各厂商公开口径核验（来源含多家模型对比与截断点指南），<strong>厂商会调参、且按输入长度分档，以你跑任务当天官网为准 ❓</strong>。<br>
+    关联：W3 任务一/三/四 的成本与自动化链路；长期目标 EMC 案例库 = RAG 最佳实践。<br>
+    数据红线不变：EMC/公司专有语料喂云端模型须谨慎，优先本地或合规部署。
+  </div>
+
+</div>
+</body>
+</html>

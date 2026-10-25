@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新国标大点位控制器 · 上市缺陷闭环系统 · 方案建议书</title>
+<style>
+  :root{
+    --bg:#f6f6f4; --panel:#ffffff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dd;
+    --accent:#2b6cb0; --ok:#1d9e75; --warn:#b7791f; --code:#f1efe8; --bad:#c0392b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141414; --panel:#1c1c1c; --text:#ececec; --muted:#a0a09a; --line:#2e2e2c;
+      --accent:#7fb3e8; --ok:#5bceaa; --warn:#e0b25c; --code:#242424; --bad:#e57373;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.75}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:24px;font-weight:600;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:10px}
+  h2{font-size:18px;font-weight:600;margin:36px 0 12px;padding-left:10px;border-left:3px solid var(--accent)}
+  h3{font-size:15.5px;font-weight:600;margin:20px 0 8px;color:var(--text)}
+  h4{font-size:14px;font-weight:600;margin:14px 0 6px;color:var(--muted)}
+  p{margin:8px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0}
+  .key{border-color:var(--accent)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12.5px;background:var(--code)}
+  tr:last-child td{border-bottom:none}
+  td.n{white-space:nowrap}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:12.5px;
+    font-family:ui-monospace,Consolas,monospace}
+  .note{border-left:3px solid var(--warn);padding:2px 0 2px 14px;color:var(--muted);margin:14px 0;font-size:13.5px}
+  .danger{border-left:3px solid var(--bad);padding:8px 0 8px 14px;margin:14px 0;font-size:13.5px;color:var(--text)}
+  .okbox{border-left:3px solid var(--ok);padding:8px 0 8px 14px;margin:14px 0;font-size:13.5px}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--accent);
+    color:var(--accent);margin-left:6px;vertical-align:2px}
+  .p-w{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--warn);
+    color:var(--warn);margin-left:6px;vertical-align:2px}
+  .p-b{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--bad);
+    color:var(--bad);margin-left:6px;vertical-align:2px}
+  .req{color:var(--bad);font-weight:600}
+  .foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 20px;margin:16px 0;
+    font-size:13.5px;columns:2;column-gap:28px}
+  .toc a{color:var(--accent);text-decoration:none;display:block;margin:3px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>新国标大点位控制器<br>上市缺陷闭环系统 · 方案建议书</h1>
+  <div class="sub">版本 v1.0　·　编制日期 2026-10-26　·　状态：待评审　·　办公载体：企业微信</div>
+
+  <div class="toc">
+    <a href="#s1">一、背景与目标</a>
+    <a href="#s2">二、总体架构原则</a>
+    <a href="#s3">三、生命周期五阶段与出口标准</a>
+    <a href="#s4">四、易漏环节清单（重点）</a>
+    <a href="#s5">五、字段字典（强制项已标）</a>
+    <a href="#s6">六、严重度定义与响应时限</a>
+    <a href="#s7">七、AI 自动化节点清单</a>
+    <a href="#s8">八、AI 边界红线</a>
+    <a href="#s9">九、平台选型与落地路线</a>
+    <a href="#s10">十、度量指标（KPI）</a>
+    <a href="#s11">十一、风险与对策</a>
+    <a href="#s12">十二、下一步行动清单</a>
+  </div>
+
+  <h2 id="s1">一、背景与目标</h2>
+  <div class="card">
+    <p><strong>现状：</strong>新国标大点位控制器上市后，售后端与产线端会持续回流产品问题。目前缺乏统一的登记、追踪与关闭载体，问题散落在微信群、电话、邮件与个人表格中，导致：定位靠回忆、责任难界定、对策难沉淀、同类问题重复发生。</p>
+    <p><strong>目标：</strong>建立一套「登记 → 分析 → 对策 → 验证 → 横展 → 关闭 → 防复发」的闭环系统，做到 <strong>每条缺陷有编号、有责任人、有出口标准、有沉淀</strong>。</p>
+    <p><strong>约束：</strong>公司办公载体为<strong>企业微信</strong>；系统需贴合现有沟通习惯，降低一线填报阻力；公司真实数据受数据主权约束。</p>
+  </div>
+
+  <h2 id="s2">二、总体架构原则</h2>
+  <div class="card key">
+    <h4>核心原则：状态机管「活」，工作流管「活之间的机器活」</h4>
+    <p><strong>不建议</strong>用一个巨大的工作流承载整个生命周期。原因：缺陷闭环跨人（售后/产线/研发/供应商）、跨地、常达数周，中间大量是「等人决策」；工作流引擎擅长的是<strong>确定的、机器可执行的</strong>片段。</p>
+    <ul>
+      <li><strong>上层 = 工单状态机</strong>：定义 5 个阶段与状态；由人推动；每个状态有明确责任人 + 出口标准</li>
+      <li><strong>下层 = 事件驱动的自动化工作流</strong>：挂在每次状态转换点上，做机器能代劳的确定动作</li>
+      <li><strong>AI 层 = 助理而非决策者</strong>：只做 5 件确定的事（见第七章），且不触碰责任判定</li>
+      <li><strong>知识层 = 缺陷案例库</strong>：关闭时入库，供下次检索（<strong>ROI 最高的一块</strong>）</li>
+    </ul>
+  </div>
+  <div class="okbox">
+    <strong>流程框架建议：直接采用 8D + FRACAS 行业标准</strong>，不自造流程。理由：跨部门有共识基础、便于追责与体系审核、客户审厂时能直接用。<br>
+    本方案五阶段与 8D 的映射：<strong>D1-D2</strong>（团队/问题描述）→ 受理登记；<strong>D3</strong>（围堵）→ 定级围堵；<strong>D4-D5</strong>（根因/永久对策）→ 根因对策；<strong>D6-D7</strong>（实施/预防再发）→ 验证横展；<strong>D8</strong>（结案）→ 关闭监控。
+  </div>
+
+  <h2 id="s3">三、生命周期五阶段与出口标准</h2>
+  <table>
+    <thead><tr><th style="width:12%">阶段</th><th style="width:22%">主要活动</th><th style="width:16%">负责人建议</th><th>出口标准（Gate，不满足不得进入下一阶段）</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="n"><strong>① 受理登记</strong></td>
+        <td>统一入口收单；AI 预填结构化字段；人工确认后入库并赋予缺陷编号</td>
+        <td>质量部（统一受理）<br>发现人（提供原始信息）</td>
+        <td>字段齐全（含<strong>固件版本号 / 批次 / SN</strong>）；附件齐备（照片·波形·日志）；严重度已初判</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>② 定级围堵</strong></td>
+        <td>严重度定级；<strong>先止血</strong>：库存隔离 / 在制品拦截 / 客户端更换 / 固件回滚；判断是否需上报或召回评估</td>
+        <td>质量经理 + 研发主管会签<br>（S/A 级须 24h 内）</td>
+        <td>围堵动作已执行并有证据；影响范围已锁定；<strong>是否上报已由人决策并记录</strong></td>
+      </tr>
+      <tr>
+        <td class="n"><strong>③ 根因对策</strong></td>
+        <td>根因分析（5Why / 鱼骨 / FTA / 失效复现）；AI 推荐相似历史案例；制定永久对策；开 ECN / SCAR</td>
+        <td>研发（硬件·固件·结构）主导<br>工艺 / 供应商参与</td>
+        <td>根因有证据支撑；对策已评审；<strong>ECN 或 SCAR 单号已生成</strong>（如需）</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>④ 验证横展</strong></td>
+        <td>有效性验证（台架 / 老化 / <strong>EMC 复测</strong> / 环境试验 / 小批试产 / 现场试点）；标准化横展更新</td>
+        <td>验证：测试·可靠性工程师<br>横展：研发工程师 + 质量监督</td>
+        <td>验证通过且样本量与判定记录充分；<strong>横展文件已更新并有佐证</strong></td>
+      </tr>
+      <tr>
+        <td class="n"><strong>⑤ 关闭监控</strong></td>
+        <td>关闭评审签字；案例入库；进入复发监控期（建议 3~6 个月）</td>
+        <td>质量经理把关<br>指定人做复发监控</td>
+        <td>监控期内无复发，方可终态关闭；<strong>复发则自动重开并回溯原根因</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:13.5px">状态取值建议：<code>待受理 / 分析中 / 对策中 / 验证中 / 待关闭 / 已关闭 / 已撤销 / 已复发重开</code></p>
+
+  <h2 id="s4">四、易漏环节清单（重点）</h2>
+  <p>以下环节常被忽略，但恰恰决定这套系统「是摆设还是真有用」：</p>
+  <table>
+    <thead><tr><th style="width:20%">易漏环节</th><th style="width:34%">为什么必须有</th><th>漏掉的后果</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>受理即结构化</strong></td><td>源头数据质量决定后续一切分析上限</td><td>一句口语描述、无批次无照片，事后无法定位，AI 也无从分析</td></tr>
+      <tr><td class="n"><strong>供应商端 SCAR</strong></td><td>来料/外协问题必须追责到对方并要求其纠正</td><td>内部反复整改，供应商端未动，下批照样出</td></tr>
+      <tr><td class="n"><strong>设计变更 ECN</strong></td><td>改了必须有据可查、版本受控</td><td>现场版本混乱，改过的问题在新批次又冒出来</td></tr>
+      <tr><td class="n"><strong>认证 / 法规变更报备</strong><span class="p-b">❓ 待确认</span></td><td>上市后改变更或关键元器件，可能触发向认证机构报备 / 补充型式试验的义务</td><td><strong>合规级风险</strong>：可能导致证书失效、市场监管风险，远大于效率损失</td></tr>
+      <tr><td class="n"><strong>标准化横展</strong></td><td>把单次经验固化进规范，并推及同系列/其他产品</td><td>只修这一台，同系列其他产品原地中招</td></tr>
+      <tr><td class="n"><strong>复发追踪</strong></td><td>关闭不等于结束</td><td>三个月后原地复发，且无人知道曾经发生过</td></tr>
+      <tr><td class="n"><strong>指标复盘</strong></td><td>Pareto / 失效率 / 外部失败成本 / 供应商评分</td><td>年底汇报拍脑袋，拿不出改进依据</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>❓ 需你与法规/质量确认的事项：</strong>我不掌握本款「新国标大点位控制器」具体适用的新国标编号与强制性认证类别（如消防认证 / CCC / 计量器具型式批准等）。<strong>请确认：设计变更或关键元器件变更后，是否需要向认证机构报备或重做部分型式试验？</strong> 若是，则该字段须设为强制并纳入 Phase ③ 出口标准。这条漏了是合规风险，不是流程瑕疵。
+  </div>
+
+  <h2 id="s5">五、字段字典</h2>
+  <p><span class="req">*</span> = 强制必填。建议先按此表在企微表单 / 多维表格中建表，<strong>字段定稿前不要开发任何系统</strong>。</p>
+
+  <h4>A. 标识与追溯</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:8%">必填</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>缺陷编号</td><td>自动</td><td class="n"><span class="req">*</span></td><td>如 <code>DEF-2026-0012</code>，全局唯一，贯穿全生命周期</td></tr>
+      <tr><td>来源渠道</td><td>单选</td><td class="n"><span class="req">*</span></td><td>售后 / 产线 / 来料 / 测试 / 市场 / 客诉</td></tr>
+      <tr><td>报告人 · 部门</td><td>成员</td><td class="n"><span class="req">*</span></td><td>便于回访补信息</td></tr>
+      <tr><td>发现环节</td><td>单选</td><td class="n"><span class="req">*</span></td><td>来料 / 过程 / 终测 / 老化 / 安装调试 / 客户使用</td></tr>
+      <tr><td>产品型号</td><td>单选</td><td class="n"><span class="req">*</span></td><td>绑定到具体型号字典</td></tr>
+      <tr><td>批次号</td><td>文本</td><td class="n"><span class="req">*</span></td><td>批次性问题的唯一抓手</td></tr>
+      <tr><td>序列号 SN</td><td>文本</td><td class="n"><span class="req">*</span></td><td>单台问题定位；现场无法获取时注明原因</td></tr>
+      <tr><td><strong>固件版本号</strong></td><td>文本</td><td class="n"><span class="req">*</span></td><td><strong>本表最关键的强制项</strong>：控制器类缺陷大量与固件强相关，无版本号则无法归因</td></tr>
+      <tr><td>硬件 / PCB 版本</td><td>文本</td><td class="n"><span class="req">*</span></td><td>与固件版本配合定位</td></tr>
+      <tr><td>运行时长 / 安装时长</td><td>数值</td><td class="n">否</td><td>用于早期失效率、浴盆曲线分析</td></tr>
+    </tbody>
+  </table>
+
+  <h4>B. 缺陷描述</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:8%">必填</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>现象描述（原话）</td><td>长文本</td><td class="n"><span class="req">*</span></td><td><strong>保留原始口语，不得改写</strong>，避免信息在转述中丢失</td></tr>
+      <tr><td>结构化现象</td><td>长文本</td><td class="n"><span class="req">*</span></td><td>AI 提取 + 人工确认后的规范表述</td></tr>
+      <tr><td>附件</td><td>文件/图片</td><td class="n"><span class="req">*</span></td><td>照片 / 波形 / 日志 / 视频；硬件问题几乎全靠证据</td></tr>
+      <tr><td>复现条件</td><td>文本</td><td class="n">否</td><td>能否稳定复现，决定根因分析难度</td></tr>
+      <tr><td>发生频次 / 台数</td><td>数值</td><td class="n"><span class="req">*</span></td><td>单台 / 多台 / 批次性</td></tr>
+      <tr><td>已出货影响范围</td><td>文本</td><td class="n">否</td><td>涉及台数与区域，用于召回/围堵决策</td></tr>
+    </tbody>
+  </table>
+
+  <h4>C. 定级与围堵</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:8%">必填</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>严重度</td><td>单选</td><td class="n"><span class="req">*</span></td><td>S/A/B/C，定义见第六章</td></tr>
+      <tr><td>是否安全相关</td><td>是否</td><td class="n"><span class="req">*</span></td><td><strong>是 → 强制走最高优先级</strong>（人身安全 / 火灾 / 触电）</td></tr>
+      <tr><td>紧急围堵措施</td><td>长文本</td><td class="n"><span class="req">*</span>（S/A）</td><td>库存隔离 / 停线 / 客户端更换 / 固件回滚</td></tr>
+      <tr><td>围堵完成日期</td><td>日期</td><td class="n">否</td><td>用于统计响应速度</td></tr>
+      <tr><td>是否需上报 / 召回评估</td><td>是否</td><td class="n"><span class="req">*</span></td><td><strong>仅人工判定</strong>，AI 不得代判（见第八章）</td></tr>
+    </tbody>
+  </table>
+
+  <h4>D. 根因分析</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:8%">必填</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>根因分类</td><td>单选</td><td class="n"><span class="req">*</span></td><td>设计(硬件) / 设计(固件软件) / 来料 / 工艺 / 误用 / 待定</td></tr>
+      <tr><td>责任方</td><td>单选</td><td class="n"><span class="req">*</span></td><td>硬件研发 / 固件 / 结构 / 工艺 / 供应商 / 客户</td></tr>
+      <tr><td>分析方法</td><td>多选</td><td class="n">否</td><td>5Why / 鱼骨 / FTA / 失效复现</td></tr>
+      <tr><td>根因描述</td><td>长文本</td><td class="n"><span class="req">*</span></td><td>须写明因果链与证据</td></tr>
+      <tr><td>相似历史缺陷编号</td><td>关联</td><td class="n">否</td><td>由 AI 检索推荐，<strong>工程师选定或否决</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h4>E. 对策</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:8%">必填</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>围堵措施（临时）</td><td>长文本</td><td class="n">否</td><td>止血用的短期手段</td></tr>
+      <tr><td>永久对策</td><td>长文本</td><td class="n"><span class="req">*</span></td><td>根治手段</td></tr>
+      <tr><td>对策类型</td><td>多选</td><td class="n"><span class="req">*</span></td><td>改设计 / 改固件 / 改工艺 / 换料 / 改检验 / 培训 / 更新文件</td></tr>
+      <tr><td>ECN 单号</td><td>文本</td><td class="n"><span class="req">*</span>（若改设计/固件）</td><td>变更必须有据可查</td></tr>
+      <tr><td><strong>是否触发认证/法规变更报备</strong></td><td>是否</td><td class="n"><span class="req">*</span></td><td><span class="p-b">❓</span> 需法规/质量先给出判定规则，再落到表单强制校验</td></tr>
+      <tr><td>SCAR 单号</td><td>文本</td><td class="n"><span class="req">*</span>（若供应商）</td><td>供应商纠正措施要求，闭环到对方</td></tr>
+    </tbody>
+  </table>
+
+  <h4>F. 验证</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:8%">必填</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>验证方式</td><td>多选</td><td class="n"><span class="req">*</span></td><td>台架 / 老化 / <strong>EMC 复测</strong> / 环境试验 / 小批试产 / 现场试点</td></tr>
+      <tr><td>样本量与结果</td><td>文本</td><td class="n"><span class="req">*</span></td><td>样本量须写明，否则「通过」无意义</td></tr>
+      <tr><td>验证结论</td><td>单选</td><td class="n"><span class="req">*</span></td><td>通过 / 不通过 / 有条件通过</td></tr>
+      <tr><td>验证人</td><td>成员</td><td class="n"><span class="req">*</span></td><td>独立验证人，避免自己验证自己</td></tr>
+    </tbody>
+  </table>
+
+  <h4>G. 关闭与横展</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:8%">必填</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>标准化横展项</td><td>多选</td><td class="n"><span class="req">*</span></td><td>DFMEA / PFMEA / 设计规范 / 检验标准 / 作业指导书 / BOM 优选清单 / 测试用例 / 服务通告</td></tr>
+      <tr><td>横展完成确认</td><td>是否</td><td class="n"><span class="req">*</span></td><td>须附更新后的文件佐证</td></tr>
+      <tr><td>关闭日期</td><td>日期</td><td class="n"><span class="req">*</span></td><td>进入监控期的起点</td></tr>
+      <tr><td>关闭评审签字</td><td>成员</td><td class="n"><span class="req">*</span></td><td>质量经理把关</td></tr>
+      <tr><td>复发监控到期日</td><td>日期</td><td class="n"><span class="req">*</span></td><td>建议 3~6 个月</td></tr>
+      <tr><td>是否复发</td><td>是否</td><td class="n">否</td><td>复发则自动重开并回溯原根因</td></tr>
+    </tbody>
+  </table>
+
+  <h4>H. 状态与时效（系统自动维护）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:8%">必填</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>当前状态</td><td>单选</td><td class="n">自动</td><td>见第三章取值表</td></tr>
+      <tr><td>当前责任人</td><td>成员</td><td class="n">自动</td><td>随阶段流转</td></tr>
+      <tr><td>各阶段时间戳</td><td>日期</td><td class="n">自动</td><td>用于统计停留时长</td></tr>
+      <tr><td>超期天数</td><td>计算</td><td class="n">自动</td><td>超过响应时限即触发催办（AI 节点 A5）</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s6">六、严重度定义与响应时限</h2>
+  <table>
+    <thead><tr><th style="width:10%">等级</th><th style="width:30%">定义</th><th style="width:20%">首响时限</th><th>处置要求</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>S 致命</strong></td><td>涉及人身安全（触电 / 火灾）；主要功能丧失且无替代方案；批量性失效</td><td class="n"><strong>24 小时内</strong></td><td>立即围堵；<strong>上报最高层并评估召回</strong>；每日跟踪</td></tr>
+      <tr><td class="n"><strong>A 严重</strong></td><td>主要功能失效；导致停线或批量返工；客户强烈投诉</td><td class="n"><strong>48 小时内</strong></td><td>围堵 + 根因并行；每周复盘</td></tr>
+      <tr><td class="n"><strong>B 一般</strong></td><td>部分功能异常，存在可接受替代方案</td><td class="n">5 个工作日内</td><td>纳入常规排期</td></tr>
+      <tr><td class="n"><strong>C 轻微</strong></td><td>外观 / 体验 / 文档类，不影响功能</td><td class="n">按需排期</td><td>可合并批处理</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:13.5px">严重度定义须在上线前与售后、生产、研发三方对齐，避免"都报紧急"导致系统失效。</p>
+
+  <h2 id="s7">七、AI 自动化节点清单</h2>
+  <p>AI 在本系统中<strong>只做 5 件确定的事</strong>，每件都明确「触发时机 → 输入 → 动作 → 人工确认点」：</p>
+  <table>
+    <thead><tr><th style="width:6%">编号</th><th style="width:14%">节点</th><th style="width:14%">触发时机</th><th style="width:24%">AI 做什么</th><th style="width:20%">人工确认点</th><th>边界</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="n"><strong>A1</strong></td>
+        <td>结构化提取</td><td>缺陷登记提交时</td>
+        <td>从口语描述+附件中抽取：型号 / 批次 / SN / 固件版本 / 现象 / <em>建议</em>严重度，输出预填字段 + 置信度</td>
+        <td><strong>必须人工确认后才可正式入库</strong></td>
+        <td>不得自行定级</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>A2</strong></td>
+        <td>相似案例检索（RAG）</td><td>进入根因分析时</td>
+        <td>检索历史缺陷库 / EMC 案例库，返回 Top-N 相似案例及其根因与对策</td>
+        <td>工程师选定或否决</td>
+        <td>仅作候选，不作结论</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>A3</strong></td>
+        <td>对策草稿生成</td><td>根因确定后</td>
+        <td>起草 8D 报告初稿 / 围堵建议清单</td>
+        <td><strong>必须由工程师改写并签字</strong></td>
+        <td>不得直接对外发出</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>A4</strong></td>
+        <td>知识入库</td><td>缺陷关闭时</td>
+        <td>生成规范化案例摘要、自动打标签、写入向量库</td>
+        <td>质量经理确认关闭后才入库</td>
+        <td>敏感字段须脱敏后入云端版本</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>A5</strong></td>
+        <td>到期催办 / 周报</td><td>每日定时</td>
+        <td>扫描在办缺陷 → 超期提醒、周报汇总、Pareto 统计</td>
+        <td>无需确认（通知类）</td>
+        <td><strong>仅通知，不得自动改状态</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="okbox">
+    <strong>ROI 判断：</strong>A2（相似案例检索）价值最高——它把你现有的 EMC / 硬件经验变成可持续复利的资产，直接缩短根因定位时间，也是这套系统区别于普通工单系统的地方。建议优先投入。
+  </div>
+
+  <h2 id="s8">八、AI 边界红线</h2>
+  <div class="danger">
+    <strong>三条不可逾越：</strong>
+    <ol style="margin:6px 0;padding-left:20px">
+      <li><strong>AI 不得判定安全 / 召回级缺陷的责任结论</strong>——必须人工签字。这是对公司、对客户、也是对你自己的保护。</li>
+      <li><strong>AI 不得自动变更缺陷状态或自动关闭工单</strong>——只能提醒。</li>
+      <li><strong>AI 草稿不得直接对外</strong>（对客户 / 对供应商）——必须经责任人确认发出。</li>
+    </ol>
+  </div>
+
+  <h2 id="s9">九、平台选型与落地路线</h2>
+  <div class="danger">
+    <strong>数据主权红线（优先级最高）：</strong>本系统数据是<strong>真实的公司资产</strong>，含型号 / 批次 / 供应商 / 失效率 / 成本。<strong>禁止流入扣子等第三方公共云端 AI 平台</strong>。数据应留存于企业微信 / 腾讯云生态内，或本地 / 私有化部署。第三方云端平台仅可用于练手演示，且必须使用假数据。
+  </div>
+  <table>
+    <thead><tr><th style="width:10%">阶段</th><th style="width:24%">做什么</th><th style="width:24%">用什么</th><th>产出 / 验收</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="n"><strong>Phase 0</strong></td>
+        <td>钉死字段字典 + 8D 表单 + 严重度定义</td>
+        <td>本方案文档 + 跨部门评审会</td>
+        <td>字段字典定稿、三方对严重度定义签字</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>Phase 1</strong><span class="pill">最推荐先做</span></td>
+        <td><strong>零开发跑真实数据</strong>：一个入口收单 + 一张表当库 + 人工流转</td>
+        <td>企业微信表单/收集表 <span class="p-w">❓</span> + 腾讯文档 / 多维表格</td>
+        <td>连续 2 周、≥20 条真实缺陷入库；字段够用、一线愿意填</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>Phase 2</strong></td>
+        <td>加轻量自动化：超期催办、周报汇总、闭环提醒</td>
+        <td>企业微信群机器人 Webhook，或本地 n8n（轻量）</td>
+        <td>催办能自动发出，超期率下降</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>Phase 3</strong></td>
+        <td>上 AI 增强层：相似案例检索 + 结构化提取 + 草稿生成</td>
+        <td><strong>本地 / 私有化 Dify</strong> + 缺陷案例向量库</td>
+        <td>A2 检索命中率可用；A1 字段预填人工修正率低</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>Phase 4</strong></td>
+        <td>质量看板与指标复盘</td>
+        <td>多维表格 / BI 看板</td>
+        <td>Pareto、闭环周期、复发率可视</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>❓ 企微能力待确认：</strong>我不掌握贵司企业微信已开通的具体能力（是否可用自建应用、是否有「汇报/审批」高阶表单、管理员是否开放了回调权限）。<strong>Phase 1 一律按"零开发、只用表单 + 文档"规划</strong>，若具备自建应用能力，Phase 2 以后的自动化深度可再评估。请先与 IT / 企微管理员确认。
+  </div>
+
+  <h2 id="s10">十、度量指标（KPI）</h2>
+  <table>
+    <thead><tr><th style="width:26%">指标</th><th style="width:30%">定义</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td>平均闭环周期 MTTC</td><td>从登记到关闭的平均天数</td><td>衡量整体效率；按严重度分层看</td></tr>
+      <tr><td>超期率</td><td>超过响应时限未推进的缺陷占比</td><td>衡量过程管控，触发催办机制</td></tr>
+      <tr><td><strong>复发率</strong></td><td>关闭后监控期内再次发生的占比</td><td><strong>衡量对策是否真有效（最关键）</strong></td></tr>
+      <tr><td>根因分类 Pareto</td><td>按设计/固件/来料/工艺分布</td><td>指引改进资源投向</td></tr>
+      <tr><td>外部失败成本</td><td>保修 / 返工 / 索赔 / 差旅合计</td><td>量化质量损失，向管理层要资源</td></tr>
+      <tr><td>供应商评分</td><td>按 SCAR 数量与闭环质量评分</td><td>供应商管理与采购决策依据</td></tr>
+      <tr><td>AI 结构化修正率</td><td>A1 预填字段被人工改动的比例</td><td>衡量 AI 辅助质量，决定是否调优</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s11">十一、风险与对策</h2>
+  <table>
+    <thead><tr><th style="width:26%">风险</th><th style="width:36%">表现</th><th>对策</th></tr></thead>
+    <tbody>
+      <tr><td>一线不愿填</td><td>字段太多，售后/产线嫌麻烦，绕开系统</td><td>Phase 1 只留<strong>最小必填集</strong>；其余字段由后续环节补；AI 预填降低负担</td></tr>
+      <tr><td>严重度通胀</td><td>所有缺陷都报 S/A，失去分级意义</td><td>严重度定义三方签字；<strong>由质量部复核的最终定级权</strong></td></tr>
+      <tr><td>僵尸工单</td><td>登记后无人推进，长期停留</td><td>A5 自动催办；周会过一遍在办清单；超期计入部门考核</td></tr>
+      <tr><td>未接 ECN/SCAR</td><td>改了但没留痕，后续追溯断链</td><td>设为出口标准硬校验，不满足不得流转</td></tr>
+      <tr><td>认证合规风险 <span class="p-b">❓</span></td><td>改关键件未报备</td><td>字段强制 + 法规/质量给出判定规则；<strong>上线前必须明确</strong></td></tr>
+      <tr><td>数据泄露</td><td>真实数据进了第三方云端</td><td>见第九章红线；技术选型上一票否决</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s12">十二、下一步行动清单</h2>
+  <div class="card key">
+    <ol style="margin:6px 0;padding-left:22px">
+      <li><strong>本周：</strong>拿本方案与质量、售后、生产、研发四方开会，对齐<strong>严重度定义</strong>与<strong>字段必填集</strong>（Phase 0）</li>
+      <li><strong>本周：</strong>向法规/质量确认<strong>认证变更报备规则</strong> <span class="p-b">❓</span>，确定后写入表单强制校验</li>
+      <li><strong>本周：</strong>与 IT / 企微管理员确认可用能力（表单 / 自建应用 / 回调） <span class="p-w">❓</span></li>
+      <li><strong>下周：</strong>按第五章字段字典在企微表单建表，<strong>零开发启动</strong>，跑 2 周真实数据</li>
+      <li><strong>两周后复盘：</strong>看有多少字段没人填、多少缺陷卡在某环节，再决定是否上 Phase 2 自动化</li>
+    </ol>
+  </div>
+  <div class="okbox">
+    <strong>一句话总结这份方案：</strong>这件事里 AI 不是主角，<strong>干净的字段字典 + 8D 流程纪律</strong>才是。先用零开发把真实数据跑起来，比先搭一个漂亮但没人用的系统重要十倍。
+  </div>
+
+  <div class="foot">
+    本建议书为内部评审稿 v1.0（2026-10-26）。标注 <span class="p-b">❓</span> 处为需嘉哥或相关部门确认的事项，涉及强制性标准合规与企微平台能力，<strong>未经确认不得作为最终设计依据</strong>。<br>
+    流程框架参考 8D 与 FRACAS 行业通用做法；AI 节点设计参考 FRACAS + RAG 检索增强思路；平台选型遵循"数据不出企业边界"原则。
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W3 任务六 · 看懂 API 调用骨架 · 教程</title>
+<style>
+  :root{
+    --bg:#f6f6f4; --panel:#ffffff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dd;
+    --accent:#2b6cb0; --ok:#1d9e75; --warn:#b7791f; --code:#f1efe8; --bad:#c0392b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141414; --panel:#1c1c1c; --text:#ececec; --muted:#a0a09a; --line:#2e2e2c;
+      --accent:#7fb3e8; --ok:#5bceaa; --warn:#e0b25c; --code:#242424; --bad:#e57373;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.75}
+  .wrap{max-width:920px;margin:0 auto}
+  h1{font-size:23px;font-weight:600;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:8px}
+  h2{font-size:17px;font-weight:600;margin:34px 0 12px;padding-left:10px;border-left:3px solid var(--accent)}
+  h3{font-size:15px;font-weight:600;margin:18px 0 8px}
+  p{margin:8px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px;
+    font-family:ui-monospace,Consolas,monospace}
+  pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto;font-size:12.5px;
+    font-family:ui-monospace,Consolas,monospace;line-height:1.6;margin:10px 0}
+  .ok{color:var(--ok);font-weight:600}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--accent);
+    color:var(--accent);margin-left:6px;vertical-align:2px}
+  .note{border-left:3px solid var(--warn);padding:2px 0 2px 14px;color:var(--muted);margin:14px 0;font-size:13.5px}
+  .danger{border-left:3px solid var(--bad);padding:2px 0 2px 14px;margin:14px 0;font-size:13.5px;color:var(--text)}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  .foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:5px;background:var(--accent);color:#fff;margin-right:6px;vertical-align:1px}
+  .tag.k{background:var(--bad)}
+  .tag.p{background:var(--warn)}
+  svg{display:block;margin:14px auto;max-width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>W3 任务六 · 看懂 API 调用骨架<span class="pill">教程</span></h1>
+  <div class="sub">目标：发请求 → 拿 JSON → 取字段 → 写文件；能自己改 API key 和参数跑通　·　记录日期：2026-10-25</div>
+
+  <div class="card" style="border-color:var(--accent)">
+    <strong>任务六和任务一是什么关系？</strong> 同一根主线，但这次要求变了：<strong>不是"看懂"，是"能改 key、改参数、真跑通"</strong>。
+    因为这条四步骨架 = 你以后读<strong>任何</strong> AI 脚本的通用模板——无论它调的是 DeepSeek、OpenAI、还是你自家服务，骨架都一样，变的只是 URL、key 和参数。
+  </div>
+
+  <h2>一、四步骨架（硬件比喻，和任务一一致）</h2>
+  <svg viewBox="0 0 680 130" width="100%" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>API 调用四步骨架：发请求、拿 JSON、取字段、写文件</title>
+    <desc>四个节点串成流水线，第一个节点上标出要改的两样：API key 和参数。</desc>
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+    <g>
+      <rect x="43" y="44" width="135" height="52" rx="8" fill="var(--panel)" stroke="#2b6cb0" stroke-width="1"/>
+      <text x="110" y="64" font-family="var(--font-sans)" font-size="13" font-weight="500" fill="var(--text)" text-anchor="middle">① 发请求</text>
+      <text x="110" y="82" font-family="var(--font-sans)" font-size="11" fill="var(--muted)" text-anchor="middle">URL+headers+key</text>
+    </g>
+    <line x1="180" y1="70" x2="196" y2="70" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <g>
+      <rect x="196" y="44" width="135" height="52" rx="8" fill="var(--panel)" stroke="#378ADD" stroke-width="1"/>
+      <text x="263" y="64" font-family="var(--font-sans)" font-size="13" font-weight="500" fill="var(--text)" text-anchor="middle">② 拿 JSON</text>
+      <text x="263" y="82" font-family="var(--font-sans)" font-size="11" fill="var(--muted)" text-anchor="middle">resp.json()</text>
+    </g>
+    <line x1="333" y1="70" x2="349" y2="70" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <g>
+      <rect x="349" y="44" width="135" height="52" rx="8" fill="var(--panel)" stroke="#5F5E5A" stroke-width="1"/>
+      <text x="416" y="64" font-family="var(--font-sans)" font-size="13" font-weight="500" fill="var(--text)" text-anchor="middle">③ 取字段</text>
+      <text x="416" y="82" font-family="var(--font-sans)" font-size="11" fill="var(--muted)" text-anchor="middle">data[...]</text>
+    </g>
+    <line x1="486" y1="70" x2="502" y2="70" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <g>
+      <rect x="502" y="44" width="135" height="52" rx="8" fill="var(--panel)" stroke="#1d9e75" stroke-width="1"/>
+      <text x="569" y="64" font-family="var(--font-sans)" font-size="13" font-weight="500" fill="var(--text)" text-anchor="middle">④ 写文件</text>
+      <text x="569" y="82" font-family="var(--font-sans)" font-size="11" fill="var(--muted)" text-anchor="middle">open+write</text>
+    </g>
+    <text x="110" y="30" font-family="var(--font-sans)" font-size="11.5" fill="var(--bad)" text-anchor="middle">▲ 改这里：API key ＋ 参数</text>
+    <text x="340" y="116" font-family="var(--font-sans)" font-size="12" fill="var(--muted)" text-anchor="middle">你以后读任何 AI 脚本，都是这个四步；变的只是 URL、key、参数</text>
+  </svg>
+
+  <h2>二、先看"免 key 版"：没账号也能跑通骨架</h2>
+  <p>先用一个<strong>不用申请 key</strong> 的公开接口，让你看到四步完整跑通（拿北京实时气温）：</p>
+  <pre>import requests
+
+url = "https://api.open-meteo.com/v1/forecast"
+params = {"latitude": 39.90, "longitude": 116.40, "current": "temperature_2m"}  <span style="color:var(--warn)"># ← 改这里换地点</span>
+
+r = requests.get(url, params=params)        <span style="color:var(--accent)"># ① 发请求</span>
+data = r.json()                            <span style="color:var(--accent)"># ② 拿 JSON</span>
+temp = data["current"]["temperature_2m"]    <span style="color:var(--accent)"># ③ 取字段</span>
+
+with open("weather.txt", "w", encoding="utf-8") as f:  <span style="color:var(--accent)"># ④ 写文件</span>
+    f.write(f"北京当前气温 {temp} ℃")
+print("已写入 weather.txt，气温 =", temp)</pre>
+  <p>跑法：装一次 <code>requests</code>（<code>pip install requests</code>），存成 <code>demo.py</code>，<code>python demo.py</code>。能看到生成 <code>weather.txt</code> 就算骨架跑通。</p>
+
+  <h2>三、再看"真 LLM 版"：这就是你要改 key/参数的那个</h2>
+  <p>下面是调 DeepSeek 的最小骨架（用最朴素的 <code>requests</code>，不依赖 SDK，骨架看得最清楚）：</p>
+  <pre>import requests, os
+
+API_KEY = os.environ.get("DEEPSEEK_API_KEY")   <span style="color:var(--bad)"># ← 改这里：从环境变量读 key（别写死明文）</span>
+url = "https://api.deepseek.com/chat/completions"
+
+payload = {
+    "model": "deepseek-v4-flash",              <span style="color:var(--warn)"># ← 改这里换模型</span>
+    "messages": [{"role": "user", "content": "用一句话解释什么是 EMC"}],  <span style="color:var(--warn)"># ← 改这里换问题</span>
+    "temperature": 0.3,                        <span style="color:var(--warn)"># ← 改这里调风格（低=稳，高=发散）</span>
+    "max_tokens": 200                          <span style="color:var(--warn)"># ← 改这里限长度</span>
+}
+headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
+
+r = requests.post(url, json=payload, headers=headers)  <span style="color:var(--accent)"># ① 发请求</span>
+data = r.json()                                    <span style="color:var(--accent)"># ② 拿 JSON</span>
+text = data["choices"][0]["message"]["content"]     <span style="color:var(--accent)"># ③ 取字段</span>
+
+with open("emc.txt", "w", encoding="utf-8") as f:   <span style="color:var(--accent)"># ④ 写文件</span>
+    f.write(text)
+print("已写入 emc.txt：", text)</pre>
+
+  <h3>这两样，就是任务六要你"能自己改"的</h3>
+  <ul>
+    <li><span class="tag k">改 key</span><strong>API_KEY</strong>：去 DeepSeek 平台复制你的 key，<strong>不要写死在脚本里</strong>。用环境变量传：
+      <pre style="margin-top:6px"># Windows PowerShell 里先设（关掉窗口就失效，安全）
+$env:DEEPSEEK_API_KEY = "sk-你的key"
+python demo_llm.py
+
+# 或 Linux / Git Bash
+export DEEPSEEK_API_KEY=sk-你的key
+python demo_llm.py</pre>
+    </li>
+    <li><span class="tag p">改参数</span><strong>payload 里那四个</strong>：
+      <code>model</code>（换模型）、<code>messages[0].content</code>（换问题）、<code>temperature</code>（0~1，低稳高活）、<code>max_tokens</code>（输出上限）。改完直接重跑即可。</li>
+  </ul>
+
+  <div class="note">
+    <strong>端点与模型（以官网为准 ❓）</strong>：DeepSeek 官方 OpenAI 兼容端点 <code>https://api.deepseek.com/chat/completions</code>。
+    注意 <code>deepseek-chat</code> / <code>deepseek-reasoner</code> 已于 <strong>2026-07-24 弃用</strong>，现用 <code>deepseek-v4-flash</code>（便宜）/ <code>deepseek-v4-pro</code>（强）。
+    换成 OpenAI 只需改 <code>url</code> + <code>model</code> + key，骨架完全不变——这就是"通用骨架"的意义。
+  </div>
+
+  <h2>四、两个真实坑（跑不通多半是它俩）</h2>
+  <table>
+    <thead><tr><th>现象</th><th>最可能原因</th><th>怎么改</th></tr></thead>
+    <tbody>
+      <tr><td>401 报错</td><td>key 错 / 没设环境变量 / Bearer 拼错</td><td>核对 <code>DEEPSEEK_API_KEY</code> 是否已 export，headers 里写了 <code>Bearer </code></td></tr>
+      <tr><td>取字段报 KeyError</td><td>返回的不是你想的结构（常因出错时返回 <code>{"error":...}</code>）</td><td>先 <code>print(data)</code> 看真实结构，再决定取哪个键；出错时别直接取 <code>choices</code></td></tr>
+      <tr><td>卡住/超时</td><td>网络不通 / 端点错 / 公司代理拦截</td><td>呼应任务一：<strong>任何请求都要设超时</strong>，如 <code>requests.post(..., timeout=30)</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="danger">
+    <strong>安全 + 数据红线（两件事）</strong><br>
+    ① <strong>key 别泄露</strong>：永远别把 <code>sk-...</code> 明文写进脚本再提交到 git / 发群里。环境变量或密钥管理才是正道。<br>
+    ② <strong>EMC/公司专有数据别喂进云端 API</strong>：这个 LLM 版示例是"公开问题（什么是 EMC）"，练手 OK；真要处理你的案例库，走本地部署或合规通道。
+  </div>
+
+  <h2>五、和前几篇串起来</h2>
+  <ul>
+    <li><strong>任务一</strong>：这条主线就是任务一那套的"代码兑现版"——当时讲概念，现在给你能跑的骨架。</li>
+    <li><strong>任务三（token 成本）</strong>：<code>max_tokens</code> 就是任务三算月成本时的"输出上限"；每次调用的 <code>usage</code> 字段能直接读出真实 token 数。</li>
+    <li><strong>任务四（自动化）</strong>：自动化里每个"调用大模型"的节点，底层就是这四步；读懂骨架，你才看得懂那些节点在做什么。</li>
+    <li><strong>任务五（上下文窗口）</strong>：<code>messages</code> 里累积的历史越长，越逼近窗口上限——和任务五的"档案"比喻是一回事。</li>
+  </ul>
+
+  <h2>六、自查三问（能答出即过关）</h2>
+  <ul>
+    <li>四步骨架是哪四步？<br><span style="color:var(--muted)">答：发请求 → 拿 JSON → 取字段 → 写文件。</span></li>
+    <li>想换一个问题/换一个模型，动脚本哪几行？<br><span style="color:var(--muted)">答：payload 里的 <code>model</code> 和 <code>messages[0].content</code>；不用动骨架其它部分。</span></li>
+    <li>为什么 key 要用环境变量而不是写死在代码里？<br><span style="color:var(--muted)">答：防止泄露——明文 key 一旦进 git / 聊天记录就曝光了，环境变量或密钥管理才安全。</span></li>
+  </ul>
+
+  <div class="foot">
+    端点/模型取自 DeepSeek 官方 API 文档（2026-10-25 核验）：base_url <code>https://api.deepseek.com</code>，模型 <code>deepseek-v4-flash</code>/<code>v4-pro</code>；<code>deepseek-chat</code> 已于 2026-07-24 弃用。<strong>厂商可能调整，以你跑任务当天官网为准 ❓</strong>。<br>
+    风格：延续 W3 系列"硬件比喻 + 一次看懂"；示例脚本仅作骨架演示，真实生产应加超时、错误判断与密钥管理。
+  </div>
+
+</div>
+</body>
+</html>
