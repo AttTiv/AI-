@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>缺陷闭环系统 · 字段配置器 v1.3</title>
+<style>
+  :root{
+    --bg:#f6f6f4; --panel:#ffffff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dd;
+    --accent:#2b6cb0; --ok:#1d9e75; --warn:#b7791f; --code:#f1efe8; --bad:#c0392b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141414; --panel:#1c1c1c; --text:#ececec; --muted:#a0a09a; --line:#2e2e2c;
+      --accent:#7fb3e8; --ok:#5bceaa; --warn:#e0b25c; --code:#242424; --bad:#e57373;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px 18px 48px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.7}
+  .wrap{max-width:1120px;margin:0 auto}
+  h1{font-size:21px;font-weight:600;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .bar{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:12px;
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .bar input,.bar select{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);font-size:13px}
+  button{padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);
+    cursor:pointer;font-size:13px}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.p{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button.p:hover{opacity:.88;color:#fff}
+  .stats{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin:0 0 12px;padding:0 4px}
+  .stats b{color:var(--text);font-weight:600}
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+  th{background:var(--code);color:var(--muted);font-weight:500;text-align:left;padding:9px 10px;font-size:12px}
+  td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:middle}
+  tr.ghead td{background:var(--code);color:var(--text);font-weight:600;font-size:12.5px;padding:6px 10px}
+  td.id{color:var(--muted);font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:nowrap}
+  .req{font-size:11px;padding:2px 7px;border-radius:12px;white-space:nowrap}
+  .req.r{background:var(--bad);color:#fff}
+  .req.c{background:var(--warn);color:#fff}
+  .req.o{background:var(--line);color:var(--muted)}
+  .req.a{background:var(--accent);color:#fff}
+  input[type=checkbox]{width:15px;height:15px;cursor:pointer}
+  .note{color:var(--muted);font-size:12px}
+  .tip{border-left:3px solid var(--warn);padding:6px 0 6px 12px;color:var(--muted);font-size:12.5px;margin:14px 0}
+  .hidden-row{display:none}
+  .star{color:var(--bad);font-weight:600}
+  .foot{margin-top:24px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+  .flowbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:16px 0}
+  .flowttl{font-size:14px;font-weight:600;margin-bottom:8px}
+  .flownote{color:var(--muted);font-size:12.5px;line-height:1.75;margin-bottom:10px}
+  .flownote b{color:var(--text)}
+  table.flowtbl{font-size:12.5px;background:transparent;border:none;border-radius:0}
+  table.flowtbl th{background:transparent;border-bottom:1px solid var(--line);padding:6px 8px}
+  table.flowtbl td{padding:7px 8px;border-top:1px solid var(--line);vertical-align:top}
+  table.flowtbl td:first-child{white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>缺陷闭环系统 · 字段配置器</h1>
+  <div class="sub">新国标大点位控制器（AEC2301 / AEC2393B / AEC2392BS / AEC2392BM）　·　GB 16808-2025　·　认证类别：型式试验　·　发证机构：沈阳消防研究所　·　企业微信表单 + 文档路线　·　v1.3</div>
+
+  <div class="bar">
+    <input id="q" placeholder="搜索字段名 / 备注" style="min-width:190px">
+    <select id="fg"><option value="">全部分组</option></select>
+    <select id="fr"><option value="">全部必填态</option><option value="required">必填</option><option value="conditional">条件必填</option><option value="optional">非必填</option><option value="auto">系统自动</option></select>
+    <button onclick="preset('min')">仅显示必填(最小集)</button>
+    <button onclick="preset('all')">全部显示</button>
+    <button onclick="preset('none')">全部隐藏</button>
+    <button onclick="resetCfg()">恢复默认</button>
+    <span style="flex:1"></span>
+    <button onclick="saveCfg()">保存</button>
+    <button onclick="exportJSON()">导出 JSON</button>
+    <button onclick="exportCSV()">导出 CSV</button>
+    <button onclick="document.getElementById('imp').click()">导入 JSON</button>
+    <button class="p" onclick="window.print()">打印 / 存 PDF</button>
+    <input id="imp" type="file" accept=".json" style="display:none" onchange="importJSON(this)">
+  </div>
+
+  <div class="stats">
+    <span>必填(人工) <b id="s-r">0</b></span>
+    <span>条件必填 <b id="s-c">0</b></span>
+    <span>非必填 <b id="s-o">0</b></span>
+    <span>系统自动 <b id="s-a">0</b></span>
+    <span>显示中 <b id="s-show">0</b></span>
+    <span>隐藏 <b id="s-hide">0</b></span>
+    <span>合计 <b id="s-total">0</b></span>
+  </div>
+
+  <table id="tbl">
+    <thead><tr>
+      <th style="width:92px">编号</th><th style="width:150px">字段名</th><th style="width:90px">类型</th>
+      <th style="width:118px">必填态</th><th style="width:70px">显示</th><th>条件说明 / 备注</th>
+    </tr></thead>
+    <tbody id="tb"></tbody>
+  </table>
+
+  <div class="tip">
+    <strong>使用说明：</strong>「必填态」四档——<span class="req r">必填</span> 一线必须填；<span class="req c">条件必填</span> 满足触发条件才必填（触发条件写在备注列）；<span class="req o">非必填</span> 可选；<span class="req a">系统自动</span> 由系统生成不手工填。
+    「显示」勾选决定该字段是否出现在表单上。配置好后<strong>务必点「导出 JSON」留存</strong>——本地保存只是缓存，VDI 环境可能被清除，JSON 文件才是可靠备份，也是给 IT / 建表同事的交付依据。
+  </div>
+
+  <div class="flowbox">
+    <div class="flowttl">认证合规：判定分四档，不要一刀切</div>
+    <div class="flownote">
+      关键区别——<strong>「改了没有」和「要不要报备 / 要不要送检」是两件事</strong>。DEF-031 只回答第一件；第二件由 DEF-034 判定。
+      改了不等于要送检，而要送检也不等于必须先送检才能改 —— 缺陷可以先整改，整改完再送检，但送检样机必须提前备。
+    </div>
+    <table class="flowtbl">
+      <thead><tr><th style="width:180px">DEF-034 判定结果</th><th>要不要报备</th><th>要不要送检</th><th>流程（关键节点顺序）</th></tr></thead>
+      <tbody>
+        <tr><td><b>① 无需报备</b></td><td>不报备</td><td>不送检</td><td>整改 → 内部验证 → 关闭。最快路径</td></tr>
+        <tr><td><b>② 仅需报备</b></td><td>需报备</td><td>不送检</td><td>备案 → 拿到回执 → 整改 → 内部验证 → 关闭</td></tr>
+        <tr><td><b>③ 报备且需送检</b></td><td>需报备</td><td>需送检</td><td>备案 → <b>整改与样机准备并行</b> → 内部验证 → 寄样送检（全项约 3 个月）→ 送检通过 → 关闭</td></tr>
+        <tr><td><b>④ 待认证机构确认</b></td><td>待定</td><td>待定</td><td>只允许先做围堵 / 临时对策；永久变更暂缓，等确认后再落②或③</td></tr>
+      </tbody>
+    </table>
+    <div class="flownote" style="margin-top:10px">
+      <strong>为什么③必须「整改与样机准备并行」：</strong>送检样机不是整改完才想起来做的。等整改完再备样机，等于在 3 个月送检周期前面再排一段备料期，缺陷闭环时间被无谓拉长。
+      判定为③的当天，DEF-038 就该从「未启动」开始动。<br>
+      <strong>为什么③的内部验证通过不能直接关：</strong>内部验证只证明「缺陷修好了」，不证明「认证仍然有效」。DEF-043 验证结论后面还压着一道 DEF-040 送检结论。
+    </div>
+  </div>
+
+  <div class="foot">
+    本配置器为零依赖单文件（无外链、无网络请求），可离线打开。字段体系与《新国标大点位控制器_缺陷闭环系统_方案建议书 v1.3》第五章一致。<br>
+    注：v1.3 起判定类字段拆成「是否变更」（DEF-031，E 组）与「变更影响判定」（DEF-034，F 组）两级；F 组由 5 个字段扩为 8 个，全表 46 → 49 个字段。
+  </div>
+
+</div>
+
+<script>
+var FIELDS = [
+ {id:"DEF-001",g:"A 标识与追溯",n:"缺陷编号",t:"自动",req:"auto",show:true,c:"系统生成 DEF-YYYY-NNNN，全局唯一"},
+ {id:"DEF-002",g:"A 标识与追溯",n:"来源渠道",t:"单选",req:"required",show:true,c:"售后 / 产线 / 来料 / 测试 / 市场 / 客诉"},
+ {id:"DEF-003",g:"A 标识与追溯",n:"报告人 · 部门",t:"成员",req:"required",show:true,c:"便于回访补信息"},
+ {id:"DEF-004",g:"A 标识与追溯",n:"报告日期",t:"日期",req:"auto",show:true,c:"系统自动记录"},
+ {id:"DEF-005",g:"A 标识与追溯",n:"产品型号",t:"单选",req:"required",show:true,c:"四选一：AEC2301 / AEC2393B / AEC2392BS / AEC2392BM"},
+ {id:"DEF-006",g:"A 标识与追溯",n:"批次号",t:"文本",req:"required",show:true,c:"批次性问题的唯一抓手"},
+ {id:"DEF-007",g:"A 标识与追溯",n:"序列号 SN",t:"文本",req:"optional",show:true,c:"单台定位；现场无法获取时注明原因"},
+ {id:"DEF-008",g:"A 标识与追溯",n:"固件版本号",t:"文本",req:"required",show:true,c:"★ 控制器缺陷与固件强相关，无版本号无法归因"},
+ {id:"DEF-009",g:"A 标识与追溯",n:"硬件 / PCB 版本",t:"文本",req:"optional",show:true,c:"与固件版本配合定位"},
+ {id:"DEF-010",g:"A 标识与追溯",n:"发现环节",t:"单选",req:"required",show:true,c:"来料 / 过程 / 终测 / 老化 / 安装调试 / 客户使用"},
+
+ {id:"DEF-011",g:"B 缺陷描述",n:"现象描述（原话）",t:"长文本",req:"required",show:true,c:"保留原始口语，不得改写"},
+ {id:"DEF-012",g:"B 缺陷描述",n:"结构化现象",t:"长文本",req:"optional",show:false,c:"AI 提取 + 人工确认后的规范表述"},
+ {id:"DEF-013",g:"B 缺陷描述",n:"附件",t:"文件/图片",req:"required",show:true,c:"照片 / 波形 / 日志 / 视频；硬件问题靠证据"},
+ {id:"DEF-014",g:"B 缺陷描述",n:"复现条件",t:"文本",req:"optional",show:false,c:"能否稳定复现，决定根因分析难度"},
+ {id:"DEF-015",g:"B 缺陷描述",n:"发生台数 / 频次",t:"数值",req:"required",show:true,c:"单台 / 多台 / 批次性"},
+ {id:"DEF-016",g:"B 缺陷描述",n:"已出货影响范围",t:"文本",req:"optional",show:false,c:"涉及台数与区域，用于召回 / 围堵决策"},
+
+ {id:"DEF-017",g:"C 定级与围堵",n:"严重度",t:"单选",req:"conditional",show:true,c:"受理阶段由质量部定级（S/A/B/C），避免一线通胀"},
+ {id:"DEF-018",g:"C 定级与围堵",n:"是否安全相关",t:"是否",req:"required",show:true,c:"★ 是 → 强制走最高优先级（人身安全 / 火灾 / 触电）"},
+ {id:"DEF-019",g:"C 定级与围堵",n:"紧急围堵措施",t:"长文本",req:"conditional",show:true,c:"条件：严重度为 S / A 时必填"},
+ {id:"DEF-020",g:"C 定级与围堵",n:"围堵完成日期",t:"日期",req:"optional",show:false,c:"用于统计响应速度"},
+ {id:"DEF-021",g:"C 定级与围堵",n:"是否需上报 / 召回评估",t:"是否",req:"conditional",show:true,c:"条件：安全相关或 S 级必填；★ 仅人工判定，AI 不得代判"},
+
+ {id:"DEF-022",g:"D 根因分析",n:"根因分类",t:"单选",req:"conditional",show:true,c:"条件：进入③根因对策阶段必填（硬件/固件/来料/工艺/误用）"},
+ {id:"DEF-023",g:"D 根因分析",n:"责任方",t:"单选",req:"conditional",show:true,c:"条件：进入③必填（研发/固件/结构/工艺/供应商/客户）"},
+ {id:"DEF-024",g:"D 根因分析",n:"分析方法",t:"多选",req:"optional",show:false,c:"5Why / 鱼骨 / FTA / 失效复现"},
+ {id:"DEF-025",g:"D 根因分析",n:"根因描述",t:"长文本",req:"conditional",show:true,c:"条件：进入③必填，须写明因果链与证据"},
+ {id:"DEF-026",g:"D 根因分析",n:"相似历史缺陷编号",t:"关联",req:"optional",show:false,c:"AI 检索推荐，工程师选定或否决"},
+
+ {id:"DEF-027",g:"E 对策",n:"围堵措施（临时）",t:"长文本",req:"optional",show:false,c:"止血用的短期手段"},
+ {id:"DEF-028",g:"E 对策",n:"永久对策",t:"长文本",req:"conditional",show:true,c:"条件：进入③后必填"},
+ {id:"DEF-029",g:"E 对策",n:"对策类型",t:"多选",req:"conditional",show:true,c:"条件：进入③必填（改设计/改固件/改工艺/换料/改检验/培训/更新文件）"},
+ {id:"DEF-030",g:"E 对策",n:"ECN 单号",t:"文本",req:"conditional",show:true,c:"条件：对策含改设计 / 改固件时必填"},
+ {id:"DEF-031",g:"E 对策",n:"是否涉及设计 / 固件 / 元器件变更",t:"是否",req:"conditional",show:true,c:"★ 触发：进入③必填。仅判断「改了没有」——改了不等于要报备；要不要报备/送检由 F 组「变更影响判定」决定"},
+ {id:"DEF-032",g:"E 对策",n:"SCAR 单号",t:"文本",req:"conditional",show:false,c:"条件：责任方为供应商时必填"},
+
+ {id:"DEF-033",g:"F 认证合规 · 变更影响判定",n:"认证证书编号",t:"文本",req:"optional",show:false,c:"按型号填写（四款型号各自对应证书）；认证类别=型式试验，发证机构=沈阳消防研究所（常量，无需每行填）"},
+ {id:"DEF-034",g:"F 认证合规 · 变更影响判定",n:"变更影响判定",t:"单选",req:"conditional",show:true,c:"★ 核心判定：条件=DEF-031 为「是」时必填。四选一：①无需报备 ②仅需报备（不送检） ③报备且需送检 ④待认证机构确认。四种走向完全不同的流程，见备注页"},
+ {id:"DEF-035",g:"F 认证合规 · 变更影响判定",n:"判定依据与判定人",t:"长文本",req:"conditional",show:true,c:"条件：DEF-034 为②③④时必填。须写明「改了哪些内容 + 依据什么判为需要/不需要」，由质量 + 认证对接人双签。★ AI 不得代判"},
+ {id:"DEF-036",g:"F 认证合规 · 变更影响判定",n:"报备单号 / 回执",t:"文本",req:"conditional",show:false,c:"条件：DEF-034 为②或③时必填。规则=先备案后实施，备案回执到手才允许实施永久对策；①无须、④暂缓"},
+ {id:"DEF-037",g:"F 认证合规 · 变更影响判定",n:"送检范围",t:"单选",req:"conditional",show:false,c:"条件：DEF-034 为③时必填。全项 / 差异项 / 待定（与沈阳消防研究所确认）。全项周期约 3 个月"},
+ {id:"DEF-038",g:"F 认证合规 · 变更影响判定",n:"送检样机准备状态",t:"单选",req:"conditional",show:true,c:"★ 条件：DEF-034 为③时必填，触发点=判定当天就启动，不等整改完成。未启动 / 备料中 / 已齐套待寄 / 已寄出。须注明样机来源（工程样机 / 量产抽样 / 库存机）与数量。判据：方案锁定须早于整改完成；物理齐套按类型判——改固件的应早于整改完成，换料的受新料采购试制周期限制"},
+ {id:"DEF-039",g:"F 认证合规 · 变更影响判定",n:"预计送检完成日",t:"日期",req:"conditional",show:false,c:"条件：DEF-034 为③时必填。用于把「外部送检周期」从内部闭环周期里剥离，避免误判超期"},
+ {id:"DEF-040",g:"F 认证合规 · 变更影响判定",n:"送检结论",t:"单选",req:"conditional",show:false,c:"条件：DEF-038 为「已寄出」后必填（通过 / 不通过 / 有条件通过）；不通过则打回③重做对策"},
+
+ {id:"DEF-041",g:"G 验证",n:"验证方式",t:"多选",req:"conditional",show:true,c:"条件：进入④必填（台架/老化/EMC 复测/环境试验/小批试产/现场试点）"},
+ {id:"DEF-042",g:"G 验证",n:"样本量与结果",t:"文本",req:"conditional",show:true,c:"条件：进入④必填；样本量须写明否则「通过」无意义"},
+ {id:"DEF-043",g:"G 验证",n:"验证结论",t:"单选",req:"conditional",show:true,c:"条件：进入④必填。注意：判定为③的，内部验证通过 ≠ 可关闭，还须等送检结论"},
+ {id:"DEF-044",g:"G 验证",n:"验证人",t:"成员",req:"conditional",show:false,c:"条件：进入④必填；独立验证人，避免自己验证自己"},
+
+ {id:"DEF-045",g:"H 关闭与横展",n:"标准化横展项",t:"多选",req:"conditional",show:true,c:"条件：进入④必填（DFMEA/PFMEA/设计规范/检验标准/作业指导书/BOM优选/测试用例/服务通告）"},
+ {id:"DEF-046",g:"H 关闭与横展",n:"横展完成确认",t:"是否",req:"optional",show:false,c:"须附更新后的文件佐证"},
+ {id:"DEF-047",g:"H 关闭与横展",n:"关闭日期",t:"日期",req:"optional",show:false,c:"进入监控期的起点。判定为③的，须送检结论=通过后才可填"},
+ {id:"DEF-048",g:"H 关闭与横展",n:"关闭评审签字",t:"成员",req:"conditional",show:true,c:"条件：进入⑤必填；质量经理把关"},
+ {id:"DEF-049",g:"H 关闭与横展",n:"复发监控到期日",t:"日期",req:"optional",show:false,c:"建议 3~6 个月；到期无复发方可终态关闭"}
+];
+
+var KEY = "def_field_cfg_v13";
+var REQ_TXT = {required:"必填", conditional:"条件必填", optional:"非必填", auto:"系统自动"};
+var REQ_CLS = {required:"r", conditional:"c", optional:"o", auto:"a"};
+
+function load(){
+  try{
+    var s = localStorage.getItem(KEY);
+    if(s){ var o = JSON.parse(s); if(o && o.length === FIELDS.length){ return o; } }
+  }catch(e){}
+  return FIELDS.map(function(f){ return {req:f.req, show:f.show}; });
+}
+
+var cfg = load();
+
+function groups(){
+  var g = [], i;
+  for(i=0;i<FIELDS.length;i++){ if(g.indexOf(FIELDS[i].g) < 0){ g.push(FIELDS[i].g); } }
+  return g;
+}
+
+function initFilters(){
+  var sel = document.getElementById("fg"), gs = groups(), i, o;
+  for(i=0;i<gs.length;i++){ o = document.createElement("option"); o.value = gs[i]; o.textContent = gs[i]; sel.appendChild(o); }
+}
+
+function render(){
+  var tb = document.getElementById("tb");
+  var q = document.getElementById("q").value.trim().toLowerCase();
+  var fg = document.getElementById("fg").value;
+  var fr = document.getElementById("fr").value;
+  var html = "", lastG = "", i, f, c;
+
+  for(i=0;i<FIELDS.length;i++){
+    f = FIELDS[i]; c = cfg[i];
+    if(fg && f.g !== fg){ continue; }
+    if(fr && c.req !== fr){ continue; }
+    if(q){
+      var hay = (f.n + " " + f.c + " " + f.g + " " + f.id).toLowerCase();
+      if(hay.indexOf(q) < 0){ continue; }
+    }
+    if(f.g !== lastG){ lastG = f.g; html += '<tr class="ghead"><td colspan="6">' + f.g + '</td></tr>'; }
+    html += '<tr>'
+      + '<td class="id">' + f.id + '</td>'
+      + '<td>' + f.n + '</td>'
+      + '<td>' + f.t + '</td>'
+      + '<td><select data-i="' + i + '" class="rsel"><option value="required"' + (c.req==="required"?" selected":"") + '>必填</option>'
+      + '<option value="conditional"' + (c.req==="conditional"?" selected":"") + '>条件必填</option>'
+      + '<option value="optional"' + (c.req==="optional"?" selected":"") + '>非必填</option>'
+      + '<option value="auto"' + (c.req==="auto"?" selected":"") + '>系统自动</option></select></td>'
+      + '<td><input type="checkbox" data-i="' + i + '" class="schk"' + (c.show?" checked":"") + '></td>'
+      + '<td class="note">' + f.c + '</td>'
+      + '</tr>';
+  }
+  tb.innerHTML = html;
+  bind();
+  stats();
+}
+
+function bind(){
+  var ss = document.querySelectorAll(".rsel"), i;
+  for(i=0;i<ss.length;i++){ ss[i].onchange = function(){ cfg[+this.getAttribute("data-i")].req = this.value; stats(); }; }
+  var cs = document.querySelectorAll(".schk");
+  for(i=0;i<cs.length;i++){ cs[i].onchange = function(){ cfg[+this.getAttribute("data-i")].show = this.checked; stats(); }; }
+}
+
+function stats(){
+  var r=0,c2=0,o=0,a=0,sh=0,hd=0,i;
+  for(i=0;i<cfg.length;i++){
+    if(cfg[i].req==="required"){r++;} else if(cfg[i].req==="conditional"){c2++;}
+    else if(cfg[i].req==="auto"){a++;} else {o++;}
+    if(cfg[i].show){sh++;} else {hd++;}
+  }
+  document.getElementById("s-r").textContent = r;
+  document.getElementById("s-c").textContent = c2;
+  document.getElementById("s-o").textContent = o;
+  document.getElementById("s-a").textContent = a;
+  document.getElementById("s-show").textContent = sh;
+  document.getElementById("s-hide").textContent = hd;
+  document.getElementById("s-total").textContent = cfg.length;
+}
+
+function preset(m){
+  var i;
+  for(i=0;i<cfg.length;i++){
+    if(m==="all"){ cfg[i].show = true; }
+    else if(m==="none"){ cfg[i].show = false; }
+    else if(m==="min"){ cfg[i].show = (cfg[i].req==="required" || cfg[i].req==="auto"); }
+  }
+  refresh();
+}
+
+function resetCfg(){
+  if(!confirm("恢复为默认配置（10 个人工必填 / 共 49 个字段）？当前修改将丢失。")){ return; }
+  cfg = FIELDS.map(function(f){ return {req:f.req, show:f.show}; });
+  localStorage.removeItem(KEY);
+  refresh();
+}
+
+function refresh(){
+  document.getElementById("q").value = "";
+  document.getElementById("fg").value = "";
+  document.getElementById("fr").value = "";
+  render();
+}
+
+function saveCfg(){
+  localStorage.setItem(KEY, JSON.stringify(cfg));
+  alert("已保存到本机缓存。请再点「导出 JSON」留存一份文件——VDI 环境可能清除本地缓存。");
+}
+
+function download(name, text, mime){
+  var b = new Blob([text], {type: mime});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(b);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+function stamp(){
+  var d = new Date(), p = function(n){ return (n<10?"0":"") + n; };
+  return d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "_" + p(d.getHours()) + p(d.getMinutes());
+}
+
+function exportJSON(){
+  var out = FIELDS.map(function(f, i){
+    return {id:f.id, group:f.g, name:f.n, type:f.t, required:cfg[i].req, requiredText:REQ_TXT[cfg[i].req], show:cfg[i].show, note:f.c};
+  });
+  var doc = {version:"v1.3", exportedAt:new Date().toISOString(), product:"新国标大点位控制器 AEC2301/AEC2393B/AEC2392BS/AEC2392BM", standard:"GB 16808-2025 消防强制性认证", fields:out};
+  download("缺陷闭环_字段配置_" + stamp() + ".json", JSON.stringify(doc, null, 2), "application/json");
+}
+
+function exportCSV(){
+  var rows = ["分组,字段编号,字段名,类型,必填态,是否显示,条件说明/备注"];
+  FIELDS.forEach(function(f, i){
+    rows.push([f.g, f.id, f.n, f.t, REQ_TXT[cfg[i].req], (cfg[i].show?"显示":"隐藏"), '"' + f.c.replace(/"/g, "'") + '"'].join(","));
+  });
+  download("缺陷闭环_字段配置_" + stamp() + ".csv", "\ufeff" + rows.join("\n"), "text/csv;charset=utf-8");
+}
+
+function importJSON(inp){
+  var f = inp.files && inp.files[0];
+  if(!f){ return; }
+  var rd = new FileReader();
+  rd.onload = function(){
+    try{
+      var o = JSON.parse(rd.result);
+      var arr = o && o.fields ? o.fields : o;
+      if(!arr || arr.length !== FIELDS.length){ alert("字段数量不一致，无法导入（期望 " + FIELDS.length + " 个，实际 " + (arr?arr.length:0) + " 个）。"); return; }
+      cfg = arr.map(function(x){ return {req: x.required || "optional", show: !!x.show}; });
+      localStorage.setItem(KEY, JSON.stringify(cfg));
+      refresh();
+      alert("导入成功。");
+    }catch(e){ alert("导入失败：不是有效的配置文件。"); }
+  };
+  rd.readAsText(f, "utf-8");
+  inp.value = "";
+}
+
+document.getElementById("q").oninput = render;
+document.getElementById("fg").onchange = render;
+document.getElementById("fr").onchange = render;
+initFilters();
+render();
+</script>
+
+</body>
+</html>

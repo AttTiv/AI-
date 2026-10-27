@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新国标大点位控制器 · 上市缺陷闭环系统 · 方案建议书 v1.3</title>
+<style>
+  :root{
+    --bg:#f6f6f4; --panel:#ffffff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dd;
+    --accent:#2b6cb0; --ok:#1d9e75; --warn:#b7791f; --code:#f1efe8; --bad:#c0392b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141414; --panel:#1c1c1c; --text:#ececec; --muted:#a0a09a; --line:#2e2e2c;
+      --accent:#7fb3e8; --ok:#5bceaa; --warn:#e0b25c; --code:#242424; --bad:#e57373;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.75}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:24px;font-weight:600;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:10px}
+  h2{font-size:18px;font-weight:600;margin:36px 0 12px;padding-left:10px;border-left:3px solid var(--accent)}
+  h3{font-size:15.5px;font-weight:600;margin:20px 0 8px;color:var(--text)}
+  h4{font-size:14px;font-weight:600;margin:14px 0 6px;color:var(--muted)}
+  p{margin:8px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0}
+  .key{border-color:var(--accent)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12.5px;background:var(--code)}
+  tr:last-child td{border-bottom:none}
+  td.n{white-space:nowrap}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:12.5px;
+    font-family:ui-monospace,Consolas,monospace}
+  .note{border-left:3px solid var(--warn);padding:2px 0 2px 14px;color:var(--muted);margin:14px 0;font-size:13.5px}
+  .danger{border-left:3px solid var(--bad);padding:8px 0 8px 14px;margin:14px 0;font-size:13.5px;color:var(--text)}
+  .okbox{border-left:3px solid var(--ok);padding:8px 0 8px 14px;margin:14px 0;font-size:13.5px}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  ol{margin:6px 0;padding-left:22px}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--accent);
+    color:var(--accent);margin-left:6px;vertical-align:2px}
+  .p-b{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--bad);
+    color:var(--bad);margin-left:6px;vertical-align:2px}
+  .req{color:var(--bad);font-weight:600}
+  .foot{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 20px;margin:16px 0;
+    font-size:13.5px;columns:2;column-gap:28px}
+  .toc a{color:var(--accent);text-decoration:none;display:block;margin:3px 0}
+  .done{color:var(--ok);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>新国标大点位控制器<br>上市缺陷闭环系统 · 方案建议书</h1>
+  <div class="sub">版本 <strong>v1.3</strong>　·　编制日期 2026-10-27　·　状态：<strong>认证判定模型已修正，可进入建表</strong>　·　企业微信（表单 + 文档路线）</div>
+
+  <div class="card key">
+    <strong>v1.3 核心修正：认证判定从「一刀切」改为「两级四档」</strong>
+    <p style="margin:8px 0 6px">v1.2 把「改了固件 / 硬件」直接等同于「必须先报备、必然要送检」，<strong>判得过紧</strong>。经确认，实际规则是：</p>
+    <table style="margin:8px 0">
+      <tr><td class="n" style="width:20%"><strong>第一级：改没改</strong></td><td>只判断「是否涉及设计 / 固件 / 元器件变更」（DEF-031）。这是一个<strong>事实判断</strong>，改了就是改了</td></tr>
+      <tr><td class="n"><strong>第二级：要不要报备 / 要不要送检</strong></td><td>由「<strong>变更影响判定</strong>」（DEF-034）给出四档结论：<strong>① 无需报备　② 仅需报备　③ 报备且需送检　④ 待认证机构确认</strong>。这是一个<strong>专业判断</strong>，看改了什么、改到什么程度</td></tr>
+      <tr><td class="n"><strong>时序：整改与送检</strong></td><td>缺陷<strong>可以先整改、再送检</strong>。送检不再卡在整改前面；但<strong>送检样机必须与整改同步准备</strong>，不能等整改完才想起来</td></tr>
+    </table>
+    <p style="margin:8px 0 0" class="req">由此产生三处设计变更：① E 组 DEF-031 改为「是否涉及变更」（只判断事实），新增 F 组「变更影响判定」「判定依据与判定人」「送检样机准备状态」；② 阶段③ 出口标准取消「一律先备案」的一刀切硬门，改为「判定已完成即放行」；③ 阶段④ 允许「整改完成 → 送检 → 送检通过 → 关闭」的长尾路径。F 组由 5 个扩为 8 个，全表 <strong>46 → 49 个字段</strong>。</p>
+  </div>
+
+  <div class="note">
+    <strong>v1.1 / v1.2 已确认的事实仍然有效</strong>（本次只修正判定模型，不推翻事实）：四款型号 AEC2301 / AEC2393B / AEC2392BS / AEC2392BM；适用 GB 16808-2025；认证类别 <strong>型式试验</strong>，发证机构 <strong>沈阳消防研究所</strong>；<strong>固件 / 软件变更算关键元器件变更</strong>，另有开关电源、电池、安规电容、继电器、短路保护器件等涉及安全的元器件；<strong>先备案后实施</strong>；送检范围可选（全项 / 差异项），<strong>全项约 3 个月</strong>；证书<strong>按型号</strong>管理。<br>
+    注意「固件算关键元器件变更」与本次修正<strong>不矛盾</strong>：它说明「改固件落入必须判定的范围」，不等于「改固件必然要送检」。
+  </div>
+
+  <div class="toc">
+    <a href="#s1">一、背景与适用范围</a>
+    <a href="#s2">二、总体架构原则</a>
+    <a href="#s3">三、生命周期五阶段与出口标准</a>
+    <a href="#s4">四、认证变更判定模型（v1.3 重构）</a>
+    <a href="#s5">五、字段字典（10 必填 + 39 其余）</a>
+    <a href="#s6">六、严重度定义与响应时限</a>
+    <a href="#s7">七、AI 自动化节点清单</a>
+    <a href="#s8">八、AI 边界红线</a>
+    <a href="#s9">九、平台选型与落地路线</a>
+    <a href="#s10">十、度量指标（KPI，含送检口径）</a>
+    <a href="#s11">十一、风险与对策</a>
+    <a href="#s12">十二、下一步行动清单</a>
+    <a href="#s13">附、待确认事项（❓）</a>
+  </div>
+
+  <h2 id="s1">一、背景与适用范围</h2>
+  <div class="card">
+    <p><strong>现状：</strong>新国标大点位控制器上市后，售后端与产线端会持续回流产品问题。目前缺乏统一的登记、追踪与关闭载体，问题散落在微信群、电话、邮件与个人表格中，导致：定位靠回忆、责任难界定、对策难沉淀、同类问题重复发生。</p>
+    <p><strong>目标：</strong>建立一套「登记 → 分析 → 对策 → 验证 → 横展 → 关闭 → 防复发」的闭环系统，做到 <strong>每条缺陷有编号、有责任人、有出口标准、有沉淀</strong>。</p>
+    <p><strong>约束：</strong>公司办公载体为<strong>企业微信</strong>；按「表单 + 文档」零开发路线；公司真实数据受数据主权约束。</p>
+  </div>
+
+  <div class="card key">
+    <h4>适用范围与认证基线（v1.3）</h4>
+    <table style="margin:8px 0">
+      <tr><td class="n" style="width:24%">适用产品</td><td>四款控制器：<code>AEC2301</code>、<code>AEC2393B</code>、<code>AEC2392BS</code>、<code>AEC2392BM</code>（表单四选一下拉，禁手填）</td></tr>
+      <tr><td class="n">适用标准</td><td><strong>GB 16808-2025</strong></td></tr>
+      <tr><td class="n">认证类别</td><td><strong>型式试验</strong></td></tr>
+      <tr><td class="n">发证机构</td><td><strong>沈阳消防研究所</strong></td></tr>
+      <tr><td class="n">证书编号口径</td><td><strong>按型号</strong>（四款各自对应证书）</td></tr>
+      <tr><td class="n">变更义务</td><td>改设计或关键元器件 → <strong>先做「变更影响判定」</strong>；判为需报备的，<strong>先备案后实施</strong>；判为需送检的，<strong>可整改后送检</strong>（详见第四章）</td></tr>
+      <tr><td class="n">送检周期</td><td class="req"><strong>全项送检约 3 个月</strong>（差异项待与沈阳消防研究所确认）</td></tr>
+    </table>
+  </div>
+
+  <h2 id="s2">二、总体架构原则</h2>
+  <div class="card key">
+    <h4>核心原则：状态机管「活」，工作流管「活之间的机器活」</h4>
+    <p><strong>不建议</strong>用一个巨大的工作流承载整个生命周期。原因：缺陷闭环跨人（售后 / 产线 / 研发 / 供应商）、跨地、常达数周（<strong>含送检则可达数月</strong>），中间大量是「等人决策」与「等外部机构」；工作流引擎擅长的是<strong>确定的、机器可执行的</strong>片段。</p>
+    <ul>
+      <li><strong>上层 = 工单状态机</strong>：定义阶段与状态；由人推动；每个状态有明确责任人 + 出口标准</li>
+      <li><strong>下层 = 事件驱动的自动化工作流</strong>：挂在每次状态转换点上，做机器能代劳的确定动作</li>
+      <li><strong>AI 层 = 助理而非决策者</strong>：只做 5 件确定的事（见第七章）</li>
+      <li><strong>知识层 = 缺陷案例库</strong>：关闭时入库，供下次检索（<strong>ROI 最高的一块</strong>）</li>
+    </ul>
+  </div>
+  <div class="okbox">
+    <strong>流程框架：采用 8D + FRACAS 行业标准</strong>，不自造流程。<br>
+    五阶段与 8D 的映射：<strong>D1-D2</strong>（团队 / 问题描述）→ 受理登记；<strong>D3</strong>（围堵）→ 定级围堵；<strong>D4-D5</strong>（根因 / 永久对策）→ 根因对策；<strong>D6-D7</strong>（实施 / 预防再发）→ 验证横展；<strong>D8</strong>（结案）→ 关闭监控。
+  </div>
+
+  <h2 id="s3">三、生命周期五阶段与出口标准</h2>
+  <table>
+    <thead><tr><th style="width:12%">阶段</th><th style="width:22%">主要活动</th><th style="width:16%">负责人建议</th><th>出口标准（Gate，不满足不得进入下一阶段）</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="n"><strong>① 受理登记</strong></td>
+        <td>统一入口收单；AI 预填结构化字段；人工确认后入库并赋予缺陷编号</td>
+        <td>质量部（统一受理）<br>发现人（提供原始信息）</td>
+        <td>10 个必填字段齐全（含<strong>固件版本号 / 批次</strong>）；附件齐备；严重度已由质量部定级</td>
+      </tr>
+      <tr>
+        <td class="n"><strong>② 定级围堵</strong></td>
+        <td>严重度定级；<strong>先止血</strong>：库存隔离 / 在制品拦截 / 客户端更换 / 固件回滚；判断是否需上报或召回评估</td>
+        <td>质量经理 + 研发主管会签<br>（S/A 级须 24h 内）</td>
+        <td>围堵动作已执行并有证据；影响范围已锁定；<strong>是否上报 / 召回已由人决策并记录</strong></td>
+      </tr>
+      <tr>
+        <td class="n"><strong>③ 根因对策</strong></td>
+        <td>根因分析（5Why / 鱼骨 / FTA / 失效复现）；AI 推荐相似历史案例；制定永久对策；开 ECN / SCAR；<strong>两段式认证判定</strong>：先答「改没改」（DEF-031），再判「要不要报备 / 要不要送检」（DEF-034，四档）；<strong>判为需送检的同时启动样机准备</strong></td>
+        <td>研发（硬件·固件·结构）主导<br>工艺 / 供应商参与<br>质量 + 认证对接人做影响判定</td>
+        <td>根因有证据支撑；对策已评审；<strong>ECN 或 SCAR 单号已生成</strong>；<strong>「变更影响判定」已出结论且由人双签</strong>；<strong>判为②③的，备案回执已到（先备案后实施）；判为③的，送检样机准备已启动</strong></td>
+      </tr>
+      <tr>
+        <td class="n"><strong>④ 验证横展</strong></td>
+        <td>有效性验证（台架 / 老化 / <strong>EMC 复测</strong> / 环境试验 / 小批试产 / 现场试点）；标准化横展；<strong>判为③的，整改完成后寄样送检，进入「等待送检（外部）」</strong></td>
+        <td>验证：测试·可靠性工程师<br>横展：研发工程师 + 质量监督<br>送检：质量对接沈阳消防研究所</td>
+        <td>内部验证通过且样本量与判定记录充分；横展文件已更新并有佐证；<strong>判为③的，内部验证通过只算「技术闭环」，还须等送检结论=通过才可进入⑤</strong></td>
+      </tr>
+      <tr>
+        <td class="n"><strong>⑤ 关闭监控</strong></td>
+        <td>关闭评审签字；案例入库；进入复发监控期（建议 3~6 个月）</td>
+        <td>质量经理把关<br>指定人做复发监控</td>
+        <td>监控期内无复发，方可终态关闭；<strong>复发则新开单并关联原缺陷编号</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:13.5px">状态取值：<code>待受理 / 分析中 / 对策中 / 验证中 / <strong>等待送检（外部）</strong> / 待关闭 / 已关闭 / 已撤销 / 已复发重开</code>。复发以「新开单 + 关联原编号」实现。<br>
+  v1.3 补充：阶段③ 的硬门从「一律先备案」改为「<strong>判定结论已出即放行</strong>」——判为①的直接实施，判为②③的先备案，判为④的只允许围堵 / 临时对策。这样既不漏合规，也不会因为没改到认证却卡在备案上。</p>
+
+  <h2 id="s4">四、认证变更判定模型（v1.3 重构）</h2>
+  <div class="okbox">
+    <strong>一句话结论：</strong>「改了」是事实，「要不要报备 / 要不要送检」是判断，<strong>两件事必须分开问</strong>。改了不等于要报备，要报备也不等于要送检，要送检也不等于必须改完之前就送检。
+  </div>
+
+  <h4>4.1 第一级：改没改（事实判断，字段 DEF-031）</h4>
+  <p>只回答一个问题：这次永久对策，<strong>有没有动到设计、固件、或者元器件</strong>。答「否」就直接实施、不进认证流程；答「是」强制进入第二级判定。判定范围（v1.1/v1.2 已确认，仍然有效）：</p>
+  <table>
+    <thead><tr><th style="width:26%">类别</th><th style="width:40%">具体范围</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>固件 / 软件变更</strong></td><td>所有固件版本变更、软件逻辑变更</td><td class="req">★ 明确<b>落在必须判定的范围内</b>——但"要判定"不等于"要送检"，见 4.2</td></tr>
+      <tr><td class="n"><strong>涉及安全的元器件</strong></td><td>开关电源、电池、安规电容、继电器、短路保护器件等</td><td class="req">★ 建议在表单里做成多选清单，勾选即触发第二级</td></tr>
+      <tr><td class="n"><strong>其他设计变更</strong></td><td>结构、原理、PCB 等影响认证一致性的改动</td><td>同样触发第二级，由质量 / 认证人员判定</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>这里最容易犯的错：</strong>把「固件算关键元器件变更」直接读成「改固件必须送检」。前者说的是<strong>落入判定范围</strong>，后者是<strong>判定结论</strong>。差一步，就会让所有固件小改动都被塞进 3 个月的送检队列，系统也就没人愿意用了。
+  </div>
+
+  <h4>4.2 第二级：变更影响判定（专业判断，字段 DEF-034，四档）</h4>
+  <p>由质量 + 认证对接人给出四档结论之一，<strong>并把依据写进 DEF-035</strong>（改了哪些内容 + 依据什么判成这个结论 + 双签）。四档走向完全不同：</p>
+  <table>
+    <thead><tr><th style="width:17%">判定结果</th><th style="width:9%">报备</th><th style="width:9%">送检</th><th>流程（关键节点顺序）</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>① 无需报备</strong></td><td>否</td><td>否</td><td>整改 → 内部验证 → 关闭。<strong>最快路径，不碰认证</strong></td></tr>
+      <tr><td class="n"><strong>② 仅需报备</strong></td><td class="req">是</td><td>否</td><td>备案 → 拿回执 → 整改 → 内部验证 → 关闭</td></tr>
+      <tr><td class="n"><strong>③ 报备且需送检</strong></td><td class="req">是</td><td class="req">是</td><td>备案 → <strong>整改与样机准备并行</strong> → 内部验证 → 寄样送检（全项约 3 个月）→ 送检通过 → 关闭</td></tr>
+      <tr><td class="n"><strong>④ 待认证机构确认</strong></td><td>待定</td><td>待定</td><td><strong>只允许先做围堵 + 临时对策</strong>（不动认证相关设计）；永久变更暂缓，等答复后落②或③</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card key">
+    <h4>为什么必须有 DEF-035「判定依据与判定人」</h4>
+    <p style="margin:6px 0">四档判定本质是<strong>专业裁量</strong>，同一处改动，不同人可能给出不同结论。系统不能只留一个「③」的标签，必须留下<strong>为什么是③</strong>：</p>
+    <ul style="margin:6px 0">
+      <li><strong>对内：</strong>半年后回头看，只有依据能解释当时的判断，否则无法复盘、无法追责</li>
+      <li><strong>对外：</strong>认证复查、客户审核、监管问询时，这一段就是最直接的合规证据</li>
+      <li><strong>对下批：</strong>同一个型号再来一次类似变更时，这段依据直接变成判定先例，判定速度会越来越快</li>
+    </ul>
+    <p style="margin:6px 0 0" class="req">红线不变：<strong>AI 不得代做这一档判定</strong>（见第八章第 4 条），只能提示"历史上类似变更被判为②/③"。</p>
+  </div>
+
+  <div class="note">
+    <strong>便于一线理解的举例方向</strong>（<span class="p-b">非规则，仅供理解</span>）：动到型式试验所覆盖特性的改动——如报警响应时序、点位容量、通信协议一致性、电源适应性、绝缘耐压相关设计——通常往③靠；只动外观丝印、包装、非安全相关说明书措辞，通常落①或②。<strong>具体边界尚未与沈阳消防研究所逐条确认，一律按人工判定执行</strong>（见附录 ❓A1）。
+  </div>
+
+  <h4>4.3 时序：整改和送检，谁先谁后（v1.3 的核心修正）</h4>
+  <div class="danger">
+    <strong>v1.2 的错误假设：</strong>把「送检」写成了整改之前的硬门，等于要求先送检、后改缺陷。这在工程上不成立——<strong>没改好拿什么送检</strong>。
+  </div>
+  <p>正确的时序是<strong>两条线并行、三个节点收口</strong>。判为③的缺陷，时间线长这样：</p>
+  <table>
+    <thead><tr><th style="width:8%">节点</th><th style="width:22%">事件</th><th style="width:20%">谁负责</th><th>要点</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>T0</strong></td><td>判定 = ③，<strong>当天</strong>启动送检样机准备</td><td>质量（认证对接）</td><td class="req">★ 不是整改完才启动。DEF-038 当天从「未启动」变「备料中」</td></tr>
+      <tr><td class="n"><strong>T1</strong></td><td>备案回执到手，允许实施永久对策</td><td>质量 / 认证对接</td><td>「先备案后实施」仅作用于<strong>报备</strong>，与送检时序无关</td></tr>
+      <tr><td class="n"><strong>T2</strong></td><td>整改完成 + 内部验证通过</td><td>研发 / 测试</td><td>到此为「<strong>技术闭环</strong>」——缺陷本身已经修好了</td></tr>
+      <tr><td class="n"><strong>T3a</strong></td><td><strong>样机方案锁定</strong>：来源、数量、状态一致性三项定下来并存档</td><td>质量 / 认证对接</td><td class="req">★ 硬判据：<strong>T3a ≤ T2</strong>，且实际应在 T0 之后几天内完成。方案不定，后面全是空转</td></tr>
+      <tr><td class="n"><strong>T3b</strong></td><td><strong>样机物理齐套</strong>（走完 ECN 的正式状态，可装箱寄出）</td><td>质量 / 生产</td><td class="req">★ 判据分两种情形：<strong>改固件的应 T3b ≤ T2</strong>；<strong>换料 / 改硬件的必然 T3b &gt; T2</strong>，此时看的是"晚了多少"，晚的部分应只剩新料的最短周期</td></tr>
+      <tr><td class="n"><strong>T4</strong></td><td>寄样送检，进入「等待送检（外部）」</td><td>质量</td><td>全项约 3 个月，属外部不可控周期</td></tr>
+      <tr><td class="n"><strong>T5</strong></td><td>送检结论 = 通过，方可关闭</td><td>质量</td><td>不通过 → 打回阶段③重做对策，<strong>不是重开新单</strong></td></tr>
+    </tbody>
+  </table>
+  <div class="card">
+    <h4>为什么 T3 要拆成 T3a / T3b —— 「T3 ≤ T2」不能一刀切</h4>
+    <p style="margin:6px 0">初稿把判据写成「样机齐套日期 ≤ 整改完成日期」，这条只在<strong>改固件</strong>时天然成立：硬件样机现在就能备，整改完刷入新固件即可寄出，两件事完全可并行。<br>
+    但若整改是<strong>换料 / 改硬件</strong>，样机必须用新料，新料要等 ECN 走完、采购到货、试制完成——<strong>T3b 在物理上不可能早于 T2</strong>。这时还拿「T3 ≤ T2」去考核，等于考核一件做不到的事，考核就废了。</p>
+    <table style="margin:8px 0">
+      <thead><tr><th style="width:24%">整改类型</th><th style="width:34%">样机能否与整改并行</th><th>该用哪条判据</th></tr></thead>
+      <tbody>
+        <tr><td class="n">改固件 / 改软件</td><td><strong>能</strong>。硬件用现有版本先备，整改完刷入新固件</td><td class="req"><strong>T3b ≤ T2 必须做到</strong>；做不到就是准备启动晚了</td></tr>
+        <tr><td class="n">换料 / 改硬件</td><td><strong>不能完全并行</strong>。样机必须用新料</td><td>看 <strong>T3b − T2 的差值</strong>：应只剩新料最短周期（采购 + 试制），不许多出"忘了启动"的时间。<strong>T3a ≤ T2 仍必须做到</strong></td></tr>
+        <tr><td class="n">改工艺 / 改检验 / 更新文件</td><td>不涉及样机状态</td><td>本判据不适用；只看送检范围是否受影响</td></tr>
+      </tbody>
+    </table>
+    <p style="margin:8px 0 4px"><strong>一组数字看懂差距</strong>（3 月 1 日判定=③，整改 + 内部验证 45 天 → T2 = 4 月 15 日；备样机需 30 天）：</p>
+    <table style="margin:6px 0">
+      <thead><tr><th style="width:22%">做法</th><th style="width:20%">样机启动</th><th style="width:20%">样机齐套 T3b</th><th>实际寄样时间</th></tr></thead>
+      <tbody>
+        <tr><td class="n">等整改完才启动</td><td>4/15（= T2）</td><td>5/15</td><td class="req">5/15 —— 整改完成后白等 <strong>30 天</strong></td></tr>
+        <tr><td class="n">T0 当天启动</td><td>3/1</td><td>3/31</td><td class="done">4/15 —— 整改验证一过<strong>当天</strong>即可寄样，<strong>省 30 天</strong></td></tr>
+      </tbody>
+    </table>
+    <p style="margin:6px 0 0">两种做法的整改速度一模一样，闭环总时长差整整一个月。<strong>这一个月既不来自研发加急，也不来自机构催办，纯粹来自"什么时候开始备样机"。</strong></p>
+  </div>
+
+  <div class="okbox">
+    <strong>这次修正带来的两个直接效果：</strong>
+    <ol style="margin:6px 0">
+      <li><strong>缺陷不再被送检堵住。</strong>研发该改就改，整改周期不被 3 个月的外部周期绑架；内部验证通过即算技术闭环，客户侧可以先靠围堵措施应对。</li>
+      <li><strong>但样机准备被顶到最前面。</strong>既然送检排到了整改之后，那"前面省下的时间"必须用来备样机——否则就是把等待从前面挪到后面，总时长一点没省。</li>
+    </ol>
+  </div>
+
+  <h4>4.4 送检样机提前准备，具体要定哪三件事</h4>
+  <table>
+    <thead><tr><th style="width:20%">要定什么</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>① 样机来源</strong></td><td><strong>工程样机 / 量产抽样 / 库存机</strong>三选一，写进 DEF-038 备注。来源决定备料路径长短：量产抽样要等排产窗口，工程样机要排试制</td></tr>
+      <tr><td class="n"><strong>② 数量</strong></td><td>型式试验有抽样台数要求，<strong>数量未定就没法备料</strong>。❓ 具体台数需按 GB 16808-2025 与沈阳消防研究所要求确认（附录 ❓A2）</td></tr>
+      <tr><td class="n"><strong>③ 状态一致性</strong></td><td class="req">★ <strong>必须是走完 ECN 的正式状态</strong>，不能是工程师手改、飞线、临时改料板。手改板送检 = 检的不是要生产的东西，结论无效且白花钱</td></tr>
+    </tbody>
+  </table>
+  <div class="danger">
+    <strong>这是全流程最容易被忽视的一处：</strong>整改完成、内部验证全过、大家都以为快结束了，结果发现手里<strong>没有一台合规状态的样机</strong>——要么是手改的，要么固件版本对不上，要么数量不够。于是从零开始备料排产，前面省的时间全还回去，还可能连带错过交付节点。<br>
+    <strong>对策分两层：① T0 当天锁定方案（T3a ≤ T2），这一步没有任何物理障碍，纯靠流程；② 物理齐套按整改类型分判——改固件的用「T3b ≤ T2」硬卡，换料的把 T3b 压到只剩新料最短周期。</strong>
+  </div>
+
+  <h4>4.5 对状态机与 KPI 口径的连带修正</h4>
+  <p>v1.2 因为假设「送检阻塞整改」，把整个等待期都算成外部时间。修正后需同步改三处，否则 KPI 会变得比修正前更失真：</p>
+  <table>
+    <thead><tr><th style="width:24%">项目</th><th style="width:32%">v1.2 口径</th><th>v1.3 修正</th></tr></thead>
+    <tbody>
+      <tr><td class="n">「等待送检（外部）」起点</td><td>判定为③即进入</td><td><strong>整改完成 + 内部验证通过</strong>后才进入。整改期间仍是「对策中 / 验证中」</td></tr>
+      <tr><td class="n">内部时长是否豁免</td><td>等待期整体豁免</td><td class="req"><strong>不豁免整改期</strong>——判为③的缺陷，整改慢照样算内部超期。送检只豁免外部等待段</td></tr>
+      <tr><td class="n">催办时点</td><td>按「预计送检完成日」提醒</td><td>新增一条：<strong>判定=③当天生成「样机准备」待办</strong>，并在 T2 前 15 天检查 T3a 是否已锁定、T3b 是否已齐套（按整改类型判）</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s5">五、字段字典（10 必填 + 39 其余）</h2>
+  <div class="card key">
+    <h4>配置原则</h4>
+    <ul style="margin:6px 0">
+      <li><strong>最小必填集 = 10 个人工必填</strong>：一线能立刻填、且决定后续能否推进的最少集合</li>
+      <li><strong>条件必填</strong>：满足触发条件才必填（如"涉及变更 → 变更影响判定必填"）</li>
+      <li><strong>属性可调</strong>：每个字段的「必填 / 条件必填 / 非必填 / 系统自动」与「显示 / 隐藏」均可调，配套工具 <code>缺陷闭环系统_字段配置器.html</code>（v1.3 已同步，双击本地打开、可离线用）</li>
+      <li><strong>v1.3 字段总数 49 个</strong>（A-H 组）+ 4 个状态与时效字段（I 组，系统维护）</li>
+    </ul>
+  </div>
+
+  <h4>10 个人工必填字段（一线登记最小集，v1.3 未变动）</h4>
+  <table>
+    <thead><tr><th style="width:6%">#</th><th style="width:20%">字段</th><th style="width:10%">类型</th><th>为什么必须填</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>来源渠道</td><td>单选</td><td>区分售后 / 产线 / 来料 / 测试，决定后续流向</td></tr>
+      <tr><td>2</td><td>报告人 · 部门</td><td>成员</td><td>便于回访补信息</td></tr>
+      <tr><td>3</td><td>产品型号</td><td>单选</td><td><strong>四选一</strong>（AEC2301 / AEC2393B / AEC2392BS / AEC2392BM），禁手填</td></tr>
+      <tr><td>4</td><td>批次号</td><td>文本</td><td>批次性问题的唯一抓手</td></tr>
+      <tr><td>5</td><td><strong>固件版本号</strong></td><td>文本</td><td class="req">★ 控制器缺陷与固件强相关；且固件变更属认证关键变更，版本号是一致性追溯依据</td></tr>
+      <tr><td>6</td><td>发现环节</td><td>单选</td><td>来料 / 过程 / 终测 / 老化 / 安装调试 / 客户使用</td></tr>
+      <tr><td>7</td><td>现象描述（原话）</td><td>长文本</td><td>保留原始口语，不得改写</td></tr>
+      <tr><td>8</td><td>附件</td><td>文件/图片</td><td>照片 / 波形 / 日志；硬件问题几乎全靠证据</td></tr>
+      <tr><td>9</td><td>发生台数 / 频次</td><td>数值</td><td>单台 / 多台 / 批次性</td></tr>
+      <tr><td>10</td><td><strong>是否安全相关</strong></td><td>是否</td><td class="req">★ 是 → 强制走最高优先级（人身安全 / 火灾 / 触电）</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:13.5px">注：<strong>严重度</strong>不列入一线必填，由<strong>质量部在受理时定级</strong>（条件必填），避免"都报紧急"。</p>
+
+  <h4>A. 标识与追溯（10 个）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:12%">必填态</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>缺陷编号</td><td>自动</td><td class="n">系统自动</td><td>如 <code>DEF-2026-0012</code></td></tr>
+      <tr><td>来源渠道</td><td>单选</td><td class="n"><span class="req">必填</span></td><td>售后 / 产线 / 来料 / 测试 / 市场 / 客诉</td></tr>
+      <tr><td>报告人 · 部门</td><td>成员</td><td class="n"><span class="req">必填</span></td><td>便于回访补信息</td></tr>
+      <tr><td>报告日期</td><td>日期</td><td class="n">系统自动</td><td>自动记录</td></tr>
+      <tr><td>产品型号</td><td>单选</td><td class="n"><span class="req">必填</span></td><td>四选一：AEC2301 / AEC2393B / AEC2392BS / AEC2392BM</td></tr>
+      <tr><td>批次号</td><td>文本</td><td class="n"><span class="req">必填</span></td><td>批次性问题的唯一抓手</td></tr>
+      <tr><td>序列号 SN</td><td>文本</td><td class="n">非必填</td><td>单台定位；无法获取时注明原因</td></tr>
+      <tr><td><strong>固件版本号</strong></td><td>文本</td><td class="n"><span class="req">必填</span></td><td><strong>最关键强制项</strong>；固件变更属认证关键变更</td></tr>
+      <tr><td>硬件 / PCB 版本</td><td>文本</td><td class="n">非必填</td><td>与固件版本配合定位</td></tr>
+      <tr><td>发现环节</td><td>单选</td><td class="n"><span class="req">必填</span></td><td>来料 / 过程 / 终测 / 老化 / 安装调试 / 客户使用</td></tr>
+    </tbody>
+  </table>
+
+  <h4>B. 缺陷描述（6 个）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:12%">必填态</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>现象描述（原话）</td><td>长文本</td><td class="n"><span class="req">必填</span></td><td><strong>保留原始口语，不得改写</strong></td></tr>
+      <tr><td>结构化现象</td><td>长文本</td><td class="n">非必填</td><td>AI 提取 + 人工确认</td></tr>
+      <tr><td>附件</td><td>文件/图片</td><td class="n"><span class="req">必填</span></td><td>照片 / 波形 / 日志 / 视频</td></tr>
+      <tr><td>复现条件</td><td>文本</td><td class="n">非必填</td><td>能否稳定复现，决定根因分析难度</td></tr>
+      <tr><td>发生台数 / 频次</td><td>数值</td><td class="n"><span class="req">必填</span></td><td>单台 / 多台 / 批次性</td></tr>
+      <tr><td>已出货影响范围</td><td>文本</td><td class="n">非必填</td><td>用于召回 / 围堵决策</td></tr>
+    </tbody>
+  </table>
+
+  <h4>C. 定级与围堵（5 个）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:12%">必填态</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>严重度</td><td>单选</td><td class="n">条件必填</td><td>受理时由<strong>质量部</strong>定级（S/A/B/C）</td></tr>
+      <tr><td><strong>是否安全相关</strong></td><td>是否</td><td class="n"><span class="req">必填</span></td><td>是 → 强制最高优先级</td></tr>
+      <tr><td>紧急围堵措施</td><td>长文本</td><td class="n">条件必填</td><td>触发：严重度 S / A</td></tr>
+      <tr><td>围堵完成日期</td><td>日期</td><td class="n">非必填</td><td>统计响应速度</td></tr>
+      <tr><td>是否需上报 / 召回评估</td><td>是否</td><td class="n">条件必填</td><td>触发：安全相关或 S 级；<strong>仅人工判定</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h4>D. 根因分析（5 个）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:12%">必填态</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>根因分类</td><td>单选</td><td class="n">条件必填</td><td>触发：进入③；硬件 / 固件 / 来料 / 工艺 / 误用</td></tr>
+      <tr><td>责任方</td><td>单选</td><td class="n">条件必填</td><td>触发：进入③</td></tr>
+      <tr><td>分析方法</td><td>多选</td><td class="n">非必填</td><td>5Why / 鱼骨 / FTA / 失效复现</td></tr>
+      <tr><td>根因描述</td><td>长文本</td><td class="n">条件必填</td><td>触发：进入③；须写明因果链与证据</td></tr>
+      <tr><td>相似历史缺陷编号</td><td>关联</td><td class="n">非必填</td><td>AI 检索推荐，工程师选定或否决</td></tr>
+    </tbody>
+  </table>
+
+  <h4>E. 对策（6 个）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:12%">必填态</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>围堵措施（临时）</td><td>长文本</td><td class="n">非必填</td><td>止血用的短期手段</td></tr>
+      <tr><td>永久对策</td><td>长文本</td><td class="n">条件必填</td><td>触发：进入③</td></tr>
+      <tr><td>对策类型</td><td>多选</td><td class="n">条件必填</td><td>触发：进入③；改设计 / 改固件 / 改工艺 / 换料 / 改检验 / 培训 / 更新文件</td></tr>
+      <tr><td>ECN 单号</td><td>文本</td><td class="n">条件必填</td><td>触发：对策含改设计 / 改固件</td></tr>
+      <tr><td><strong>是否涉及设计 / 固件 / 元器件变更</strong><span class="pill">v1.3 改名</span></td><td>是否</td><td class="n">条件必填</td><td class="req">★ 触发：进入③。范围=固件 / 软件变更、涉及安全的元器件（开关电源 / 电池 / 安规电容 / 继电器 / 短路保护器件等）、其他影响认证一致性的设计变更。<strong>只答事实「改没改」，不作报备判断</strong>——要不要报备 / 送检由 F 组 DEF-034 判定</td></tr>
+      <tr><td>SCAR 单号</td><td>文本</td><td class="n">条件必填</td><td>触发：责任方为供应商</td></tr>
+    </tbody>
+  </table>
+
+  <h4>F. 认证合规 · 变更影响判定（8 个，v1.3 由 5 个扩为 8 个）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:12%">必填态</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>认证证书编号</td><td>文本</td><td class="n">非必填</td><td><strong>按型号填写</strong>（四款型号各自对应证书）；认证类别「型式试验」与发证机构「沈阳消防研究所」为常量，写在表单顶部说明，不占字段</td></tr>
+      <tr><td><strong>变更影响判定</strong><span class="pill">v1.3 新增</span></td><td>单选</td><td class="n">条件必填</td><td class="req">★ 全流程核心判定。触发：DEF-031 = 是。四档：<strong>① 无需报备　② 仅需报备　③ 报备且需送检　④ 待认证机构确认</strong>。四种走向的流程完全不同，见 4.2</td></tr>
+      <tr><td><strong>判定依据与判定人</strong><span class="pill">v1.3 新增</span></td><td>长文本</td><td class="n">条件必填</td><td class="req">★ 触发：DEF-034 为 ②③④。<strong>写明"改了哪些内容 + 依据什么判成这个结论"，质量 + 认证对接人双签</strong>。这是事后唯一能解释判断的凭证，也是外部审核的直接证据</td></tr>
+      <tr><td>报备单号 / 回执</td><td>文本</td><td class="n">条件必填</td><td>触发：DEF-034 为 ②或③。<strong>先备案后实施</strong>，回执到手才允许实施永久对策；判为①无须、④暂缓</td></tr>
+      <tr><td><strong>送检范围</strong></td><td>单选</td><td class="n">条件必填</td><td>触发：DEF-034 为 ③。<strong>全项 / 差异项 / 待定</strong>（由质量与沈阳消防研究所确认后选定）</td></tr>
+      <tr><td><strong>送检样机准备状态</strong><span class="pill">v1.3 新增</span></td><td>单选</td><td class="n">条件必填</td><td class="req">★ 触发：DEF-034 为 ③，<strong>且触发点 = 判定当天</strong>（不等整改完成）。<strong>未启动 / 备料中 / 已齐套待寄 / 已寄出</strong>。备注须写<strong>样机来源</strong>（工程样机 / 量产抽样 / 库存机）与<strong>数量</strong></td></tr>
+      <tr><td><strong>预计送检完成日</strong></td><td>日期</td><td class="n">条件必填</td><td>触发：DEF-034 为 ③。<strong>全项约 3 个月</strong>；用于把外部等待段从内部闭环周期里剥离，避免误判超期</td></tr>
+      <tr><td>送检结论</td><td>单选</td><td class="n">条件必填</td><td>触发：DEF-038 为「已寄出」后。通过 / 不通过 / 有条件通过；<strong>不通过则打回阶段③重做对策</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h4>G. 验证（4 个）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:12%">必填态</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>验证方式</td><td>多选</td><td class="n">条件必填</td><td>触发：进入④；台架 / 老化 / <strong>EMC 复测</strong> / 环境试验 / 小批试产 / 现场试点</td></tr>
+      <tr><td>样本量与结果</td><td>文本</td><td class="n">条件必填</td><td>触发：进入④；样本量须写明</td></tr>
+      <tr><td>验证结论</td><td>单选</td><td class="n">条件必填</td><td>触发：进入④</td></tr>
+      <tr><td>验证人</td><td>成员</td><td class="n">条件必填</td><td>触发：进入④；独立验证人</td></tr>
+    </tbody>
+  </table>
+
+  <h4>H. 关闭与横展（5 个）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:12%">必填态</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>标准化横展项</td><td>多选</td><td class="n">条件必填</td><td>触发：进入④；DFMEA / PFMEA / 设计规范 / 检验标准 / 作业指导书 / BOM 优选 / 测试用例 / 服务通告</td></tr>
+      <tr><td>横展完成确认</td><td>是否</td><td class="n">非必填</td><td>须附更新后的文件佐证</td></tr>
+      <tr><td>关闭日期</td><td>日期</td><td class="n">非必填</td><td>进入监控期的起点</td></tr>
+      <tr><td>关闭评审签字</td><td>成员</td><td class="n">条件必填</td><td>触发：进入⑤；质量经理把关</td></tr>
+      <tr><td>复发监控到期日</td><td>日期</td><td class="n">非必填</td><td>建议 3~6 个月；到期无复发方可终态关闭</td></tr>
+    </tbody>
+  </table>
+
+  <h4>I. 状态与时效（4 个，系统自动维护，不计入 49）</h4>
+  <table>
+    <thead><tr><th style="width:22%">字段</th><th style="width:14%">类型</th><th style="width:12%">必填态</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>当前状态</td><td>单选</td><td class="n">系统自动</td><td>含「等待送检（外部）」，起点=整改完成 + 内部验证通过</td></tr>
+      <tr><td>当前责任人</td><td>成员</td><td class="n">系统自动</td><td>随阶段流转</td></tr>
+      <tr><td>各阶段时间戳</td><td>日期</td><td class="n">系统自动</td><td>含 T0~T5 六节点及送检起止，用于拆分口径</td></tr>
+      <tr><td>超期天数</td><td>计算</td><td class="n">系统自动</td><td>仅豁免送检外部等待段，<strong>整改期不豁免</strong>（见 4.5）</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:13.5px">字段统计核对（与《字段配置器》默认值一致，已脚本自检 + 无头浏览器渲染验证）：A10 + B6 + C5 + D5 + E6 + <strong>F8</strong> + G4 + H5 = <strong>49 个字段</strong>；其中<strong>人工必填 10</strong>、条件必填 <strong>24</strong>、非必填 <strong>13</strong>、系统自动 <strong>2</strong>。即 <strong>10 必填 + 39 其余</strong>。编号 DEF-001 ~ DEF-049 连续唯一，无悬空引用。</p>
+
+  <h2 id="s6">六、严重度定义与响应时限</h2>
+  <table>
+    <thead><tr><th style="width:10%">等级</th><th style="width:30%">定义</th><th style="width:20%">首响时限</th><th>处置要求</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>S 致命</strong></td><td>涉及人身安全（触电 / 火灾）；主要功能丧失且无替代方案；批量性失效</td><td class="n"><strong>24 小时内</strong></td><td>立即围堵；<strong>上报最高层并评估召回</strong>；每日跟踪</td></tr>
+      <tr><td class="n"><strong>A 严重</strong></td><td>主要功能失效；导致停线或批量返工；客户强烈投诉</td><td class="n"><strong>48 小时内</strong></td><td>围堵 + 根因并行；每周复盘</td></tr>
+      <tr><td class="n"><strong>B 一般</strong></td><td>部分功能异常，存在可接受替代方案</td><td class="n">5 个工作日内</td><td>纳入常规排期</td></tr>
+      <tr><td class="n"><strong>C 轻微</strong></td><td>外观 / 体验 / 文档类，不影响功能</td><td class="n">按需排期</td><td>可合并批处理</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s7">七、AI 自动化节点清单</h2>
+  <table>
+    <thead><tr><th style="width:6%">编号</th><th style="width:14%">节点</th><th style="width:14%">触发时机</th><th style="width:24%">AI 做什么</th><th style="width:20%">人工确认点</th><th>边界</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>A1</strong></td><td>结构化提取</td><td>缺陷登记提交时</td><td>抽取型号 / 批次 / SN / 固件版本 / 现象 / <em>建议</em>严重度</td><td><strong>必须人工确认后才可入库</strong></td><td>不得自行定级</td></tr>
+      <tr><td class="n"><strong>A2</strong></td><td>相似案例检索（RAG）</td><td>进入根因分析时</td><td>检索历史缺陷库 / EMC 案例库 / <strong>历史认证变更记录</strong>，返回 Top-N 相似案例及其根因与对策</td><td>工程师选定或否决</td><td>仅作候选，不作结论</td></tr>
+      <tr><td class="n"><strong>A3</strong></td><td>对策草稿生成</td><td>根因确定后</td><td>起草 8D 报告初稿 / 围堵建议清单</td><td><strong>必须由工程师改写并签字</strong></td><td>不得直接对外发出</td></tr>
+      <tr><td class="n"><strong>A4</strong></td><td>知识入库</td><td>缺陷关闭时</td><td>生成规范化案例摘要、打标签、写入向量库</td><td>质量经理确认关闭后才入库</td><td>敏感字段须脱敏后入云端版本</td></tr>
+      <tr><td class="n"><strong>A5</strong></td><td>到期催办 / 周报</td><td>每日定时</td><td>超期提醒、周报汇总、Pareto；<strong>判为③的额外两条待办</strong>：判定当天生成「样机准备」，T2 前 15 天未齐套则升级提醒</td><td>无需确认（通知类）</td><td><strong>仅通知，不得自动改状态</strong></td></tr>
+    </tbody>
+  </table>
+  <div class="okbox">
+    <strong>v1.3 增强点（A2）：</strong>把「历史变更影响判定记录」（DEF-034 + DEF-035 依据）纳入检索语料后，当新缺陷的对策涉及改固件或换安全元器件时，系统能提示<strong>"同类变更历史上被判为② / ③，当时的依据是……"</strong>——注意提示的是<strong>先例与依据</strong>，不是结论。这既加快了人工判定，又保留了人的裁量权（红线第 4 条）。随着案例积累，判定速度会明显提升，这是这套系统最容易被人低估的复利。
+  </div>
+
+  <h2 id="s8">八、AI 边界红线</h2>
+  <div class="danger">
+    <strong>四条不可逾越：</strong>
+    <ol>
+      <li><strong>AI 不得判定安全 / 召回级缺陷的责任结论</strong>——必须人工签字</li>
+      <li><strong>AI 不得自动变更缺陷状态或自动关闭工单</strong>——只能提醒</li>
+      <li><strong>AI 草稿不得直接对外</strong>（对客户 / 对供应商）——必须经责任人确认发出</li>
+      <li class="req"><strong>AI 不得判定「变更影响」（四档结论）</strong>——GB 16808-2025 型式试验（沈阳消防研究所）下的报备 / 送检判定，必须由质量 + 认证对接人人工完成并双签；AI 只能返回历史同类变更的判定先例与依据（v1.3 表述修正：从「不得判定是否报备」扩为「不得判定四档」）</li>
+    </ol>
+  </div>
+
+  <h2 id="s9">九、平台选型与落地路线</h2>
+  <div class="danger">
+    <strong>数据主权红线（优先级最高）：</strong>本系统数据是<strong>真实的公司资产</strong>，含型号 / 批次 / 供应商 / 失效率 / 成本，且关联 GB 16808-2025 认证一致性信息。<strong>禁止流入扣子等第三方公共云端 AI 平台</strong>。数据应留存于企业微信 / 腾讯云生态内，或本地 / 私有化部署；第三方云端仅用于练手演示且必须用假数据。
+  </div>
+  <table>
+    <thead><tr><th style="width:10%">阶段</th><th style="width:24%">做什么</th><th style="width:24%">用什么</th><th>产出 / 验收</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>Phase 0</strong><span class="done">可结项</span></td><td>字段字典定稿 + 严重度定义 + 认证判定模型确认</td><td>本方案 + 字段配置器 + 评审会</td><td class="done">判定模型定稿（两级四档）；49 字段配置导出；<strong>剩一张"四档判定对照表"待与认证对接人共同定稿</strong></td></tr>
+      <tr><td class="n"><strong>Phase 1</strong><span class="pill">当前应做</span></td><td><strong>零开发跑真实数据</strong>：一个入口收单 + 一张表当库 + 人工流转</td><td>企业微信表单 / 收集表 + 腾讯文档 · 多维表格</td><td>连续 2 周、≥20 条真实缺陷入库；字段够用、一线愿意填</td></tr>
+      <tr><td class="n"><strong>Phase 2</strong></td><td>轻量自动化：超期催办、周报汇总、送检到期提醒、<strong>样机准备待办</strong></td><td>企业微信群机器人 Webhook，或本地 n8n</td><td>催办能发出；<strong>判定=③当天能生成样机待办</strong>；送检等待期不误报超期</td></tr>
+      <tr><td class="n"><strong>Phase 3</strong></td><td>AI 增强层：相似案例检索 + 结构化提取 + 草稿生成</td><td><strong>本地 / 私有化 Dify</strong> + 缺陷案例向量库</td><td>A2 命中率可用；A1 人工修正率低</td></tr>
+      <tr><td class="n"><strong>Phase 4</strong></td><td>质量看板与指标复盘（含 MTTC 双口径）</td><td>多维表格 / BI 看板</td><td>Pareto、闭环周期（内部/总计）、复发率可视</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s10">十、度量指标（KPI，含送检与判定口径）</h2>
+  <table>
+    <thead><tr><th style="width:26%">指标</th><th style="width:30%">定义</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td><strong>MTTC-内部</strong></td><td>登记到<strong>「整改完成 + 内部验证通过」</strong>的天数，<strong>只扣送检外部等待段</strong></td><td><strong>评价团队真实处理效率</strong>（汇报用这个）。v1.3 修正：判为③的整改期<strong>照常计入</strong>，不再整体豁免</td></tr>
+      <tr><td><strong>MTTC-总计</strong></td><td>登记到<strong>关闭</strong>的天数，含送检等待</td><td>对外 / 合规汇报；与内部口径对照可看出外部依赖占比</td></tr>
+      <tr><td><strong>变更影响判定及时率</strong><span class="pill">v1.3 新增</span></td><td>DEF-031 = 是 到 DEF-034 出结论的天数（目标 ≤ 3 个工作日）</td><td class="req">判定慢，后面全慢。这是整条认证链路的<strong>第一个节拍器</strong></td></tr>
+      <tr><td><strong>变更分档分布</strong><span class="pill">v1.3 新增</span></td><td>①②③④ 四档各占已判定缺陷的比例</td><td>比单一「触发占比」信息量大得多：③ 占比高说明改动多落在型试关键特性上，是设计质量的信号</td></tr>
+      <tr><td><strong>样机准备及时率</strong><span class="pill">v1.3 修正</span></td><td><strong>① T3a ≤ T2</strong>（方案锁定早于整改完成）的占比，<strong>所有判为③的都计入分母</strong>；<br><strong>② 改固件类</strong>另看 T3b ≤ T2 的占比；<strong>换料类</strong>看 T3b − T2 是否超出新料最短周期</td><td class="req">★ 直接衡量"提前准备样机"是否真落地。指标① 没有任何客观借口，低了就是流程没跑起来</td></tr>
+      <tr><td>超期率</td><td>超过响应时限未推进的占比（<strong>仅</strong>豁免送检外部等待段）</td><td>过程管控，触发催办</td></tr>
+      <tr><td><strong>复发率</strong></td><td>关闭后监控期内再次发生的占比</td><td><strong>衡量对策是否真有效（最关键）</strong></td></tr>
+      <tr><td>根因分类 Pareto</td><td>按设计 / 固件 / 来料 / 工艺分布</td><td>指引改进资源投向</td></tr>
+      <tr><td><strong>认证报备及时率</strong></td><td>判为<strong>②③</strong>的缺陷中，<strong>在实施对策前完成备案</strong>的比例（<strong>分母不含判为①的</strong>，v1.3 修正）</td><td class="req">直接监控合规风险敞口（对应"先备案后实施"）</td></tr>
+      <tr><td>送检按时回填率</td><td>预计送检完成日到期时，结论已回填的比例</td><td>防止送检石沉大海</td></tr>
+      <tr><td>外部失败成本 / 供应商评分</td><td>保修返工索赔合计 / SCAR 闭环质量</td><td>向管理层要资源 / 采购决策</td></tr>
+      <tr><td>AI 结构化修正率</td><td>A1 预填字段被人工改动的比例</td><td>决定是否调优</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>一句话记住口径差别：</strong><code>MTTC-内部</code> 问的是「我们干活快不快」，<code>MTTC-总计</code> 问的是「客户等多久」。判为③的缺陷这两者必然差约 3 个月，<strong>两个都要看；混在一起看就是自欺</strong>。
+  </div>
+
+  <h2 id="s11">十一、风险与对策</h2>
+  <table>
+    <thead><tr><th style="width:24%">风险</th><th style="width:34%">表现</th><th>对策</th></tr></thead>
+    <tbody>
+      <tr><td>一线不愿填</td><td>字段太多，绕开系统</td><td><strong>已按 10 个必填最小化</strong>；其余随流程补录；AI 预填降负担</td></tr>
+      <tr><td>严重度通胀</td><td>都报 S/A，分级失效</td><td>严重度由<strong>质量部</strong>定级；定义三方签字</td></tr>
+      <tr><td class="req">判定过紧，把一切改动都判③<br><span class="pill">v1.3 新增风险</span></td><td>固件一个小改动也要排 3 个月送检；送检队列拥堵，一线干脆绕开系统改</td><td><strong>四档判定 + 依据留痕 + 「变更分档分布」KPI</strong> 三重约束；若 ③ 占比长期畸高，就是判定标准需要重新对齐的信号（不是执行问题）</td></tr>
+      <tr><td class="req">判定过松，该报备的漏报<br><span class="pill">v1.3 新增风险</span></td><td>为了跑得快，一律判①；认证一致性在无声中失控</td><td><strong>质量 + 认证对接人双签</strong>（DEF-035）；<strong>认证报备及时率</strong>纳入考核；定期抽查已判①的记录</td></tr>
+      <tr><td class="req">固件变更绕过认证<br><span class="pill">v1.2 新增风险</span></td><td>研发随手发固件版本，未走判定，认证一致性断链</td><td><strong>固件版本发布必须关联缺陷单号或 ECN 单号</strong>；对策类型含"改固件"时强制弹出 DEF-031 / DEF-034</td></tr>
+      <tr><td class="req">样机晚到，白等一轮<br><span class="pill">v1.3 新增风险</span></td><td>整改全过才发现没有合规状态样机（手改板 / 固件对不上 / 数量不够），从零备料</td><td><strong>判定当天锁定方案（T3a ≤ T2）+ 按整改类型卡物理齐套 + 「样机准备及时率」KPI</strong>；阶段④ 出口校验样机是否齐套</td></tr>
+      <tr><td class="req">送检期僵尸工单<br><span class="pill">v1.2 新增风险</span></td><td>等 3 个月无人跟进，或催办系统疯狂误报</td><td>「等待送检（外部）」状态 + 按预计完成日提醒 + MTTC 双口径</td></tr>
+      <tr><td>认证合规风险<br><span class="done">已识别并设防</span></td><td>改设计 / 固件 / 安全元器件未按判定流程走</td><td><strong>三重防线</strong>：字段条件必填（DEF-031→034→035 链条）+ 阶段③「判定结论已出」硬校验 + KPI 监控（判定及时率 / 报备及时率 / 分档分布）</td></tr>
+      <tr><td>未接 ECN / SCAR</td><td>改了没留痕，追溯断链</td><td>出口标准硬校验</td></tr>
+      <tr><td>数据泄露</td><td>真实数据进第三方云端</td><td>见第九章红线；技术选型一票否决</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s12">十二、下一步行动清单</h2>
+  <div class="card key">
+    <ol>
+      <li><strong>已完成（v1.3）：</strong>修正认证判定模型为「两级四档」；放开「先整改后送检」；新增样机提前准备要求；配置器与方案书同步更新，字段自检通过（49 个）</li>
+      <li><strong>本周：</strong>用《字段配置器》勾选定稿 → <strong>导出 JSON / CSV 留存</strong> → 作为建表依据</li>
+      <li><strong>本周：</strong>与质量、认证对接人一起把<strong>四档判定标准写成一张一页纸的对照表</strong>（什么情形落① / ② / ③ / ④），张贴在判定人看得见的地方。这是 v1.3 最关键的一件落地动作——判定标准不统一，四档就白设</li>
+      <li><strong>本周：</strong>与质量、售后、生产、研发四方对齐<strong>严重度定义</strong>与<strong>四款型号字典值</strong></li>
+      <li><strong>本周：</strong>落地流程约束 —— <strong>固件版本发布必须关联缺陷单号或 ECN 单号</strong></li>
+      <li><strong>下周：</strong>按配置器导出结果在企微表单建表（先只放必填 + 常用字段），<strong>零开发启动</strong>，跑 2 周真实数据</li>
+      <li><strong>两周后复盘：</strong>重点看三件事——有多少字段没人填、判定平均耗时多少天、③ 档占比是否畸高</li>
+    </ol>
+  </div>
+  <div class="okbox">
+    <strong>一句话总结 v1.3：</strong>把「认证变更」这团模糊的顾虑，拆成了三道各自清楚的关口——<strong>改没改</strong>（事实）、<strong>要不要报备 / 送检</strong>（四档判断）、<strong>样机什么时候备</strong>（工程节奏）。前两道防止漏合规，第三道防止白等 3 个月。<strong>先用两周真实数据说话，比先搭一个漂亮但没人用的系统重要十倍。</strong>
+  </div>
+
+  <h2 id="s13">附、待确认事项（❓）</h2>
+  <table>
+    <thead><tr><th style="width:8%">编号</th><th style="width:34%">待确认内容</th><th>为什么影响设计</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>A1</strong></td><td>四档判定的<strong>具体边界</strong>——哪些改动落①（无需报备）、哪些落②（仅报备）、哪些落③（报备+送检）、哪些需先问机构（④）</td><td>边界不清，判定就会因人而异、因赶进度而异。<strong>未确认前一律人工判定并留依据</strong>，系统不做任何自动推断</td></tr>
+      <tr><td class="n"><strong>A2</strong></td><td>型式试验<strong>抽样台数</strong>（每个型号 / 每次送检需要几台）、是否允许用<strong>量产抽样</strong>代替工程样机</td><td>决定「送检样机准备」要提前多久启动、要不要单独排试制。<strong>数量不定，T3a 就锁不了（方案未定），T3b 也无从检查</strong></td></tr>
+      <tr><td class="n"><strong>A3</strong></td><td>送检「全项 vs 差异项」的<strong>选取规则</strong>（什么情形可只做差异项）</td><td>全项 3 个月、差异项更短，直接决定闭环周期预估。字段已设为可选（全项 / 差异项 / 待定）</td></tr>
+      <tr><td class="n"><strong>A4</strong></td><td>备案的<strong>受理时限与材料清单</strong>（提交后多久出回执、需要哪些文件）</td><td>决定阶段③ 的「等回执」会不会成为新瓶颈，以及是否需要为安全相关缺陷留一条应急通道</td></tr>
+      <tr><td class="n"><strong>A5</strong></td><td>判定为③（或②）后，若整改方案在实施中<strong>发生变化</strong>（比备案时改得更多 / 更少 / 换了项），<strong>是否需要补充或重新备案</strong></td><td>是否<strong>重新判定</strong>内部已定（<strong>一定重新判定</strong>，见下方说明）；但<strong>对外是否需补充备案，取决于机构的受理规则</strong>，不是我们能单方面定的。建议问法：「备案提交后，若实际实施的设计变更范围与备案内容不一致（扩大、缩小或换项），是否需重新提交备案？是否存在幅度阈值？」</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>关于 A5 为什么必须问机构，而不是自己定一条规则：</strong>
+    <ol style="margin:6px 0">
+      <li><strong>备案是对外行为，有效性由受理方认定。</strong>内部流程管得住我们自己，管不住机构认不认。自己定"改一点不用补备案"，出了事责任在公司，不在流程文件。</li>
+      <li><strong>超出备案范围，性质就变了。</strong>举例：判②按"改 A"备案并拿到回执，实施中发现光改 A 不够、得连 B 一起改，而 B 也在型式试验覆盖范围内。此时已<strong>超出备案范围</strong>，机构可能认定实际做的是未备案变更，原回执对 B 无效。注意"少改"一般不算新变更，"多改 / 换项"才是风险点。</li>
+      <li><strong>这类细节不会写进公开文件。</strong>法规写"变更需备案"，但"幅度多大算新变更、缩小要不要补报"属于受理时的操作惯例，只能直接问对接人。</li>
+    </ol>
+    <strong>所以按两层执行，不要混：</strong>
+    <table style="margin:6px 0">
+      <tbody>
+        <tr><td class="n" style="width:22%"><strong>内部（已定）</strong></td><td>整改方案只要变化，<strong>一律重新判定</strong>；DEF-034 允许被改写但<strong>保留历次版本与依据</strong>，不得覆盖</td></tr>
+        <tr><td class="n"><strong>对外（待确认）</strong></td><td>是否需补充备案，<strong>按机构答复执行</strong>。这样即使答复慢，内部判定也不会失控</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="foot">
+    版本：v1.3（2026-10-27 初版；2026-10-28 修订：T3 拆为 T3a / T3b 并按整改类型分判、A5 拆为"内部重新判定"与"对外补充备案"两层）　·　配套文件：<code>缺陷闭环系统_字段配置器.html</code>（本地网页，双击打开、可离线；可勾选必填/显示、导出 JSON/CSV、打印）<br>
+    适用：AEC2301 / AEC2393B / AEC2392BS / AEC2392BM　·　GB 16808-2025　·　型式试验　·　发证机构：沈阳消防研究所<br>
+    认证基线（已确认事实）：固件 / 软件变更及开关电源、电池、安规电容、继电器、短路保护器件等安全元器件变更，<strong>落入必须判定的范围</strong>；判为需报备的<strong>先备案后实施</strong>；判为需送检的<strong>可整改后送检，样机须提前准备</strong>；全项送检约 3 个月；证书按型号管理。<br>
+    流程框架参考 8D 与 FRACAS；平台选型遵循"数据不出企业边界"原则。v1.0 ~ v1.2 保留备查，<strong>评审与建表请以 v1.3 为准</strong>。
+  </div>
+
+</div>
+</body>
+</html>
