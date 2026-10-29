@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>缺陷闭环系统 · 智能表格建表作业单 v2</title>
+<style>
+  :root{
+    --bg:#f6f6f4; --panel:#ffffff; --text:#1d1d1b; --muted:#6b6b66; --line:#e2e2dd;
+    --accent:#2b6cb0; --ok:#1d9e75; --warn:#b7791f; --code:#f1efe8; --bad:#c0392b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141414; --panel:#1c1c1c; --text:#ececec; --muted:#a0a09a; --line:#2e2e2c;
+      --accent:#7fb3e8; --ok:#5bceaa; --warn:#e0b25c; --code:#242424; --bad:#e57373;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.75}
+  .wrap{max-width:980px;margin:0 auto}
+  h1{font-size:23px;font-weight:600;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:10px}
+  h2{font-size:18px;font-weight:600;margin:36px 0 12px;padding-left:10px;border-left:3px solid var(--accent)}
+  h3{font-size:15.5px;font-weight:600;margin:22px 0 8px}
+  h4{font-size:14px;font-weight:600;margin:16px 0 6px;color:var(--muted)}
+  p{margin:8px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0}
+  .key{border-color:var(--accent)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12.5px;background:var(--code)}
+  tr:last-child td{border-bottom:none}
+  td.n{white-space:nowrap}
+  td.i{color:var(--muted);font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:nowrap}
+  td.mono{font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:12.5px;
+    font-family:ui-monospace,Consolas,monospace}
+  pre{background:var(--code);padding:12px 14px;border-radius:8px;white-space:pre-wrap;
+    font-size:13px;line-height:1.7;font-family:inherit;margin:10px 0;border:1px dashed var(--line)}
+  .note{border-left:3px solid var(--warn);padding:2px 0 2px 14px;color:var(--muted);margin:14px 0;font-size:13.5px}
+  .danger{border-left:3px solid var(--bad);padding:8px 0 8px 14px;margin:14px 0;font-size:13.5px}
+  .okbox{border-left:3px solid var(--ok);padding:8px 0 8px 14px;margin:14px 0;font-size:13.5px}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--accent);
+    color:var(--accent);margin-left:6px;vertical-align:2px}
+  .p-b{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--bad);
+    color:var(--bad);margin-left:6px;vertical-align:2px}
+  .p-g{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--ok);
+    color:var(--ok);margin-left:6px;vertical-align:2px}
+  .req{color:var(--bad);font-weight:600}
+  .done{color:var(--ok);font-weight:600}
+  .chk{font-family:ui-monospace,Consolas,monospace}
+  .foot{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 20px;margin:16px 0;
+    display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px}
+  .toc a{color:var(--accent);text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  .step{counter-reset:none}
+  .step li{margin:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>缺陷闭环系统 · 智能表格建表作业单</h1>
+  <div class="sub">版本 <strong>v2（智能表格为主库）</strong>　·　编制日期 2026-10-29　·　用途：<strong>照着这份把主库 + 表单视图建出来</strong>　·　依据：方案建议书 v1.3 + 字段配置器</div>
+
+  <div class="card key">
+    <strong>v2 相对 v1 改了什么（三处，都是实质性的）</strong>
+    <table style="margin:8px 0 0">
+      <tr><td class="n" style="width:22%"><strong>① 库定了</strong></td><td>主库 = <strong>企微智能表格</strong>（免费、全企业可用，已核实）。v1 里的"库放哪"决策点关闭，不再需要你确认版本</td></tr>
+      <tr><td class="n"><strong>② 收单方式改了</strong></td><td>用智能表格<strong>自带的「表单视图」</strong>收单，<strong>不再需要收集表做入口再转存</strong>——提交即入主表，一张表到底</td></tr>
+      <tr><td class="n"><strong>③ 主表列数变了</strong></td><td>v1 只讲了"16 个字段"，但那样建出来的表<strong>没法看板、没法催办</strong>。v2 补齐了<strong>质量部维护的管理列</strong>（状态/严重度/责任人），主表共 <strong>21 列</strong>，其中一线只填 13 项</td></tr>
+    </table>
+  </div>
+
+  <div class="toc">
+    <a href="#s1">一、建表五步</a>
+    <a href="#s2">二、主表 21 列总览</a>
+    <a href="#s3">三、逐字段配置表</a>
+    <a href="#s4">四、表单视图怎么配</a>
+    <a href="#s5">五、看板与表格视图</a>
+    <a href="#s6">六、自动化与次数预算</a>
+    <a href="#s7">七、权限设计</a>
+    <a href="#s8">八、状态取值字典</a>
+    <a href="#s9">九、刻意不建的列</a>
+    <a href="#s10">十、建完自测 6 项</a>
+    <a href="#s11">十一、两周验收</a>
+    <a href="#s12">十二、降级路径</a>
+  </div>
+
+  <div class="danger" style="margin-top:16px">
+    <strong>先记住一条总原则：一线看到的表单，和主表不是一回事。</strong><br>
+    主表有 21 列，但一线通过表单视图只会看到 <strong>14 列</strong>（其中 1 列自动带出），实际动手填 <strong>13 项</strong>。状态、严重度、责任人这些<strong>只有在主表里有，绝不出现在表单上</strong>。<br>
+    把主表所有列都塞进表单 = 一线填不完 = 两周后没人再填。这是整套设计里最容易犯、后果最不可逆的错。
+  </div>
+
+  <h2 id="s1">一、建表五步（照着做，顺序别换）</h2>
+  <ol class="step">
+    <li><strong>确认入口</strong>：手机企业微信 → 工作台 → 文档 → 新建，看有没有「智能表格」。有就继续；没有就跳到<a href="#s12">第十二节降级路径</a>。</li>
+    <li><strong>建主表并改名</strong>：新建空智能表格，表名（子表名）改成 <code>缺陷主表</code>。整份文件命名 <code>缺陷闭环系统_AEC控制器_v1</code>。</li>
+    <li><strong>按第三节顺序建列</strong>：<strong>先建列再填数据</strong>。列的类型一旦建错（比如把"产品型号"建成文本），后面看板分组、筛选、自动化全都用不了，只能删列重建、已录数据一起丢。</li>
+    <li><strong>生成表单视图</strong>（第四节）：这是给一线用的唯一入口，只选 14 列。</li>
+    <li><strong>配视图和权限</strong>（第五、七节）：至少配 1 个看板视图按状态分组，配 1 个「我的单」视图按报告人筛选。</li>
+  </ol>
+  <div class="note">
+    <strong>自动化（第六节）先别配。</strong>等表结构稳定、并且真实数据跑进来十几条之后再配——否则字段一改，规则全部失效，还得重配一遍。而且免费版自动化额度只有 100 次/月，前期试错会把它耗光。
+  </div>
+
+  <h2 id="s2">二、主表 21 列总览</h2>
+  <table>
+    <thead><tr><th style="width:24%">分组</th><th style="width:8%">列数</th><th style="width:18%">谁维护</th><th>包含</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>A. 系统生成</strong></td><td>3</td><td>系统，人不碰</td><td>缺陷编号、创建时间、创建人</td></tr>
+      <tr><td class="n"><strong>B. 一线填报</strong></td><td>14</td><td>一线（表单视图）</td><td>来源渠道、报告人、产品型号、批次号、SN、固件版本、硬件版本、发现环节、现象描述、附件、复现条件、发生台数、已出货影响范围、是否安全相关</td></tr>
+      <tr><td class="n"><strong>C. 质量部维护</strong></td><td>4</td><td>质量部（主表内改）</td><td>当前状态、严重度、当前责任人、最后更新时间</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:13.5px">3 + 14 + 4 = <strong>21 列</strong>。其中「创建人」「最后更新时间」由系统自动带出，实际手工维护的是 3 列。一线在表单里<strong>看不到 C 组任何一列</strong>。</p>
+  <p style="color:var(--muted);font-size:13.5px">对应到字段编号：21 列里<strong>17 列来自配置器的 49 个字段</strong>（DEF-001/004 + B 组 14 个 + <strong>DEF-017 严重度</strong>），另外 4 列是系统自带或状态类字段（创建人、最后更新时间、当前状态、当前责任人），不占 49 的名额。</p>
+
+  <div class="okbox">
+    <strong>为什么 C 组必须有，哪怕第一版只有受理阶段：</strong>没有「当前状态」，就看不出哪一单停在谁手上，也做不了看板；没有「严重度」，排不出优先级；没有「责任人」，超期提醒不知道 @ 谁。<br>
+    这三列是<strong>系统的骨架</strong>，不是"后面再加"的东西——它们是主表列，不是一线字段，所以加它们<strong>不会增加一线的填写负担</strong>，一分钱成本都没有。
+  </div>
+
+  <h2 id="s3">三、逐字段配置表（建表时逐行照抄）</h2>
+
+  <div class="danger">
+    <strong>先分清两组编号，别混（这是最容易问的一个问题）：</strong>
+    <table style="margin:8px 0 0">
+      <tr><td style="width:24%"><code>DEF-001</code> ~ <code>DEF-049</code></td><td><strong>字段字典的序号</strong>。只用于本系列文档之间互相引用（"把 DEF-008 设成必填"），<strong>不建进智能表格、不会出现在任何一列里</strong>。表格里你找不到 DEF-001 这个东西</td></tr>
+      <tr><td><code>DC-2026-0001</code></td><td><strong>缺陷编号的"值"</strong>。由「缺陷编号」这一列的<strong>自动编号</strong>字段自动生成，每来一条缺陷长一个号</td></tr>
+      <tr><td style="background:var(--code)"><strong>下面表格第一列的 #</strong></td><td>就是字段序号，<strong>给你看、不用建</strong>。你真正要建的是第二列「列名」</td></tr>
+    </table>
+    <p style="margin:8px 0 0"><strong>说明：</strong>原先两者都写作 <code>DEF-</code> 前缀（字段=DEF-001，缺陷编号=DEF-2026-0001），极易看成同一个东西。<strong>本版起缺陷编号改用 <code>DC-</code>（Defect Case）</strong>，字段序号保持 <code>DEF-</code>（Defect Field）不变。</p>
+  </div>
+
+  <h3>3.1 A 组 · 系统生成（3 列）</h3>
+  <table>
+    <thead><tr><th style="width:8%">#</th><th style="width:16%">列名</th><th style="width:14%">字段类型</th><th>配置要点</th></tr></thead>
+    <tbody>
+      <tr><td class="i">DEF-001</td><td><strong>缺陷编号</strong></td><td class="mono">自动编号</td><td><strong>前缀</strong> <code>DC-</code>，<strong>位数</strong> 4 位补零，开启<strong>年份前缀</strong>（若编辑器支持）→ 生成 <code>DC-2026-0001</code>。<br>⚠ 自动编号在<strong>删除记录后不回收号码</strong>，这正是我们要的：编号一旦出现永不复用。撤销的缺陷保留编号、状态改「已撤销」</td></tr>
+      <tr><td class="i">DEF-004</td><td><strong>创建时间</strong></td><td class="mono">创建时间<br>（系统字段）</td><td>用系统自带的「创建时间」，<strong>不要自己新建日期字段让人填</strong>。它是所有时效指标（MTTC、响应时限）的唯一合法起点，人一能改，指标就废了</td></tr>
+      <tr><td class="i">—</td><td><strong>创建人</strong></td><td class="mono">创建人<br>（系统字段）</td><td>系统自带。与 B 组的「报告人」<strong>不是一回事</strong>：创建人=谁录的系统，报告人=谁发现的缺陷。代填单据时两者会不同</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.2 B 组 · 一线填报（14 列，其中 13 项需动手）</h3>
+  <table>
+    <thead><tr><th style="width:8%">#</th><th style="width:15%">列名（直接抄）</th><th style="width:13%">字段类型</th><th style="width:8%">必填</th><th>选项值 / 配置要点</th></tr></thead>
+    <tbody>
+      <tr><td class="i">DEF-002</td><td><strong>来源渠道</strong></td><td class="mono">单选</td><td class="n"><span class="req">必填</span></td><td>选项：<code>售后</code> <code>产线</code> <code>来料</code> <code>测试</code> <code>市场</code> <code>客诉</code><br>⚠ 必须是<strong>单选</strong>，不能文本。文本会导致"售后""售后服务""客户售后"三种写法并存，Pareto 统计直接废掉</td></tr>
+      <tr><td class="i">DEF-003</td><td><strong>报告人</strong></td><td class="mono">人员</td><td class="n"><span class="req">必填</span></td><td>用<strong>人员</strong>类型，从通讯录选，系统自动带出部门和头像。<br>⚠ 不要用文本填姓名：一是会有重名，二是后面"@ 报告人补充信息"没法做</td></tr>
+      <tr><td class="i">DEF-005</td><td><strong>产品型号</strong></td><td class="mono">单选</td><td class="n"><span class="req">必填</span></td><td>选项（<strong>只这四个，不许加别的</strong>）：<br><code>AEC2301</code>　<code>AEC2393B</code>　<code>AEC2392BS</code>　<code>AEC2392BM</code><br><span class="req">★ 全表最关键的一个类型</span>：建成文本的话，"AEC-2393B""aec2393b"会成为三种型号，按型号统计失效率和证书追溯全部错位</td></tr>
+      <tr><td class="i">DEF-006</td><td><strong>批次号</strong></td><td class="mono">文本</td><td class="n"><span class="req">必填</span></td><td>提示语：<em>批次性问题的唯一抓手，看不清包装就拍照留档</em></td></tr>
+      <tr><td class="i">DEF-008</td><td><strong>固件版本号</strong></td><td class="mono">文本</td><td class="n"><span class="req">必填</span></td><td>提示语：<em>控制器缺陷多与固件相关，务必填准确版本号</em><br><span class="req">★ 第二关键项</span>：没有版本号就无法归因，也无法反查这个版本是否又流到了别的型号上</td></tr>
+      <tr><td class="i">DEF-010</td><td><strong>发现环节</strong></td><td class="mono">单选</td><td class="n"><span class="req">必填</span></td><td>选项：<code>来料</code> <code>过程</code> <code>终测</code> <code>老化</code> <code>安装调试</code> <code>客户使用</code></td></tr>
+      <tr><td class="i">DEF-011</td><td><strong>现象描述</strong></td><td class="mono">多行文本</td><td class="n"><span class="req">必填</span></td><td>提示语：<em>照原话说，不用组织语言，不用写得专业</em><br><span class="req">★ 不得改写</span>——原话是最有价值的证据，改写过的描述是二手信息</td></tr>
+      <tr><td class="i">DEF-013</td><td><strong>附件</strong></td><td class="mono">附件</td><td class="n"><span class="req">必填</span></td><td>提示语：<em>照片、波形、日志、视频都行；硬件问题靠证据，光靠描述没法定位</em><br>若编辑器只给「图片」类型，日志/波形让一线先截图，并在提示语里说明</td></tr>
+      <tr><td class="i">DEF-015</td><td><strong>发生台数</strong></td><td class="mono">数字</td><td class="n"><span class="req">必填</span></td><td>提示语：<em>单台就写 1；说不出准确数就写大概值，别空着</em><br>⚠ <strong>用数字类型，别用文本</strong>——后面要算"失效率=发生台数/出货台数"，文本算不了。一线若只能估，就要求填估数，不许填"若干"</td></tr>
+      <tr><td class="i">DEF-018</td><td><strong>是否安全相关</strong></td><td class="mono">单选</td><td class="n"><span class="req">必填</span></td><td>选项：<code>是</code> <code>否</code><br>提示语：<em>涉及人身安全、火灾、触电风险的选「是」，会走最高优先级</em><br><span class="req">★ 这一项决定整单优先级</span>：<strong>必须单选不要勾选框</strong>——勾选框不勾时分不清"否"和"没看到"，这两个在事故追溯时是完全不同的责任</td></tr>
+      <tr><td class="i">DEF-007</td><td>序列号 SN</td><td class="mono">文本</td><td class="n">选填</td><td><em>能拿到就填，单台定位靠它</em></td></tr>
+      <tr><td class="i">DEF-009</td><td>硬件 / PCB 版本</td><td class="mono">文本</td><td class="n">选填</td><td><em>板上有丝印就看一眼，和固件版本配合定位</em></td></tr>
+      <tr><td class="i">DEF-014</td><td>复现条件</td><td class="mono">多行文本</td><td class="n">选填</td><td><em>什么情况下会出、什么情况下不出</em></td></tr>
+      <tr><td class="i">DEF-016</td><td>已出货影响范围</td><td class="mono">多行文本</td><td class="n">选填</td><td><em>大概多少台已到客户手里、在哪些区域——决定要不要围堵</em></td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.3 C 组 · 质量部维护（4 列，<strong>不进表单视图</strong>）</h3>
+  <table>
+    <thead><tr><th style="width:9%">#</th><th style="width:15%">列名</th><th style="width:14%">字段类型</th><th>配置要点</th></tr></thead>
+    <tbody>
+      <tr><td class="i">I 组</td><td><strong>当前状态</strong></td><td class="mono">单选</td><td>选项见<a href="#s8">第八节</a>，共 9 个。<strong>看板视图的分组依据就是它</strong>，所以必须是单选，不能是文本或标签</td></tr>
+      <tr><td class="i">DEF-017</td><td><strong>严重度</strong></td><td class="mono">单选</td><td>建议分级：<code>S1 致命</code> <code>S2 严重</code> <code>S3 一般</code> <code>S4 轻微</code><br>由质量部定级。四项的具体判据需与技术、售后对齐后确定 ❓<br>⚠ 配置器里它原本是"非必填"字段，这里<strong>提到 C 组当管理列</strong>——因为它决定优先级和加急通知，不能不填</td></tr>
+      <tr><td class="i">I 组</td><td><strong>当前责任人</strong></td><td class="mono">人员</td><td>随阶段流转。超期提醒要 @ 的就是这一列，所以必须是<strong>人员</strong>类型</td></tr>
+      <tr><td class="i">—</td><td><strong>最后更新时间</strong></td><td class="mono">修改时间<br>（系统字段）</td><td>系统自带。判断"这一单多久没人动过"靠它，不用手工维护</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>关于"最后更新时间"的一个用法：</strong>质量周会上真正该看的不是"这条单立了多久"，而是"这条单<strong>多久没人动过</strong>"。后者直接指向卡在谁手上，前者只会引发互相解释。有这一列，第一个"漏气孔"就能一眼看出来。
+  </div>
+
+  <h2 id="s4">四、表单视图怎么配（一线的唯一入口）</h2>
+  <p>在智能表格里新建<strong>表单视图</strong>，命名 <code>缺陷登记表</code>。它有两个作用：把 21 列筛成 14 列；让一线<strong>看不到别人提交的记录</strong>（表单视图天然如此）。</p>
+
+  <h4>4.1 表单里保留哪 14 列，按这个顺序排</h4>
+  <p>顺序不是随便排的，按<strong>一线脑子里的顺序</strong>，不是按数据库的逻辑顺序：</p>
+  <table>
+    <thead><tr><th style="width:8%">序</th><th style="width:24%">列</th><th>为什么排这个位置</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>来源渠道</td><td>第一个问题决定他后面怎么想——"这是售后问题还是产线问题"</td></tr>
+      <tr><td class="n">2</td><td>产品型号</td><td>紧接着就是"哪台机器"，四选一，两秒点完</td></tr>
+      <tr><td class="n">3</td><td>批次号</td><td>型号之后就问批次，符合硬件人的排查顺序</td></tr>
+      <tr><td class="n">4</td><td>序列号 SN</td><td>同上，选填</td></tr>
+      <tr><td class="n">5</td><td>固件版本号</td><td>硬件人的本能顺序：型号→批次→SN→固件</td></tr>
+      <tr><td class="n">6</td><td>硬件 / PCB 版本</td><td>选填</td></tr>
+      <tr><td class="n">7</td><td>发现环节</td><td>接下来才问"在哪发现的"</td></tr>
+      <tr><td class="n">8</td><td><strong>现象描述</strong></td><td>位置到此为止都是"选择题"，第 8 项才开始写字——<strong>先让他点完再让他写</strong>，否则一进来看到大段文字就退出去了</td></tr>
+      <tr><td class="n">9</td><td>附件</td><td>写完现象立刻传图，脑子里的场景还没忘</td></tr>
+      <tr><td class="n">10</td><td>发生台数</td><td></td></tr>
+      <tr><td class="n">11</td><td>复现条件</td><td>选填</td></tr>
+      <tr><td class="n">12</td><td>已出货影响范围</td><td>选填，但这一项对围堵决策价值很高，<strong>放在"是否安全相关"之前</strong></td></tr>
+      <tr><td class="n">13</td><td><strong>是否安全相关</strong></td><td class="req">★ 放在<strong>最后一个必填项</strong>：前面填完了他才有耐心认真回答这个最要命的问题</td></tr>
+      <tr><td class="n">14</td><td>报告人</td><td>放最后，用人员字段<strong>自动带出当前登录人</strong>，正常情况他一个字都不用动</td></tr>
+    </tbody>
+  </table>
+
+  <h4>4.2 表单顶部说明文字（直接复制粘贴）</h4>
+  <pre>【缺陷登记 · 新国标大点位控制器】
+
+适用型号：AEC2301 / AEC2393B / AEC2392BS / AEC2392BM
+适用标准：GB 16808-2025（消防强制性认证 · 型式试验 · 沈阳消防研究所）
+
+填写说明：
+1. 带 * 的必须填完才能提交，其余能填就填，不知道就空着，不要编。
+2. 现象描述照原话说，不用组织语言、不用写得专业。
+3. 附件至少给一张照片或一段日志，光靠文字没法定位硬件问题。
+4. 涉及人身安全、火灾、触电风险的，务必在「是否安全相关」选「是」。
+5. 提交后系统自动给缺陷编号，后续进展由质量部接手跟踪，不用你反复催。
+
+本表只是登记入口，不是结案报告。先把问题记下来，比想清楚再记重要。</pre>
+
+  <h4>4.3 分享方式</h4>
+  <ul>
+    <li><strong>主路径</strong>：把表单视图的链接/二维码发到售后群、产线群、质量群，<strong>群里置顶</strong>。不要只发一次——发一次等于没发。</li>
+    <li><strong>次路径</strong>：作为企微工作台应用或群快捷入口，减少一次跳转。</li>
+    <li class="req"><strong>必须实测的一件事</strong>：让一个<strong>没有主表编辑权限</strong>的同事用手机打开表单提交一条 ❓。表单视图通常允许"有表格访问权限的人"提交，若一线压根没有权限就提交不了——这时改走<a href="#s12">第十二节的降级路径</a>（收集表收单 + 同步到智能表格）。<strong>这一步不测，推广当天就会卡死。</strong></li>
+  </ul>
+
+  <h2 id="s5">五、看板和表格视图（各配一个，别贪多）</h2>
+  <table>
+    <thead><tr><th style="width:18%">视图</th><th style="width:22%">怎么配</th><th>给谁看、看什么</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>看板视图</strong></td><td>分组依据 = <strong>当前状态</strong><br>命名 <code>状态看板</code></td><td><strong>质量部每天看这个</strong>。哪一列堆得多，那个环节就是瓶颈。拖动卡片即可改状态，比打开记录改字段快得多</td></tr>
+      <tr><td class="n"><strong>表格视图（全量）</strong></td><td>按<strong>创建时间倒序</strong><br>命名 <code>全部缺陷</code></td><td>日常录入与修改，默认视图</td></tr>
+      <tr><td class="n"><strong>表格视图（我的单）</strong></td><td>筛选：报告人 = 当前用户<br>命名 <code>我报的</code></td><td>一线回看自己报的问题处理到哪了。<strong>这个视图是留住一线的关键</strong>——他能自己看到进展，就不会在群里反复问</td></tr>
+    </tbody>
+  </table>
+  <div class="okbox">
+    <strong>「我报的」这个视图，比任何催办都有效。</strong>一线不是不愿意填，是怕填了没下文。让他随时能看到自己那张单走到哪一步，比发十条通知都管用。这一条几乎零成本，但直接决定系统能不能活过第一个月。
+  </div>
+
+  <h2 id="s6">六、自动化（先别配，两周后再配）</h2>
+
+  <div class="danger">
+    <strong>先说清楚限制：企微智能表格免费版，自动化流程每月只有 100 次运行额度。</strong><br>
+    超出后需要升级「文档高级功能」（约 200 元/账号/年、5 个账号起，额度提到 1 万次/月）。<br>
+    <strong>危险不在"要花钱"，在于额度用完后它是静默失效的</strong>——不报错、不提醒，只是不再发通知。你会以为系统在跑，实际上早就哑了。所以自动化必须省着配。
+  </div>
+
+  <h4>6.1 建议先配的两条（合计约 25 次/月）</h4>
+  <table>
+    <thead><tr><th style="width:26%">规则</th><th style="width:26%">触发 → 动作</th><th style="width:14%">月均消耗</th><th>为什么值得配</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>① 新单通知</strong></td><td>触发：<strong>新增记录</strong><br>动作：发消息到「缺陷闭环」群，@ 当前责任人</td><td>≈ 20 次</td><td>这一条最重要：<strong>保证"填了之后有人接"</strong>。一线填完立刻看到群里有人回应，才有第二次</td></tr>
+      <tr><td class="n"><strong>② 安全相关加急</strong></td><td>触发：<strong>记录新增时</strong>且「是否安全相关 = 是」<br>动作：发群消息 @ 质量经理 + 技术负责人</td><td>≈ 3~5 次</td><td>S1 类缺陷晚一天发现，代价和 S3 差两个数量级。这条不走"每天扫一遍"，必须即时</td></tr>
+    </tbody>
+  </table>
+
+  <h4>6.2 暂时不配的（原因很实在）</h4>
+  <table>
+    <thead><tr><th style="width:24%">想配的规则</th><th style="width:20%">估算月消耗</th><th>为什么先不配</th></tr></thead>
+    <tbody>
+      <tr><td class="n">超期提醒</td><td class="req">可能上千次</td><td><strong>这是最容易打爆额度的坑。</strong>如果按"到达记录中的时间"逐条触发，每条超期缺陷每天算一次，30 条 × 30 天 = 900 次，一周就耗光。<br>正确做法是<strong>一条「定时重复」规则每天汇总发一次</strong>，但能否一次汇总多条记录发一条消息，<strong>需实测 ❓</strong>。测不通就先人工看板</td></tr>
+      <tr><td class="n">状态变更通知</td><td>≈ 60~100 次</td><td>每改一次状态发一条，等于把额度全花在"通知"上。<strong>用「我报的」视图让人自己看</strong>，成本为零</td></tr>
+      <tr><td class="n">送检到期提醒</td><td>0（前期）</td><td>前两个月根本走不到送检环节，配了也用不上</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>判断标准很简单：一个通知如果"人自己点一下视图就能知道"，就不要配自动化。</strong>把有限的额度全留给"人不点就一定会漏"的事——新单没人接、安全相关没人管。
+  </div>
+
+  <h2 id="s7">七、权限设计（四类人，四套视角）</h2>
+  <table>
+    <thead><tr><th style="width:18%">角色</th><th style="width:22%">权限</th><th>能看到什么</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>一线</strong><br>（售后/产线/测试）</td><td>仅表单视图提交<br>+「我报的」视图只读</td><td>只能提交、只能看自己报的单。<strong>看不到别人的记录</strong>——这一条必须做到，否则一线会看到成本、供应商信息，后续没人愿意照实填</td></tr>
+      <tr><td class="n"><strong>质量部</strong></td><td>主表编辑</td><td>全部记录、全部字段。负责改状态、定级、指派责任人</td></tr>
+      <tr><td class="n"><strong>研发 / 生产 / 采购</strong></td><td>主表只读<br>（或按型号分组视图）</td><td>按需看。研发主要看自己负责的那些单</td></tr>
+      <tr><td class="n"><strong>管理层</strong></td><td>只读 + 仪表盘</td><td>看趋势，不看单条。<strong>给管理层单独做一个视图</strong>，别让他翻 20 条记录找重点</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:13.5px">智能表格支持<strong>按字段设内容权限</strong>（指定某些列仅部分成员可编辑）。这条留给后续：等成本、供应商这类敏感字段加进来时，用字段权限锁住，不用拆表。</p>
+
+  <h2 id="s8">八、状态取值字典（9 个，与方案书 v1.3 完全一致）</h2>
+  <table>
+    <thead><tr><th style="width:22%">状态</th><th style="width:14%">前期会用到吗</th><th>含义与进入条件</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><strong>待受理</strong></td><td class="n"><span class="done">会</span></td><td>一线已提交，质量部尚未定级。新单默认落这里</td></tr>
+      <tr><td class="n"><strong>分析中</strong></td><td class="n"><span class="done">会</span></td><td>已完成定级与围堵，正在做根因分析</td></tr>
+      <tr><td class="n"><strong>对策中</strong></td><td class="n"><span class="done">会</span></td><td>根因已确认，正在制定并实施永久对策</td></tr>
+      <tr><td class="n"><strong>验证中</strong></td><td class="n"><span class="done">会</span></td><td>对策已落地，正在做有效性验证与横展</td></tr>
+      <tr><td class="n">等待送检（外部）</td><td class="n">前期不会</td><td>需重新送检、样机已寄出，在等沈阳消防研究所结论。<strong>此状态不计内部超期</strong></td></tr>
+      <tr><td class="n">待关闭</td><td class="n">会</td><td>验证通过、横展完成，等关闭评审签字</td></tr>
+      <tr><td class="n">已关闭</td><td class="n">会</td><td>已签字关闭。进入复发监控期（建议 3~6 个月）</td></tr>
+      <tr><td class="n">已撤销</td><td class="n">会</td><td>误报、重复登记、非缺陷。<strong>保留编号，绝不删除记录</strong></td></tr>
+      <tr><td class="n">已复发重开</td><td class="n">后期</td><td>监控期内再次发生。<strong>以「新开单 + 关联原编号」实现</strong>，不直接改原单</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>为什么要一次把这 9 个全建好，哪怕前期只用 4 个：</strong>状态是单选字段，后期往选项列表里<strong>加项</strong>很容易，但改<strong>已有选项的文字</strong>会让已经录进去的记录一起变。一次建全，后面只是"用不到"，不会出错。
+  </div>
+
+  <h2 id="s9">九、刻意不建的列（32 个，及什么时候加）</h2>
+  <p>配置器里 49 个字段，本作业单用掉 <strong>17 个</strong>，剩下 <strong>32 个不是丢了，是延后</strong>。它们大多是<strong>条件必填或后期阶段</strong>才需要，现在建出来只会有两个后果：表单变长（一线弃用）、列变多（找到想看的列要滚三屏）。</p>
+  <p style="color:var(--muted);font-size:13.5px">下表按配置器里的<strong>原分组</strong>列，方便你回去对照勾选。</p>
+  <table>
+    <thead><tr><th style="width:32%">配置器分组 · 不建的字段</th><th style="width:7%">数量</th><th style="width:22%">什么时候加</th><th>理由</th></tr></thead>
+    <tbody>
+      <tr><td>B 缺陷描述：结构化现象</td><td>1</td><td>接 AI 提取之后</td><td>它是 AI 提取后人工确认的<strong>产物</strong>，不是登记动作。Phase 1 没有 AI，建了也是空列</td></tr>
+      <tr><td>C 定级与围堵：紧急围堵措施、围堵完成日期、是否需上报 / 召回评估<br><span style="color:var(--muted)">（严重度 DEF-017 已提到 C 组当管理列，不在本表）</span></td><td>3</td><td>第一批单进入「分析中」时</td><td>登记时还不知道影响范围，问围堵只会得到"待查"</td></tr>
+      <tr><td>D 根因分析：根因分类、责任方、分析方法、根因描述、相似历史缺陷编号</td><td>5</td><td>第一次做根因分析时</td><td>刚登记时根因还不存在，逼着填就是逼人造假</td></tr>
+      <tr><td>E 对策：围堵措施（临时）、永久对策、对策类型、ECN 单号、<strong>是否涉及设计 / 固件 / 元器件变更</strong>、SCAR 单号</td><td>6</td><td>第一单进入「对策中」时</td><td><strong>「是否涉及变更」必须在有对策之后才问</strong>——提前问，一线必然乱答，而这一列的答案会一路传到认证判定，错在源头就全错</td></tr>
+      <tr><td>F 认证合规：证书编号、变更影响判定、判定依据与判定人、报备单号、送检范围、样机准备状态、预计送检完成日、送检结论</td><td>8</td><td>真正第一单触发认证判定时</td><td><strong>前两个月大概率走不到</strong>。现在建上去，一线会觉得"报个修还要懂认证"</td></tr>
+      <tr><td>G 验证：验证方式、样本量与结果、验证结论、验证人</td><td>4</td><td>第一单进入「验证中」时</td><td>属阶段④</td></tr>
+      <tr><td>H 关闭与横展：标准化横展项、横展完成确认、关闭日期、关闭评审签字、复发监控到期日</td><td>5</td><td>第一单要关闭时</td><td>属阶段④⑤</td></tr>
+      <tr><td style="background:var(--code)"><strong>合计</strong></td><td><strong>32</strong></td><td colspan="2">17 已建 + 32 延后 = 49，与配置器一致</td></tr>
+    </tbody>
+  </table>
+  <div class="okbox">
+    <strong>加字段的时机由数据决定，不由方案决定。</strong>哪个阶段开始有单积压，就补哪个阶段的列——那时候你才知道"到底缺哪一条信息"，而不是凭想象加 8 列，最后有 6 列没人填。
+  </div>
+
+  <h2 id="s10">十、建完自测 6 项（一项都别跳）</h2>
+  <table>
+    <thead><tr><th style="width:6%">#</th><th style="width:26%">测什么</th><th>怎么测 / 通过标准</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td class="req"><strong>无权限同事能否提交</strong></td><td>找一个<strong>没有主表编辑权</strong>的同事，用手机打开表单链接提交一条。<strong>提交成功才算过</strong>；失败就说明权限模型要改，或走降级路径</td></tr>
+      <tr><td class="n">2</td><td class="req"><strong>手机端完整填一遍</strong></td><td><strong>不要用电脑测</strong>。一线用手机：选项多会折叠、多行文本难写、附件上传会卡。<strong>用你自己手机从群里点进去填</strong></td></tr>
+      <tr><td class="n">3</td><td>编号生成对不对</td><td>提交两条，看编号是否 <code>DC-2026-0001</code> / <code>0002</code>；删掉一条再提交，确认<strong>号码没有被回收复用</strong></td></tr>
+      <tr><td class="n">4</td><td>附件能不能传波形 / 视频</td><td>传一个 ≥5MB 的文件，看是否被限。被限就写明上限，并在提示语里告诉一线"大的先截图"</td></tr>
+      <tr><td class="n">5</td><td>看板能拖能分组</td><td>切到「状态看板」，确认 9 个状态列都在、卡片能拖动改状态。<strong>拖不动就说明"当前状态"建成了文本，要改类型</strong></td></tr>
+      <tr><td class="n">6</td><td>导出一次 Excel</td><td>确认字段名没乱码、多选没被压成一格、日期没变成数字。<strong>导出是你唯一的数据逃生通道</strong>，必须验证过</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:13.5px">另外掐表算一次填写时长：<strong>≤3 分钟合格，&gt;5 分钟必须砍字段</strong>。不是砍到凑合，是砍到<strong>你敢把它直接推到售后群里</strong>为止。</p>
+
+  <h2 id="s11">十一、两周验收口径（提前定，免得到时扯）</h2>
+  <table>
+    <thead><tr><th style="width:28%">看什么</th><th style="width:20%">及格线</th><th>不及格时先怀疑什么</th></tr></thead>
+    <tbody>
+      <tr><td class="n">入库缺陷条数</td><td><strong>≥ 20 条</strong></td><td>不是"公司没那么多问题"，是<strong>推广没做到位</strong>。群里发一条链接不等于让人会用</td></tr>
+      <tr><td class="n">字段缺失投诉</td><td><strong>≤ 2 次</strong></td><td>多了说明第一版砍过头，按投诉补列，<strong>别一次全加回来</strong></td></tr>
+      <tr><td class="n">一线平均填写时长</td><td><strong>≤ 3 分钟</strong></td><td>超了先砍选填（复现条件、影响范围），再砍必填里最不痛的那个</td></tr>
+      <tr><td class="n">重复登记 / 绕开系统</td><td><strong>≤ 1 例</strong></td><td>有人在微信群里报、没进系统——要么<strong>入口不够短</strong>，要么<strong>填了没人管</strong>（后者更致命）</td></tr>
+      <tr><td class="n">新单首次回应时长</td><td><strong>当天</strong></td><td>超了说明"每天看新单"这件事没落到人头。见下方红框</td></tr>
+      <tr><td class="n">自动化额度消耗</td><td><strong>&lt; 40 次/月</strong></td><td>接近 100 就要立刻砍规则，否则下个月静默失效</td></tr>
+    </tbody>
+  </table>
+  <div class="danger">
+    <strong>最容易翻车的是"新单首次回应"这一条。</strong>一线填了三条、两周没人回复，第四天就再也不填了——而且他会在群里告诉所有人"那个系统没用"。<br>
+    <strong>系统能不能活，取决于"填了之后有没有人接"，不取决于表建得多漂亮。</strong>所以建表的同时必须落定一个人：<strong>每天固定时间看一遍「待受理」，当天给出回应</strong>——哪怕只是"收到，已转研发"。<br>
+    这件事没有技术方案能替代。自动化能发通知，但替不了有人真的接手。
+  </div>
+
+  <h2 id="s12">十二、降级路径（智能表格用不了时）</h2>
+  <table>
+    <thead><tr><th style="width:26%">卡在哪</th><th style="width:30%">退到哪</th><th>代价</th></tr></thead>
+    <tbody>
+      <tr><td><strong>找不到「智能表格」</strong></td><td>用<strong>收集表</strong>收单 → 定期导出 Excel → 同步进一张在线表格当库</td><td>没有自动编号（人工台账补号）、没有看板、没有自动化。但<strong>字段验证照样能做</strong>——这是当前唯一目的</td></tr>
+      <tr><td><strong>有智能表格，但一线没有访问权限</strong></td><td>收集表收单 → 用收集表的"同步到智能表格"把数据灌进主库</td><td>多一步同步动作，且同步频率决定实时性。<strong>先确认是否真没权限</strong>，很多情况是链接权限没开对</td></tr>
+      <tr><td><strong>附件上传受限</strong>（大文件传不上）</td><td>附件只收图片，日志/波形另存微盘，表单里填微盘链接</td><td>多一次跳转，一线会抱怨。能接受就先这样</td></tr>
+      <tr><td><strong>自动化额度不够用</strong></td><td>①砍规则 ②改人工看板 ③升级文档高级功能</td><td>前两项免费但要靠人；第三项约 200 元/账号/年（5 账号起）</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <strong>降级不是失败。</strong>Phase 1 的唯一目的是<strong>用两周真实数据验证字段设计</strong>，不是验证工具。工具选错了可以换，字段设计错了才是白干。哪怕最后只用收集表 + Excel 跑完两周，只要拿到了"哪些字段没人填、哪一单卡在哪"，这一阶段就是成功的。
+  </div>
+
+  <div class="foot">
+    版本：v2（2026-10-29；同日晚修订：缺陷编号前缀 <code>DEF-</code> → <code>DC-</code>，避免与字段序号 <code>DEF-001</code> 混淆，见第三节开头）　·　主库：<strong>企业微信智能表格</strong>（免费、全企业可用）　·　依据：<code>新国标大点位控制器_缺陷闭环系统_方案建议书_v1.3.html</code> 第五章字段字典、第九章 Phase 1<br>
+    字段编号与<code>缺陷闭环系统_字段配置器.html</code>一致（DEF-001 ~ DEF-049）：主表 21 列 = 用到其中 <strong>17 个字段</strong> + 4 个系统/状态列（创建人、最后更新时间、当前状态、当前责任人）；其余 32 个字段延后，见第九节<br>
+    <span class="p-b">说明</span>：本文件是<strong>本机 HTML</strong>，双击打开、不联网、不属于任何平台。文中标注 ❓ 的 3 处（严重度判据、表单提交权限、自动化汇总能力）需在你司实际环境实测确认。<br>
+    v1（收集表版）保留备查，<strong>建表以 v2 为准</strong>。
+  </div>
+
+</div>
+</body>
+</html>
