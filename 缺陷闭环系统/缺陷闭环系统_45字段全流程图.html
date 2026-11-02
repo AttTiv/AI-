@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>缺陷闭环 · 45 个字段全流程图</title>
+<style>
+:root{
+  --ink:#242c33; --sub:#78838d; --faint:#a8b0b8;
+  --paper:#fbfaf7; --band:#f6f4ef; --bandGate:#fdf6ea;
+  --bd:#dcd8cf; --line:#b9c0c7;
+  --req:#2b5a86; --cond:#b07c2a; --opt:#98a1a9;
+  --gate:#c05621; --back:#a8412c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+header{
+  position:sticky; top:0; z-index:20; background:rgba(251,250,247,.96);
+  backdrop-filter:blur(8px); border-bottom:1px solid #e6e2d9;
+  padding:14px 26px 12px;
+}
+.hd-row{display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap}
+h1{margin:0; font-size:19px; font-weight:700; letter-spacing:.2px}
+.sub{margin:5px 0 0; font-size:12.5px; color:var(--sub); line-height:1.7}
+.sub b{color:#3d4a55; font-weight:600}
+
+.tools{display:flex; gap:7px; flex-wrap:wrap; margin-top:11px; align-items:center}
+.btn{
+  border:1px solid var(--bd); background:#fff; color:#4a5460;
+  padding:4px 11px; border-radius:14px; font-size:12px; cursor:pointer;
+  font-family:inherit; transition:.13s; line-height:1.5;
+}
+.btn:hover{border-color:#a9b2bb; color:#242c33}
+.btn.on{background:#2b3b4a; border-color:#2b3b4a; color:#fff}
+.sep{width:1px; height:18px; background:#e2ded4; margin:0 4px}
+.spacer{flex:1}
+.hint{font-size:11.5px; color:var(--faint)}
+
+.legend{display:flex; gap:18px; flex-wrap:wrap; margin-top:10px; font-size:11.5px; color:#5d6873}
+.lg{display:inline-flex; align-items:center; gap:5px}
+.sw{width:3px; height:13px; border-radius:2px; display:inline-block}
+.sw.req{background:var(--req)} .sw.cond{background:var(--cond)} .sw.opt{background:var(--opt)}
+.ln{width:20px; height:0; border-top:2px solid var(--line); display:inline-block}
+.ln.dash{border-top:2px dashed var(--gate)}
+.ln.back{border-top:2px dashed var(--back)}
+.dia{width:8px; height:8px; background:var(--gate); transform:rotate(45deg); display:inline-block; border-radius:1px}
+
+#wrap{overflow:auto; padding:22px 26px 60px}
+#wrap.one #stage{width:1800px; max-width:none}
+#wrap.one #stage{height:auto}
+svg{display:block; width:100%; height:auto}
+#wrap.one svg{width:1800px}
+
+#tip{
+  position:fixed; z-index:60; max-width:340px; pointer-events:none;
+  background:#2c3540; color:#f4f6f8; font-size:12.5px; line-height:1.65;
+  padding:10px 13px; border-radius:8px; box-shadow:0 8px 26px rgba(0,0,0,.22);
+  opacity:0; transform:translateY(4px); transition:opacity .12s, transform .12s;
+}
+#tip.on{opacity:1; transform:translateY(0)}
+#tip .k{color:#8fb4d6; font-weight:600}
+#tip .w{color:#e8c68a}
+#tip .d{display:block; margin-top:5px; color:#cfd8e0}
+
+.foot{max-width:1180px; margin:0 auto; padding:6px 26px 70px; font-size:12.5px; color:#5d6873; line-height:1.85}
+.foot h3{font-size:13.5px; margin:22px 0 7px; color:#2b3b4a; letter-spacing:.3px}
+.foot ul{margin:6px 0 0; padding-left:19px}
+.foot li{margin:4px 0}
+.foot code{background:#efece4; padding:1px 5px; border-radius:3px; font-size:11.5px; font-family:ui-monospace,Consolas,monospace}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-row">
+    <div>
+      <h1>缺陷闭环 · 45 个字段全流程图</h1>
+      <p class="sub">全表 47 个字段 → 去掉 2 个系统自动字段（缺陷编号、创建时间）→ <b>其余 45 个全部落在这一张图上</b>。<br>
+      纵向是单据推进的 8 个阶段，横向是每阶段要填的字段。分支只画三处，其余条件依赖写在卡片上。</p>
+    </div>
+  </div>
+  <div class="tools">
+    <button class="btn on" data-role="all">全部</button>
+    <button class="btn" data-role="一线">一线</button>
+    <button class="btn" data-role="质量部">质量部</button>
+    <button class="btn" data-role="研发">研发</button>
+    <button class="btn" data-role="测试">测试</button>
+    <button class="btn" data-role="认证对接">认证对接</button>
+    <span class="sep"></span>
+    <button class="btn" id="zbtn">1 : 1 查看</button>
+    <span class="spacer"></span>
+    <span class="hint">鼠标悬停卡片看法完整填写要求</span>
+  </div>
+  <div class="legend">
+    <span class="lg"><i class="sw req"></i>必填 10</span>
+    <span class="lg"><i class="sw cond"></i>条件必填 25</span>
+    <span class="lg"><i class="sw opt"></i>选填 10</span>
+    <span class="lg"><i class="ln"></i>主干流程</span>
+    <span class="lg"><i class="ln dash"></i>跳过 P5（030=否）</span>
+    <span class="lg"><i class="ln back"></i>打回 P4（041=不通过）</span>
+    <span class="lg"><i class="dia"></i>判定点 / 卡口</span>
+  </div>
+</header>
+
+<div id="wrap"><svg id="stage" viewBox="0 0 1800 2120" xmlns="http://www.w3.org/2000/svg"></svg></div>
+
+<div class="foot">
+  <h3>这张图怎么读</h3>
+  <ul>
+    <li><b>纵向 = 时间。</b>从上往下，单据从「待受理」走到「终态关闭」。左侧深色方块是阶段节点，主干线把它们串起来。</li>
+    <li><b>卡片按「什么时候填」排，不是按编号排。</b>同一阶段内从左到右、从上到下就是填写顺序。编号（DEF-002 等）是按 A~H 部门分组编的，所以会出现 012 排在 011 前面、017 排在 016 前面——那是有意的，因为 017「安全相关」必须先勾，才能定 016「严重程度」。</li>
+    <li><b>卡片左侧竖条 = 必填态。</b>深蓝必填、琥珀条件必填、灰色选填。卡片第三行的小字「‹ xxx」就是触发条件。</li>
+    <li><b>只有三处画了分支线</b>：030「设计变更」答否 → 走右侧橙色虚线，跳过整个 P5；041「验证结论」不通过 → 走左侧红色虚线，打回 P4；P5 内部七个字段是一条横向判定链。其余跨阶段的依赖关系（比如 029 要等 028 选了改设计才填）<b>写在卡片上、不连线</b>——四十五个字段全连起来会变成一张没人愿意看的乱线图。</li>
+    <li><b>编号 032~038 为什么横着排。</b>它们是层层嵌套的判定树，横排之后「哪档走到哪一格」一眼可见：2·3·4 档才有 033，2·3 档才有 034，只有 3 档才走到 035 之后。</li>
+  </ul>
+
+  <h3>三个必须记住的判定</h3>
+  <ul>
+    <li><b>安全相关（017）先于严重程度（016）。</b>安全相关是硬约束，勾上就直接压过定级；先定级再补安全相关，等于让定级决定要不要重视安全。</li>
+    <li><b>030 决定 P5 存废。</b>只有它答「是」，后面 032~038 七个字段才存在。答否，整段跳过——这是全表唯一一处「一个字段决定七个字段」。</li>
+    <li><b>032 = 3 档，单据不能靠内部验证关闭。</b>必须等送检结论（038）。所以 MTTC 要算两遍：内部只截到「整改完成 + 内部验证通过」，总计才含送检。</li>
+  </ul>
+</div>
+
+<div id="tip"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- 配色 ---------- */
+var C = {
+  ink:'#242c33', sub:'#78838d', faint:'#a8b0b8',
+  bd:'#dcd8cf', card:'#ffffff', line:'#b9c0c7',
+  req:'#2b5a86', cond:'#b07c2a', opt:'#98a1a9',
+  gate:'#c05621', back:'#a8412c',
+  band:'#f6f4ef', bandGate:'#fdf6ea', bandBack:'#f9f3f0'
+};
+
+/* ---------- 数据：45 个字段 ---------- */
+/* req: 1=必填 2=条件必填 3=选填 */
+var S = [
+{
+  id:'P1', name:'登记', state:'待受理', who:'一线（手机表单）',
+  note:'9 个必填 + 4 个选填｜手机端 ≤ 3 分钟',
+  out:'9 个必填填齐 → 质量部受理',
+  tip:'填完这 13 格，质量部受理 → 才能定级。其中 011 结构化现象、013 复现条件、015 出货范围由质量部 / 研发后补',
+  f:[
+    ['DEF-002','来源渠道','单选',1,'一线','售后 / 产线 / 来料 / 测试 / 市场 / 客诉'],
+    ['DEF-003','报告人','人员',1,'一线','从通讯录选人，不要手打；部门由人员字段自动带出'],
+    ['DEF-005','产品型号','单选',1,'一线','AEC2301 / AEC2393B / AEC2392BS / AEC2392BM'],
+    ['DEF-006','产品编号','文本',1,'一线','一产品一编号，唯一单台追溯锚点；看不到铭牌填「无法获取」'],
+    ['DEF-007','固件版本号','文本',1,'一线','控制器缺陷与固件强相关，无版本号无法归因'],
+    ['DEF-008','硬件版本号','文本',3,'一线','与固件版本配合定位'],
+    ['DEF-009','发现环节','单选',1,'一线','来料 / 过程 / 终测 / 老化 / 安装调试 / 客户使用'],
+    ['DEF-014','缺陷台数','数值',1,'一线','单台 / 多台 / 批次性'],
+    ['DEF-010','现象描述（原话）','长文本',1,'一线','保留原始口语，不得改写'],
+    ['DEF-012','附件','文件/图片',1,'一线','照片 / 波形 / 日志 / 视频；硬件问题靠证据'],
+    ['DEF-011','结构化现象','长文本',3,'质量部','AI 提取 + 人工确认后的规范表述'],
+    ['DEF-013','复现条件','文本',3,'研发','能否稳定复现，决定根因分析难度'],
+    ['DEF-015','已出货影响范围','文本',3,'质量部','涉及台数与区域，用于召回 / 围堵决策']
+  ]
+},
+{
+  id:'P2', name:'受理定级', state:'待受理 → 分析中', who:'质量部',
+  note:'5 个｜安全相关必须先勾，再定级',
+  out:'定级 + 围堵 + 上报结论 → 转「分析中」',
+  tip:'017 是硬约束：勾上直接压过定级。020 判 2 / 3 档的，必须回到 034 留报备痕迹',
+  f:[
+    ['DEF-017','安全相关','是否',1,'质量部','勾选 = 安全相关 → 强制最高优先级；未勾 = 不相关，受理当天必须勾定','先于 016 定级'],
+    ['DEF-016','严重程度','单选',2,'质量部','S / A / B / C，受理阶段由质量部定级，避免一线通胀','受理当天'],
+    ['DEF-018','紧急围堵措施','长文本',2,'质量部','S / A 级时必填：先止血，阻止扩散','S / A 级'],
+    ['DEF-019','围堵完成日期','日期',3,'质量部','用于统计响应速度',''],
+    ['DEF-020','上报 / 召回处置','单选',2,'质量部','五选一：无需 / 需上报 / 需上报且召回 / 仅内部召回 / 待评估。3 个工作日内出结论，AI 不得代判','安全=是 或 S/A 级']
+  ]
+},
+{
+  id:'P3', name:'根因分析', state:'分析中', who:'研发',
+  note:'5 个｜根因分类决定责任方的粒度',
+  out:'根因定到可对策的层级 → 转「对策中」',
+  tip:'021 与 022 必须对得上：固件问题不能挂在「研发-硬件」名下，否则做不了交叉分析',
+  f:[
+    ['DEF-021','根因分类','单选',2,'研发','7 项：硬件设计 / 固件设计 / 结构设计 / 来料不良 / 生产工艺 / 使用环境 / 其他。固件必须单列，不设「待定」','进入分析'],
+    ['DEF-022','责任方','单选',2,'研发','7 项：研发-硬件 / 研发-固件 / 研发-结构 / 工艺生产 / 供应商 / 客户使用方 / 其他。粒度须与根因分类对齐','进入分析'],
+    ['DEF-023','分析方法','多选',3,'研发','5Why / 鱼骨图 / FTA / 失效复现 / A/B 对比 / 器件失效分析 / FMEA 反查 / 数据分析 / 其他',''],
+    ['DEF-024','根因描述','长文本',2,'研发','须写明因果链与证据，不能只写结论','进入分析'],
+    ['DEF-025','相似历史缺陷编号','关联',3,'研发','AI 检索推荐，工程师选定或否决','']
+  ]
+},
+{
+  id:'P4', name:'对策', state:'对策中', who:'研发 / SQE',
+  note:'6 个｜028 是总开关，030 决定 P5 存废',
+  out:'永久对策落地 → 转「验证中」',
+  tip:'030 答否 → 走右侧橙色虚线，整段跳过 P5；答是 → 才进 032 的四档判定',
+  f:[
+    ['DEF-026','围堵措施（临时）','长文本',3,'研发','止血用的短期手段；与 P2 的紧急围堵不同，这里要等根因已知',''],
+    ['DEF-027','永久对策','长文本',2,'研发','进入对策后必填','进入对策'],
+    ['DEF-028','对策类型','多选',2,'研发','改设计 / 改固件 / 改工艺 / 换料 / 改检验 / 培训 / 更新文件。决定 029 与 030 怎么填','进入对策'],
+    ['DEF-029','ECN 单号','文本',2,'研发','对策含改设计或改固件时必填','含设计/固件'],
+    ['DEF-030','设计变更','是否',2,'研发','只判断「改了没有」，含固件、元器件、结构、PCB 全部版本级变更。固件变更不得因「只是改软件」选否','进入对策'],
+    ['DEF-031','SCAR 单号','文本',2,'质量部','责任方为供应商时必填','责任方=供应商']
+  ]
+},
+{
+  id:'P5', name:'认证判定', state:'对策中 / 等待送检（外部）', who:'质量部 + 认证对接',
+  note:'7 个｜四档判定，只有 3 档要走通送检支线',
+  out:'1/2/4 档在此闭合，3 档转「等待送检（外部）」',
+  chain:[
+    ['DEF-032','变更影响','单选',2,'质量部','四档判定：1 无需报备　2 仅需报备　3 报备且需送检　4 待机构确认。四种走向完全不同，AI 不得代判','030 = 是'],
+    ['DEF-033','判定依据与判定人','长文本',2,'质量部','写明「改了哪些内容 + 依据什么判」，质量 + 认证对接双签','2 · 3 · 4 档'],
+    ['DEF-034','报备单号','文本',2,'认证对接','先备案后实施，回执到手才允许实施永久对策；1 档无须、4 档暂缓','2 · 3 档'],
+    ['DEF-035','送检范围','单选',2,'认证对接','全项 / 差异项 / 待定（与沈阳消防研究所确认）。全项约 3 个月','3 档'],
+    ['DEF-036','送检样机状态','单选',2,'研发','未启动 / 备料中 / 已齐套待寄 / 已寄出。判定当天就启动，不等整改完成。方案锁定须早于整改完成','3 档'],
+    ['DEF-037','预计送检完成日','日期',2,'认证对接','把外部送检周期从内部闭环周期里剥离，避免误判超期','3 档'],
+    ['DEF-038','送检结论','单选',2,'认证对接','通过 / 不通过 / 有条件通过。不通过则整单打回 P4 重做对策','036 = 已寄出']
+  ],
+  chainEdge:['2 · 3 · 4','2 · 3','3','3','3','已寄出'],
+  tail:[
+    [0,'1 档 无需报备，此处结束'],
+    [1,'4 档 待机构确认，暂缓实施'],
+    [2,'2 档 备案即可，不送检']
+  ]
+},
+{
+  id:'P6', name:'验证与横展', state:'验证中', who:'测试 / 研发',
+  note:'5 个｜041 不通过则整单打回 P4',
+  out:'验证通过 + 横展项已定 → 转「待关闭」',
+  tip:'043 勾的每一类，P7 都要有一份改版受控的文件对得上；填了不等于做完',
+  f:[
+    ['DEF-039','验证方式','多选',2,'测试','台架 / 老化 / EMC 复测 / 环境试验 / 小批试产 / 现场试点','进入验证'],
+    ['DEF-040','样本量与结果','文本',2,'测试','须写明样本量，否则「通过」无意义','进入验证'],
+    ['DEF-041','验证结论','单选',2,'测试','通过 / 不通过。判定为 3 档的，内部通过 ≠ 可关闭，还须等 038','进入验证'],
+    ['DEF-042','验证人','人员',2,'测试','独立验证人，避免自己验证自己','进入验证'],
+    ['DEF-043','标准化横展项','多选',2,'研发','DFMEA / PFMEA / 设计规范 / 检验标准 / 作业指导书 / BOM 优选 / 测试用例 / 服务通告','进入验证']
+  ]
+},
+{
+  id:'P7', name:'横展确认', state:'待关闭', who:'质量经理',
+  note:'1 个｜文件改版受控后才签字',
+  out:'签字 → 转「待关闭会」',
+  tip:'这道门与 P8 的关闭评审是两道门：先证明「教训写进文件了」，再评审「能不能关」',
+  f:[
+    ['DEF-044','横展确认人','人员',2,'质量部','谁签字确认勾选的横展项文件均已改版且受控、附件齐全。勾谁都会点，签名才有人负责','043 已填']
+  ]
+},
+{
+  id:'P8', name:'关闭', state:'已关闭 → 监控中', who:'质量经理',
+  note:'3 个｜监控期无复发 = 终态',
+  out:'终态关闭',
+  f:[
+    ['DEF-045','关闭日期','日期',3,'质量部','进入监控期的起点。3 档须送检结论 = 通过后才可填',''],
+    ['DEF-046','关闭评审签字','人员',2,'质量部','质量经理把关；签字前核对 043 勾选的横展文件均已改版','进入关闭'],
+    ['DEF-047','复发监控到期日','日期',3,'质量部','建议 3~6 个月；到期无复发方可终态关闭','']
+  ]
+}
+];
+
+var REQ_NAME = { 1:'必填', 2:'条件必填', 3:'选填' };
+var REQ_COLOR = { 1:C.req, 2:C.cond, 3:C.opt };
+
+/* ---------- 几何 ---------- */
+var G = {
+  W: 1800,
+  NODE_X: 90, NODE_W: 150, NODE_H: 78,
+  BAND_X: 56, BAND_W: 1570,
+  CARD_X0: 282, CARD_W: 208, CARD_H: 60, COL_GAP: 22, ROW_GAP: 12, COLS: 4,
+  PAD_TOP: 44, PAD_BOT: 30,
+  GAP: 40, GAP_BIG: 64,
+  P5_CARD_W: 148, P5_CARD_H: 78, P5_GAP: 48,
+  BYPASS_X: 1730, BACK_X: 48
+};
+
+var svg = document.getElementById('stage');
+var out = [];
+var A = function(s){ out.push(s); };
+var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+
+/* ---------- 布局计算 ---------- */
+var y = 56;
+S.forEach(function(st){
+  if (st.chain) {
+    st.h = 222;
+  } else {
+    var rows = Math.ceil(st.f.length / G.COLS);
+    st.h = G.PAD_TOP + rows * (G.CARD_H + G.ROW_GAP) - G.ROW_GAP + G.PAD_BOT;
+  }
+  st.y = y;
+  y += st.h + (st.id === 'P4' ? G.GAP_BIG : G.GAP);
+});
+var TOTAL_H = y + 36;
+
+/* ---------- defs ---------- */
+A('<defs>');
+['line','gate','back','req','cond','opt'].forEach(function(k){
+  var col = k==='line'?C.line : k==='gate'?C.gate : k==='back'?C.back : k==='req'?C.req : k==='cond'?C.cond : C.opt;
+  A('<marker id="ar-'+k+'" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
+    + '<path d="M0,0 L10,5 L0,10 Z" fill="'+col+'"/></marker>');
+});
+A('</defs>');
+
+/* ---------- 入口 ---------- */
+A('<g>');
+A('<circle cx="165" cy="30" r="6" fill="#3d4a55"/>');
+A('<text x="184" y="35" font-size="12.5" fill="#5d6873">缺陷发生 / 客诉 / 来料异常 / 产线不良</text>');
+A('<path d="M165,38 L165,'+(S[0].y+2)+'" stroke="'+C.line+'" stroke-width="2" fill="none" marker-end="url(#ar-line)"/>');
+A('</g>');
+
+/* ---------- 阶段带 ---------- */
+function band(st){
+  var isGate = st.id === 'P5';
+  var isBack = st.id === 'P4';
+  var fill = isGate ? C.bandGate : (isBack ? C.bandBack : C.band);
+  var stroke = isGate ? '#ecd9b8' : '#eae6dd';
+  A('<rect x="'+G.BAND_X+'" y="'+st.y+'" width="'+G.BAND_W+'" height="'+st.h+'" rx="14" fill="'+fill+'" stroke="'+stroke+'"/>');
+}
+
+function node(st){
+  var isGate = st.id === 'P5';
+  var nY = st.y + G.PAD_TOP - 6;
+  A('<g>');
+  A('<rect x="'+G.NODE_X+'" y="'+nY+'" width="'+G.NODE_W+'" height="'+G.NODE_H+'" rx="10" '
+    + 'fill="'+(isGate?'#a8621c':'#2f3d4a')+'" />');
+  A('<text x="'+(G.NODE_X+15)+'" y="'+(nY+27)+'" font-size="17" font-weight="700" fill="#fff" letter-spacing=".5">'+st.id+'</text>');
+  A('<text x="'+(G.NODE_X+15)+'" y="'+(nY+48)+'" font-size="15" font-weight="600" fill="#ffffff">'+esc(st.name)+'</text>');
+  A('<text x="'+(G.NODE_X+15)+'" y="'+(nY+66)+'" font-size="10.5" fill="rgba(255,255,255,.72)">'+esc(st.state)+'</text>');
+  if (isGate) {
+    A('<circle cx="'+(G.NODE_X+G.NODE_W-14)+'" cy="'+(nY+14)+'" r="5" fill="#f2c14e"/>');
+  }
+  A('</g>');
+}
+
+function bandHead(st, count){
+  var tx = G.CARD_X0;
+  var ty = st.y + 20;
+  A('<text x="'+tx+'" y="'+ty+'" font-size="12" fill="#4a5560">'
+    + '<tspan font-weight="600">谁填</tspan> '+esc(st.who)
+    + '<tspan fill="#b3aa9c">　·　</tspan>'+esc(st.note||'')
+    + '</text>');
+  A('<text x="'+(G.CARD_X0 + 900)+'" y="'+ty+'" font-size="12" fill="#7d8690" text-anchor="end">'
+    + count+' 个字段　→　'+esc(st.out||'')+'</text>');
+}
+
+/* ---------- 卡片 ---------- */
+function card(f, x, cy, w, h, big){
+  var id=f[0], name=f[1], type=f[2], req=f[3], who=f[4], desc=f[5], trig=f[6]||'';
+  var col = REQ_COLOR[req];
+  var isGate = (id === 'DEF-030' || id === 'DEF-032');
+  var idW = 42;
+  var g = '<g class="fc" data-id="'+id+'" data-role="'+who+'" data-req="'+REQ_NAME[req]+'" data-desc="'+esc(desc)+'" data-trig="'+esc(trig)+'">';
+  // 底
+  g += '<rect x="'+x+'" y="'+cy+'" width="'+w+'" height="'+h+'" rx="7" fill="'+(isGate?'#fffaf0':C.card)+'" stroke="'+(isGate?'#e0b878':C.bd)+'" stroke-width="'+(isGate?1.4:1)+'"/>';
+  // 左侧色条
+  g += '<rect x="'+(x+1)+'" y="'+(cy+7)+'" width="3" height="'+(h-14)+'" rx="1.5" fill="'+col+'"/>';
+  // 判定点
+  if (isGate) {
+    g += '<rect x="'+(x+w-15)+'" y="'+(cy+9)+'" width="7" height="7" rx="1" fill="'+C.gate+'" transform="rotate(45 '+(x+w-11.5)+' '+(cy+12.5)+')"/>';
+  }
+
+  if (big) {
+    // 竖排四行：编号 / 名称 / 类型·必填·角色 / 触发
+    g += '<text x="'+(x+13)+'" y="'+(cy+19)+'" font-size="9.5" fill="#94a0aa" font-family="ui-monospace,Consolas,monospace" letter-spacing=".2">'+id+'</text>';
+    var nm = name.length >= 8 ? 12 : 13;
+    g += '<text x="'+(x+13)+'" y="'+(cy+38)+'" font-size="'+nm+'" font-weight="600" fill="#242c33">'+esc(name)+'</text>';
+    g += '<text x="'+(x+13)+'" y="'+(cy+56)+'" font-size="9.5" fill="#8b949c">'
+       + esc(type)+'<tspan fill="#c8c2b6">·</tspan>'
+       + '<tspan fill="'+col+'">'+REQ_NAME[req].replace('条件必填','条件')+'</tspan>'
+       + '<tspan fill="#c8c2b6">·</tspan>'+esc(who)+'</text>';
+    if (trig) {
+      g += '<text x="'+(x+13)+'" y="'+(cy+72)+'" font-size="9.5" fill="'+C.cond+'">‹ '+esc(trig)+'</text>';
+    }
+  } else {
+    // 横排三行
+    g += '<text x="'+(x+14)+'" y="'+(cy+21)+'" font-size="10" fill="#94a0aa" font-family="ui-monospace,Consolas,monospace" letter-spacing=".2">'+id+'</text>';
+    var nameSize = name.length > 9 ? 13 : 14;
+    g += '<text x="'+(x+14+idW)+'" y="'+(cy+21.5)+'" font-size="'+nameSize+'" font-weight="600" fill="#242c33">'+esc(name)+'</text>';
+    g += '<text x="'+(x+14)+'" y="'+(cy+38.5)+'" font-size="10.5" fill="#8b949c">'
+       + esc(type)+'<tspan fill="#c8c2b6"> · </tspan>'
+       + '<tspan fill="'+col+'">'+REQ_NAME[req]+'</tspan>'
+       + '<tspan fill="#c8c2b6"> · </tspan>'+esc(who)+'</text>';
+    if (trig) {
+      g += '<text x="'+(x+14)+'" y="'+(cy+54)+'" font-size="10" fill="'+C.cond+'">'
+         + '<tspan fill="#c0a271">‹ </tspan>'+esc(trig)+'</text>';
+    } else if (req === 1) {
+      g += '<text x="'+(x+14)+'" y="'+(cy+54)+'" font-size="10" fill="#b0b8bf">无条件 · 每单必填</text>';
+    }
+  }
+  g += '</g>';
+  A(g);
+}
+
+/* ---------- 主干线 ---------- */
+var mainX = 165;
+var firstN = S[0].y + G.PAD_TOP - 6;
+var lastSt = S[S.length-1];
+var lastN = lastSt.y + G.PAD_TOP - 6 + G.NODE_H;
+
+A('<path d="M'+mainX+','+(firstN+34)+' L'+mainX+','+(lastN-34)+'" stroke="'+C.line+'" stroke-width="2.4" fill="none"/>');
+
+/* ---------- 逐阶段绘制 ---------- */
+S.forEach(function(st, si){
+  band(st);
+  node(st);
+
+  if (st.chain) {
+    drawChain(st);
+  } else {
+    bandHead(st, st.f.length);
+    var cy0 = st.y + G.PAD_TOP;
+    st.f.forEach(function(f, i){
+      var c = i % G.COLS, r = Math.floor(i / G.COLS);
+      var x = G.CARD_X0 + c * (G.CARD_W + G.COL_GAP);
+      var cy = cy0 + r * (G.CARD_H + G.ROW_GAP);
+      card(f, x, cy, G.CARD_W, G.CARD_H, false);
+    });
+    // 末行空位写阶段小结
+    if (st.tip) {
+      var li = st.f.length - 1;
+      var lc = li % G.COLS, lr = Math.floor(li / G.COLS);
+      var txx = G.CARD_X0 + (lc + 1) * (G.CARD_W + G.COL_GAP);
+      var tyy = cy0 + lr * (G.CARD_H + G.ROW_GAP) + 36;
+      A('<path d="M'+(txx-18)+','+(tyy-14)+' L'+(txx-18)+','+(tyy+4)+'" stroke="#ddd6c6" stroke-width="1.2"/>');
+      A('<text x="'+txx+'" y="'+tyy+'" font-size="11.5" fill="#a1977f">'+esc(st.tip)+'</text>');
+    }
+
+    // P8 空格子放终点
+    if (st.id === 'P8') {      var ex = G.CARD_X0 + 3 * (G.CARD_W + G.COL_GAP);
+      var ey = cy0;
+      A('<g><rect x="'+ex+'" y="'+ey+'" width="'+G.CARD_W+'" height="'+G.CARD_H+'" rx="7" fill="#f6faf5" stroke="#c4d4c2"/>'
+        + '<circle cx="'+(ex+26)+'" cy="'+(ey+30)+'" r="9" fill="none" stroke="#4f6b52" stroke-width="2.2"/>'
+        + '<circle cx="'+(ex+26)+'" cy="'+(ey+30)+'" r="3.4" fill="#4f6b52"/>'
+        + '<text x="'+(ex+45)+'" y="'+(ey+27)+'" font-size="13" font-weight="600" fill="#3f5a46">终态关闭</text>'
+        + '<text x="'+(ex+45)+'" y="'+(ey+44)+'" font-size="10.5" fill="#7d8f83">监控期满且无复发</text></g>');
+    }
+  }
+});
+
+/* ---------- P5 横向判定链 ---------- */
+function drawChain(st){
+  var n = st.chain.length;
+  var step = G.P5_CARD_W + G.P5_GAP;
+  var chainW = n * G.P5_CARD_W + (n-1) * G.P5_GAP;
+  var x0 = G.CARD_X0;
+  var cy = st.y + 62;
+
+  // 说明行
+  A('<text x="'+G.CARD_X0+'" y="'+(st.y+20)+'" font-size="12" fill="#4a5560">'
+    + '<tspan font-weight="600">谁填</tspan> '+esc(st.who)
+    + '<tspan fill="#b3aa9c">　·　</tspan>'+esc(st.note)
+    + '</text>');
+  A('<text x="'+(x0+chainW)+'" y="'+(st.y+20)+'" font-size="12" fill="#7d8690" text-anchor="end">'
+    + n+' 个字段　→　'+esc(st.out)+'</text>');
+
+  // 四档图例
+  A('<text x="'+G.CARD_X0+'" y="'+(st.y+41)+'" font-size="11.5" fill="#9a7a3e">'
+    + '032 四档：<tspan font-weight="600">1 无需报备</tspan>　<tspan font-weight="600">2 仅需报备</tspan>　<tspan font-weight="600">3 报备且需送检</tspan>　<tspan font-weight="600">4 待机构确认</tspan>'
+    + '<tspan fill="#c0ad8c">　—　箭头上的数字，表示「只有这一档才走这条路」</tspan></text>');
+
+  // 链条
+  st.chain.forEach(function(f, i){
+    var x = x0 + i * step;
+    card(f, x, cy, G.P5_CARD_W, G.P5_CARD_H, true);
+    if (i < n-1) {
+      var ax1 = x + G.P5_CARD_W + 5;
+      var ax2 = x + G.P5_CARD_W + G.P5_GAP - 5;
+      var mid = (ax1 + ax2) / 2;
+      var lab = st.chainEdge[i];
+      var isLast = (i === n-2);
+      var col = isLast ? C.gate : '#b3a892';
+      A('<path d="M'+ax1+','+(cy+44)+' L'+ax2+','+(cy+44)+'" stroke="'+col+'" stroke-width="1.7" fill="none" marker-end="url(#ar-'+(isLast?'gate':'line')+')"/>');
+      A('<text x="'+mid+'" y="'+(cy+31)+'" font-size="10.5" fill="'+(isLast?C.gate:'#8a7f6c')+'" text-anchor="middle" font-weight="600">'+esc(lab)+'</text>');
+    }
+  });
+
+  // 终止尾
+  var tailY = cy + G.P5_CARD_H;
+  st.tail.forEach(function(t){
+    var i = t[0], txt = t[1];
+    var x = x0 + i * step + G.P5_CARD_W/2;
+    A('<path d="M'+x+','+tailY+' L'+x+','+(tailY+28)+'" stroke="#c9bda6" stroke-width="1.3" stroke-dasharray="3 3" fill="none" marker-end="url(#ar-opt)"/>');
+    A('<text x="'+x+'" y="'+(tailY+44)+'" font-size="10.5" fill="#9b907c" text-anchor="middle">'+esc(txt)+'</text>');
+  });
+
+  // 038 之后的出口说明
+  var ex = x0 + (n-1) * step;
+  A('<text x="'+(ex + G.P5_CARD_W/2)+'" y="'+(tailY+44)+'" font-size="10.5" fill="#a8621c" text-anchor="middle">不通过 → 打回 P4</text>');
+}
+
+/* ---------- 旁路：030 = 否，跳过 P5 ---------- */
+(function bypass(){
+  var p4 = S[3], p5 = S[4], p6 = S[5];
+  var y1 = p4.y + p4.h + (G.GAP_BIG/2) + 4;
+  var y2 = p5.y + p5.h + (G.GAP/2);
+  var X = G.BYPASS_X;
+
+  // 分叉点
+  A('<circle cx="'+mainX+'" cy="'+y1+'" r="4.5" fill="#fff" stroke="'+C.gate+'" stroke-width="2"/>');
+  // 去程 + 下行 + 回程
+  A('<path d="M'+mainX+','+y1+' L'+X+','+y1+' L'+X+','+y2+' L'+(mainX+8)+','+y2+'" '
+    + 'stroke="'+C.gate+'" stroke-width="1.8" stroke-dasharray="6 4" fill="none"/>');
+  // 汇入主干（箭头朝下，指向 P6）
+  A('<path d="M'+mainX+','+y2+' L'+mainX+','+(y2+22)+'" stroke="'+C.gate+'" stroke-width="1.8" fill="none" marker-end="url(#ar-gate)"/>');
+  // 标签
+  A('<text x="'+(mainX+22)+'" y="'+(y1-9)+'" font-size="11.5" fill="'+C.gate+'" font-weight="600">030 设计变更 = 否 → 跳过整个 P5</text>');
+  A('<text x="'+(X-12)+'" y="'+(y1+24)+'" font-size="10.5" fill="#b07a4e" text-anchor="end">未改设计，无需认证判定</text>');
+})();
+
+/* ---------- 打回：041 不通过 → P4 ---------- */
+(function rework(){
+  var p4 = S[3], p6 = S[5];
+  var X = G.BACK_X;
+  var yTop = p4.y + G.PAD_TOP - 6 + 39;   // P4 节点垂直中心
+  var yBot = p6.y + G.PAD_TOP - 6 + 39;   // P6 节点垂直中心
+
+  A('<path d="M'+(G.NODE_X-1)+','+yBot+' L'+X+','+yBot+' L'+X+','+yTop+' L'+(G.NODE_X-6)+','+yTop+'" '
+    + 'stroke="'+C.back+'" stroke-width="1.8" stroke-dasharray="6 4" fill="none" marker-end="url(#ar-back)"/>');
+  A('<text x="'+(X+8)+'" y="'+((yTop+yBot)/2)+'" font-size="11" fill="'+C.back+'" font-weight="600" '
+    + 'transform="rotate(-90 '+(X+8)+' '+((yTop+yBot)/2)+')" text-anchor="middle">041 验证结论 = 不通过</text>');
+})();
+
+/* ---------- 阶段间连接小标注 ---------- */
+(function betweenLabels(){
+  var marks = [
+    [0, '9 个必填齐 → 受理'],
+    [1, '定级完成 → 转「分析中」'],
+    [2, '根因落实 → 转「对策中」'],
+    [3, '对策落地 → 转「验证中」'],
+    [4, '判 1/2/4 档 → 直接进 P6'],
+    [5, '验证通过 + 横展已定 → 转「待关闭」'],
+    [6, '签字完成 → 转「待关闭会」']
+  ];
+  marks.forEach(function(m){
+    var a = S[m[0]], b = S[m[0]+1];
+    if(!b) return;
+    var ym = a.y + a.h + (G.GAP/2) + 4;
+    if (m[0] === 3) ym = a.y + a.h + G.GAP_BIG - 8;
+    A('<text x="'+(mainX+14)+'" y="'+ym+'" font-size="10.5" fill="#a8b0b8">'+esc(m[1])+'</text>');
+  });
+})();
+
+svg.setAttribute('viewBox', '0 0 ' + G.W + ' ' + TOTAL_H);
+svg.innerHTML = out.join('');
+
+/* ---------- 交互 ---------- */
+var wrap = document.getElementById('wrap');
+var tip = document.getElementById('tip');
+
+svg.addEventListener('mouseover', function(e){
+  var g = e.target.closest ? e.target.closest('.fc') : null;
+  if (!g) return;
+  var id = g.getAttribute('data-id');
+  var role = g.getAttribute('data-role');
+  var req = g.getAttribute('data-req');
+  var desc = g.getAttribute('data-desc');
+  var trig = g.getAttribute('data-trig');
+  var nameEl = g.querySelectorAll('text')[1];
+  var name = nameEl ? nameEl.textContent : '';
+  tip.innerHTML = '<span class="k">' + id + '</span>　<b>' + name + '</b>'
+    + '<span class="w">　' + req + ' · ' + role + '</span>'
+    + (trig ? '<span class="d">触发：' + trig + '</span>' : '')
+    + '<span class="d">' + desc + '</span>';
+  tip.classList.add('on');
+});
+svg.addEventListener('mousemove', function(e){
+  if (!tip.classList.contains('on')) return;
+  var x = e.clientX + 16, yy = e.clientY + 18;
+  var r = tip.getBoundingClientRect();
+  if (x + r.width > window.innerWidth - 12) x = e.clientX - r.width - 16;
+  if (yy + r.height > window.innerHeight - 12) yy = e.clientY - r.height - 16;
+  tip.style.left = x + 'px';
+  tip.style.top = yy + 'px';
+});
+svg.addEventListener('mouseout', function(e){
+  var g = e.target.closest ? e.target.closest('.fc') : null;
+  if (g && !g.contains(e.relatedTarget)) tip.classList.remove('on');
+});
+
+var btns = document.querySelectorAll('.btn[data-role]');
+btns.forEach(function(b){
+  b.addEventListener('click', function(){
+    btns.forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    var r = b.getAttribute('data-role');
+    var cards = svg.querySelectorAll('.fc');
+    cards.forEach(function(c){
+      var ok = (r === 'all') || (c.getAttribute('data-role') === r);
+      c.style.opacity = ok ? '1' : '0.12';
+    });
+  });
+});
+
+var zb = document.getElementById('zbtn');
+zb.addEventListener('click', function(){
+  wrap.classList.toggle('one');
+  zb.textContent = wrap.classList.contains('one') ? '适应宽度' : '1 : 1 查看';
+  zb.classList.toggle('on', wrap.classList.contains('one'));
+  wrap.scrollLeft = 0;
+});
+
+})();
+</script>
+</body>
+</html>
