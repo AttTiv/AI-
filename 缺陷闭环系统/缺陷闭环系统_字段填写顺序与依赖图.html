@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>缺陷闭环系统 · 字段填写顺序与依赖关系</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#f5f6f8;color:#1a1f26;line-height:1.65;font-size:14px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px 70px}
+
+header{background:#1b2b3a;color:#fff;padding:30px 0 26px;margin-bottom:26px}
+header .wrap{padding-bottom:0}
+header h1{font-size:23px;font-weight:600;letter-spacing:.3px}
+header .sub{color:#9fb3c8;font-size:13px;margin-top:6px}
+header .meta{color:#6f8499;font-size:12px;margin-top:12px;padding-top:12px;border-top:1px solid #2c3f52}
+
+h2{font-size:17px;font-weight:600;margin:34px 0 12px;padding-left:11px;border-left:4px solid #2b6cb0;line-height:1.3}
+h3{font-size:14.5px;font-weight:600;margin:22px 0 9px}
+p{margin:9px 0}
+.lead{font-size:14.5px;color:#33414f}
+
+.card{background:#fff;border:1px solid #e2e6eb;border-radius:9px;padding:18px 20px;margin:12px 0}
+.card.tight{padding:14px 16px}
+
+.keybox{background:#eef4fb;border:1px solid #c9dcf0;border-left:4px solid #2b6cb0;border-radius:6px;padding:16px 18px;margin:14px 0}
+.keybox .big{font-size:15.5px;font-weight:600;color:#1a3a5c;margin-bottom:8px}
+.keybox ul{margin:0 0 0 19px}
+.keybox li{margin:5px 0;color:#2a3f52}
+
+.flow{display:flex;gap:0;align-items:stretch;flex-wrap:wrap;margin:16px 0 6px}
+.fstep{flex:1 1 0;min-width:104px;position:relative;background:#fff;border:1px solid #dde3ea;border-radius:7px;padding:11px 9px 10px;text-align:center;cursor:pointer;transition:.15s}
+.fstep:hover{border-color:#2b6cb0;box-shadow:0 2px 8px rgba(43,108,176,.13)}
+.fstep .no{font-size:11px;color:#8595a6;letter-spacing:.5px}
+.fstep .nm{font-size:13.5px;font-weight:600;margin:2px 0 3px}
+.fstep .st{font-size:11.5px;color:#5b6b7c;line-height:1.4}
+.fstep .who{font-size:11px;color:#8b9aa9;margin-top:4px}
+.fstep.gate{border-color:#c53030;background:#fff8f8}
+.fstep.gate .nm{color:#a32424}
+.fstep.wait{border-color:#d98324;background:#fffaf3}
+.farrow{width:16px;display:flex;align-items:center;justify-content:center;color:#b8c4d0;font-size:13px;flex:0 0 16px}
+@media(max-width:880px){.flow{flex-direction:column}.farrow{width:auto;height:14px;transform:rotate(90deg)}}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 4px;align-items:center}
+.filters .lb{font-size:12.5px;color:#6b7b8c;margin-right:2px}
+.fbtn{font-size:12.5px;padding:5px 13px;border:1px solid #d2dae3;background:#fff;border-radius:16px;cursor:pointer;color:#3d4d5e;transition:.13s}
+.fbtn:hover{border-color:#2b6cb0;color:#2b6cb0}
+.fbtn.on{background:#2b6cb0;border-color:#2b6cb0;color:#fff}
+
+.stage{background:#fff;border:1px solid #e2e6eb;border-radius:9px;margin:14px 0;overflow:hidden}
+.shead{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:#f8fafc;border-bottom:1px solid #e8edf2}
+.snum{flex:0 0 34px;height:34px;border-radius:8px;background:#2b6cb0;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600}
+.stage.gate .snum{background:#c53030}
+.stage.wait .snum{background:#d98324}
+.stitle{flex:1}
+.stitle .nm{font-size:15px;font-weight:600}
+.stitle .meta{font-size:12.5px;color:#6b7b8c;margin-top:3px}
+.tagline{font-size:12px;padding:2px 9px;border-radius:11px;background:#e8f0f8;color:#2b5a86;white-space:nowrap;align-self:center}
+.tagline.red{background:#fdeaea;color:#a32424}
+.tagline.orange{background:#fdf1e3;color:#a5631a}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f2f5f8;text-align:left;padding:8px 11px;font-weight:600;color:#43536a;border-bottom:1px solid #e2e6eb;font-size:12.5px;white-space:nowrap}
+td{padding:8px 11px;border-bottom:1px solid #eef1f5;vertical-align:top;color:#2c3742}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fafbfd}
+td.id{color:#8595a6;font-size:12px;font-family:ui-monospace,Consolas,monospace;white-space:nowrap}
+td.nm{font-weight:500;white-space:nowrap}
+td.ty{color:#6b7b8c;font-size:12.5px;white-space:nowrap}
+td.dep{color:#4a5a6b;font-size:12.5px}
+td.dep b{color:#a32424;font-weight:600}
+td.dep .trig{display:inline-block;background:#fdf1e3;color:#8a5312;border-radius:3px;padding:0 5px;font-size:11.5px;margin-right:4px}
+td.dep .opt{color:#8b9aa9}
+.sysrow td{background:#fbfcfd;color:#7a8896}
+
+.tree{margin:16px 0 6px}
+.tnode{margin:0 0 0 0;padding:9px 0 9px 22px;border-left:2px solid #d7e0e9;position:relative}
+.tnode:last-child{border-left-color:transparent}
+.tnode::before{content:"";position:absolute;left:-2px;top:0;width:14px;height:2px;background:#d7e0e9}
+.tnode .l1{font-weight:600;font-size:13.5px}
+.tnode .l2{font-size:12.5px;color:#6b7b8c;margin-top:2px}
+.tnode .cond{display:inline-block;background:#eef4fb;color:#2b5a86;border-radius:3px;padding:0 6px;font-size:11.5px;margin-right:6px;letter-spacing:.5px}
+.tnode.hot .l1{color:#a32424}
+.tnode.hot{border-left-color:#f0c0c0}
+.tnode.hot::before{background:#f0c0c0}
+
+.warn{background:#fffbf3;border:1px solid #f0dcb8;border-radius:7px;padding:14px 17px;margin:14px 0}
+.warn .h{font-weight:600;color:#8a5312;margin-bottom:7px;font-size:13.5px}
+.warn ol,.warn ul{margin:0 0 0 19px}
+.warn li{margin:6px 0;color:#4a3a22}
+
+.err{background:#fdf5f5;border:1px solid #f0cfcf;border-radius:7px;padding:14px 17px;margin:14px 0}
+.err .h{font-weight:600;color:#a32424;margin-bottom:7px;font-size:13.5px}
+.err ol,.err ul{margin:0 0 0 19px}
+.err li{margin:6px 0;color:#4a2a2a}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#6b7b8c;margin:10px 0 2px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+.sum{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}
+.sum .box{flex:1 1 150px;background:#fff;border:1px solid #e2e6eb;border-radius:8px;padding:12px 15px}
+.sum .box .v{font-size:20px;font-weight:600;color:#1a3a5c}
+.sum .box .k{font-size:12px;color:#7a8896;margin-top:2px}
+
+footer{margin-top:40px;padding-top:16px;border-top:1px solid #e2e6eb;font-size:12px;color:#8595a6}
+code{background:#eef1f5;border-radius:3px;padding:1px 5px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:#33414f}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+<div class="wrap">
+<h1>字段填写顺序与依赖关系</h1>
+<div class="sub">缺陷闭环系统 · AEC 控制器 · 47 个字段按「什么时候填」重排，不按 A~H 部门分组</div>
+<div class="meta">配套：智能表格建表作业单 v2.1.2 ｜ 字段配置器 v1.4.2 ｜ 方案建议书 v1.4.2 ｜ 2026-11-02</div>
+</div>
+</header>
+
+<div class="wrap">
+
+<div class="keybox">
+<div class="big">先记住这一条，其余都是推论</div>
+<ul>
+<li><b>字段不会自己变，状态也不会自己变；只有人改状态、人填字段。</b>所以「状态和字段互为条件」这个循环，用一条规则就能打破：<b>先填齐门票字段 → 质量部再推状态</b>，永远单向，不倒推。</li>
+<li>填字段的人不管状态（一线、研发、测试只管填），改状态的人只改状态（质量部）。<b>两件事分开，就不会转晕。</b></li>
+<li>47 个字段里，<b>无条件必填只有 10 个</b>，其余 37 个全部挂在「状态门槛」或「字段触发」上。所以真正要记的不是 47 条，是 <b>8 个阶段 + 2 个卡口</b>。</li>
+</ul>
+</div>
+
+<h2>一、全局视图：8 个阶段、2 个卡口</h2>
+<p class="lead">从左到右是单据的一生。点任一块跳到下面的字段清单。</p>
+
+<div class="flow" id="flow"></div>
+<div class="legend">
+<span><i style="background:#2b6cb0"></i>常规阶段</span>
+<span><i style="background:#c53030"></i>卡口（决定走不走认证流程）</span>
+<span><i style="background:#d98324"></i>外部等待（不归你控制）</span>
+</div>
+
+<div class="card tight">
+<p style="margin:0 0 8px"><b>两个卡口分别卡什么：</b></p>
+<p style="margin:6px 0"><b style="color:#a32424">卡口 1｜设计变更（DEF-030）</b>：这个问题改没改到设计／固件／元器件。<b>答「否」→ F 组 7 个字段全部跳过（含落在验证阶段的送检结论）</b>，直接去验证。答「是」→ 必须过 F 组。这是 47 个字段里唯一一处「一个字段决定 7 个字段存废」。</p>
+<p style="margin:6px 0"><b style="color:#a32424">卡口 2｜变更影响（DEF-032）</b>：改了之后要不要报备、要不要送检。<b>答「3 报备且需送检」→ 单据进入「等待送检（外部）」，内部验证通过也只算技术闭环，不能关闭。</b></p>
+<p style="margin:6px 0 0"><b style="color:#a5631a">一个等待区</b>：「等待送检（外部）」不是阶段，是挂在验证期旁边的并行线。它的周期不由你控制（全项送检约 3 个月），所以 MTTC 要算两遍：内部截到整改完成 + 内部验证，总计才含送检。</p>
+</div>
+
+<div class="filters" id="filters">
+<span class="lb">只看谁要填：</span>
+<button class="fbtn on" data-r="all">全部 47</button>
+<button class="fbtn" data-r="一线">一线</button>
+<button class="fbtn" data-r="质量部">质量部</button>
+<button class="fbtn" data-r="研发">研发</button>
+<button class="fbtn" data-r="测试">测试</button>
+<button class="fbtn" data-r="认证对接">认证对接</button>
+<button class="fbtn" data-r="系统">系统自动</button>
+</div>
+
+<h2>二、逐阶段字段清单</h2>
+<p class="lead">每个阶段一块。表里「前置依赖」写的是<b>填这一格之前必须先有什么</b>；橙底是触发条件（满足才填），灰字是选填。</p>
+<div id="stages"></div>
+
+<h2>三、全表速查（按实际填写顺序编号）</h2>
+<p class="lead">注意：这里的 1~47 是<b>填写顺序</b>，和 DEF 编号不是一回事。DEF 是按部门分组排的，会跳。</p>
+<div class="card" style="padding:0;overflow:hidden">
+<table>
+<thead><tr><th>顺序</th><th>字段序号</th><th>字段名</th><th>类型</th><th>谁填</th><th>前置依赖 / 触发条件</th></tr></thead>
+<tbody id="allrows"></tbody>
+</table>
+</div>
+
+<h2>四、最容易转晕的一段：F 组七层依赖</h2>
+<p class="lead">你觉得晕，八成是因为这一段。它不是并列的 7 个字段，是<b>一棵层层嵌套的树</b>：上一层答什么，决定下一层填不填。</p>
+
+<div class="card tight" style="background:#f8fafc">
+<p style="margin:0 0 6px;font-size:12.5px;color:#5b6b7c">先记死这四档，「变更影响」往后全靠它分支。本页写作 1/2/3/4，配置器里用的是带圈的同一组编号，指的是同一件事：</p>
+<p style="margin:0;font-size:13px;line-height:1.9"><b>1</b>　无需报备 → 直接实施，F 组到此为止<br>
+<b>2</b>　仅需报备、不送检 → 先备案后实施，回执到手才能改<br>
+<b>3</b>　报备且需送检 → 走完整条链，且<b style="color:#a32424">关闭前必须等送检结论</b><br>
+<b>4</b>　待认证机构确认 → 只允许围堵和临时对策，永久对策先别动</p>
+</div>
+
+<div class="card">
+<div class="tree">
+<div class="tnode hot">
+<div class="l1">DEF-030　设计变更 <span style="font-weight:400;color:#6b7b8c;font-size:12.5px">（是否）</span></div>
+<div class="l2">只答事实：改了没有。含固件、元器件、结构、PCB 全部版本级变更。<b>固件变更不得因为「只是改软件」答否。</b></div>
+</div>
+<div class="tnode" style="margin-left:26px">
+<div class="l1"><span class="cond">答「是」</span>DEF-032　变更影响 <span style="font-weight:400;color:#6b7b8c;font-size:12.5px">（单选，四档）</span></div>
+<div class="l2">这是判断不是事实：要不要报备、要不要送检。质量部 + 认证对接人双签，<b>AI 不得代判</b>。</div>
+</div>
+<div class="tnode" style="margin-left:52px">
+<div class="l1"><span class="cond">2 · 3 · 4</span>DEF-033　判定依据与判定人</div>
+<div class="l2">写清「改了哪些内容 + 依据什么判成这一档」。答 1（无需报备）不用填。</div>
+</div>
+<div class="tnode" style="margin-left:52px">
+<div class="l1"><span class="cond">2 · 3</span>DEF-034　报备单号</div>
+<div class="l2">规则：<b>先备案、后实施</b>。回执到手才允许实施永久对策。答 4（待机构确认）暂缓，只允许围堵和临时对策。</div>
+</div>
+<div class="tnode" style="margin-left:78px">
+<div class="l1"><span class="cond">3 档</span>DEF-035　送检范围</div>
+<div class="l2">全项 / 差异项 / 待定。全项约 3 个月，直接把总周期拉长。</div>
+</div>
+<div class="tnode" style="margin-left:78px">
+<div class="l1"><span class="cond">3 档</span>DEF-036　送检样机状态</div>
+<div class="l2"><b>判定当天就启动，不等整改完成。</b>未启动 / 备料中 / 已齐套待寄 / 已寄出。判据：方案锁定必早于整改完成；物理齐套改固件的早于整改完成，换料的受新料周期限制可能晚于——这是正常的，不算超期。</div>
+</div>
+<div class="tnode" style="margin-left:78px">
+<div class="l1"><span class="cond">3 档</span>DEF-037　预计送检完成日</div>
+<div class="l2">用来把外部等待段从内部周期里剥出来，避免误判超期。</div>
+</div>
+<div class="tnode" style="margin-left:104px">
+<div class="l1"><span class="cond">样机已寄出</span>DEF-038　送检结论</div>
+<div class="l2">通过 / 不通过 / 有条件通过。<b>不通过则整单打回「对策中」重做对策</b>——这是唯一一个会往回走的字段。</div>
+</div>
+</div>
+<p style="margin:12px 0 0;color:#5b6b7c;font-size:12.5px">读法：<b>从最外层往下，上一层没填完，下一层不出现。</b>所以实际操作时永远只有「下一个该填哪个」，不会同时面对 7 个格子。</p>
+</div>
+
+<h2>五、五个最容易填错的地方</h2>
+
+<div class="err">
+<div class="h">1　把「状态」当成「字段」来填</div>
+<p style="margin:0">「当前状态」「当前责任人」「最后更新时间」不在 47 个字段里，它们是主表的管理列。<b>不占表单、不给一线看、也不写进字段填写说明表。</b>看到作业单里 C 组那 4 列别去找对应的 DEF 编号——它们没有编号。</p>
+</div>
+
+<div class="err">
+<div class="h">2　在「安全相关」没勾定时就判严重程度</div>
+<p style="margin:0">顺序是固定的：<b>安全相关（一线填）→ 严重程度（质量部判）</b>。因为「安全相关 = 是」会强制走最高优先级，先判严重程度等于把这条规则绕过去了。复选框只有勾／不勾，<b>不勾分不出「不相关」还是「还没判」</b>，所以规定：受理当天必须勾定。</p>
+</div>
+
+<div class="err">
+<div class="h">3　先填 ECN 再填对策类型（顺序颠倒）</div>
+<p style="margin:0">DEF-028 对策类型 → 决定 DEF-029 ECN 单号要不要填；DEF-028 → 决定 DEF-030 设计变更答是还是否。<b>对策类型是这一段的总开关</b>，它填了，后面两个才有意义。</p>
+</div>
+
+<div class="err">
+<div class="h">4　把「围堵」和「临时对策」当成一件事</div>
+<p style="margin:0"><b>C 组「紧急围堵措施」</b>（质量部，受理当天，S/A 级才填）＝先把客户的货挡住，<b>在根因还不知道的时候做</b>。<br><b>E 组「围堵措施（临时）」</b>（研发，根因分析之后）＝知道了原因之后采取的短期手段，是和永久对策配套的。<br>两者信息前提不同，所以不能合并，前后大概差 3~5 个工作日。</p>
+</div>
+
+<div class="err">
+<div class="h">5　横展项填了就直接关闭</div>
+<p style="margin:0">中间还有一道 DEF-044 横展确认人签字。它要确认的是<b>文件真的改版并受控了</b>，不是「通知过了」。没有附件佐证，这个签字不许签；签了字才算进「待关闭」。</p>
+</div>
+
+<h2>六、按角色筛出来的工作量</h2>
+<div class="sum" id="sum"></div>
+<p style="color:#5b6b7c;font-size:12.5px">上面六个数字加起来是 49，比 47 多 2 —— 因为「变更影响」「判定依据与判定人」两格由质量部和认证对接共填，两边都要算。<br>「条件必填」是按最坏情况算的（即所有触发条件都命中）。实际上一线只会遇到 13 格、其中 10 格必填 3 格选填，手机端 3 分钟内能填完。</p>
+
+<footer>
+本文件为本机文件，双击即可打开，不联网、不依赖任何平台。<br>
+数据来源：字段配置器 v1.4.2（47 字段）＋ 智能表格建表作业单 v2.1.2（20 列）＋ 方案建议书 v1.4.2（状态机与认证判定模型）。<br>
+顺序编号为「填写顺序」，与 DEF 字段序号不是同一套编号，两者不要混用。
+</footer>
+</div>
+
+<script>
+var STAGES = [
+ {k:'P1', no:'P1', nm:'登记', st:'状态：待受理', who:'一线 / 报告人', note:'表单视图提交，手机端 3 分钟内', cls:''},
+ {k:'P2', no:'P2', nm:'受理定级', st:'转「分析中」', who:'质量部（主表内改）', note:'定级、判上报召回、下围堵', cls:''},
+ {k:'P3', no:'P3', nm:'根因分析', st:'状态：分析中', who:'研发', note:'根因分类 + 责任方 + 因果链', cls:''},
+ {k:'P4', no:'P4', nm:'对策', st:'状态：对策中', who:'研发 / SQE', note:'永久对策、ECN、SCAR', cls:''},
+ {k:'P5', no:'P5', nm:'认证判定', st:'卡口 1 + 卡口 2', who:'质量部 + 认证对接', note:'改了才进，没改整段跳过', cls:'gate'},
+ {k:'P6', no:'P6', nm:'验证与横展', st:'状态：验证中', who:'测试 / 研发', note:'判 3 档的并行挂「等待送检」', cls:''},
+ {k:'P7', no:'P7', nm:'横展确认', st:'转「待关闭」', who:'质量经理', note:'文件改版受控才签字', cls:''},
+ {k:'P8', no:'P8', nm:'关闭', st:'状态：已关闭', who:'质量经理', note:'评审签字、进复发监控期', cls:''}
+];
+
+var F = [
+ {id:'DEF-002',n:'来源渠道',t:'单选',r:['一线'],s:'P1',d:'无。表单第一格'},
+ {id:'DEF-003',n:'报告人',t:'人员',r:['一线'],s:'P1',d:'无。从通讯录选，部门自动带出'},
+ {id:'DEF-005',n:'产品型号',t:'单选',r:['一线'],s:'P1',d:'无。四选一'},
+ {id:'DEF-006',n:'产品编号',t:'文本',r:['一线'],s:'P1',d:'无。一台一编号，现场看不到铭牌填「无法获取」'},
+ {id:'DEF-007',n:'固件版本号',t:'文本',r:['一线'],s:'P1',d:'无。控制器缺陷与固件强相关'},
+ {id:'DEF-008',n:'硬件版本号',t:'文本',r:['一线'],s:'P1',d:'无。<span class="opt">选填</span>'},
+ {id:'DEF-009',n:'发现环节',t:'单选',r:['一线'],s:'P1',d:'无'},
+ {id:'DEF-010',n:'现象描述（原话）',t:'文本',r:['一线'],s:'P1',d:'无。保留口语，不得改写'},
+ {id:'DEF-012',n:'附件',t:'文件',r:['一线'],s:'P1',d:'无。照片／波形／日志，硬件问题靠证据'},
+ {id:'DEF-013',n:'复现条件',t:'文本',r:['一线'],s:'P1',d:'无。<span class="opt">选填</span>，决定根因分析难度'},
+ {id:'DEF-014',n:'缺陷台数',t:'数字',r:['一线'],s:'P1',d:'无。单台／多台／批次性'},
+ {id:'DEF-015',n:'已出货影响范围',t:'文本',r:['一线'],s:'P1',d:'无。<span class="opt">选填</span>，用于围堵与召回判断'},
+ {id:'DEF-017',n:'安全相关',t:'复选框',r:['一线'],s:'P1',d:'无。<b>必须受理当天勾定</b>；决定 DEF-018、DEF-020 填不填'},
+
+ {id:'DEF-011',n:'结构化现象',t:'文本',r:['质量部'],s:'P2',d:'依赖 DEF-010。AI 提取后人工确认'},
+ {id:'DEF-016',n:'严重程度',t:'单选',r:['质量部'],s:'P2',d:'依赖 DEF-017 + DEF-014。先勾安全相关，再定级'},
+ {id:'DEF-018',n:'紧急围堵措施',t:'文本',r:['质量部'],s:'P2',d:'<span class="trig">触发</span>DEF-016 = S 或 A'},
+ {id:'DEF-020',n:'上报 / 召回处置',t:'单选',r:['质量部'],s:'P2',d:'<span class="trig">触发</span>DEF-017 = 是 或 DEF-016 = S／A。五档，3 个工作日内出结论'},
+ {id:'DEF-019',n:'围堵完成日期',t:'日期',r:['质量部'],s:'P2',d:'<span class="opt">选填</span>，随围堵实施进度'},
+
+ {id:'DEF-021',n:'根因分类',t:'单选',r:['研发'],s:'P3',d:'进入「分析中」即必填。固件必须单列'},
+ {id:'DEF-022',n:'责任方',t:'单选',r:['研发'],s:'P3',d:'依赖 DEF-021。<b>粒度必须对齐</b>，否则做不了交叉分析'},
+ {id:'DEF-023',n:'分析方法',t:'多选',r:['研发'],s:'P3',d:'<span class="opt">选填</span>'},
+ {id:'DEF-024',n:'根因描述',t:'文本',r:['研发'],s:'P3',d:'依赖 DEF-021 + DEF-022。须写因果链与证据'},
+ {id:'DEF-025',n:'相似历史缺陷编号',t:'关联',r:['研发'],s:'P3',d:'<span class="opt">选填</span>，AI 检索推荐后人工选定'},
+
+ {id:'DEF-026',n:'围堵措施（临时）',t:'文本',r:['研发'],s:'P4',d:'<span class="opt">选填</span>。知道根因之后的短期手段，不是客户围堵'},
+ {id:'DEF-027',n:'永久对策',t:'文本',r:['研发'],s:'P4',d:'进入「对策中」即必填'},
+ {id:'DEF-028',n:'对策类型',t:'多选',r:['研发'],s:'P4',d:'依赖 DEF-024。<b>这一段的总开关</b>，它决定下面两个填不填'},
+ {id:'DEF-029',n:'ECN 单号',t:'文本',r:['研发'],s:'P4',d:'<span class="trig">触发</span>DEF-028 含「改设计」或「改固件」'},
+ {id:'DEF-030',n:'设计变更',t:'复选框',r:['研发'],s:'P4',d:'依赖 DEF-028。<b>卡口 1</b>：答否，F 组 7 个全跳过（含送检结论）'},
+ {id:'DEF-031',n:'SCAR 单号',t:'文本',r:['质量部'],s:'P4',d:'<span class="trig">触发</span>DEF-022 = 供应商'},
+
+ {id:'DEF-032',n:'变更影响',t:'单选',r:['质量部','认证对接'],s:'P5',d:'<span class="trig">触发</span>DEF-030 = 是。<b>卡口 2</b>：四档，决定后面 5 个字段'},
+ {id:'DEF-033',n:'判定依据与判定人',t:'文本',r:['质量部','认证对接'],s:'P5',d:'<span class="trig">触发</span>DEF-032 = 2 / 3 / 4。双签，AI 不得代判'},
+ {id:'DEF-034',n:'报备单号',t:'文本',r:['认证对接'],s:'P5',d:'<span class="trig">触发</span>DEF-032 = 2 / 3。<b>先备案后实施</b>，回执到手才可实施永久对策'},
+ {id:'DEF-035',n:'送检范围',t:'单选',r:['认证对接'],s:'P5',d:'<span class="trig">触发</span>DEF-032 = 3 档'},
+ {id:'DEF-036',n:'送检样机状态',t:'单选',r:['认证对接'],s:'P5',d:'<span class="trig">触发</span>DEF-032 = 3 档。<b>判定当天就启动</b>，不等整改完成'},
+ {id:'DEF-037',n:'预计送检完成日',t:'日期',r:['认证对接'],s:'P5',d:'<span class="trig">触发</span>DEF-032 = 3 档'},
+
+ {id:'DEF-039',n:'验证方式',t:'多选',r:['测试'],s:'P6',d:'进入「验证中」即必填'},
+ {id:'DEF-040',n:'样本量与结果',t:'文本',r:['测试'],s:'P6',d:'同上。不写样本量，「通过」等于没写'},
+ {id:'DEF-041',n:'验证结论',t:'单选',r:['测试'],s:'P6',d:'同上。判 3 档时：内部通过 ≠ 可关闭'},
+ {id:'DEF-042',n:'验证人',t:'人员',r:['测试'],s:'P6',d:'同上。<b>独立于整改人</b>，不能自己验自己'},
+ {id:'DEF-043',n:'标准化横展项',t:'多选',r:['研发'],s:'P6',d:'进入验证阶段即必填。八类载体，只选一项要被质疑'},
+ {id:'DEF-038',n:'送检结论',t:'单选',r:['认证对接'],s:'P6',d:'<span class="trig">触发</span>DEF-036 = 已寄出。<b>不通过则整单打回对策中</b>'},
+
+ {id:'DEF-044',n:'横展确认人',t:'人员',r:['质量部'],s:'P7',d:'<span class="trig">触发</span>DEF-043 已填 + 附件佐证齐全。签完才可转「待关闭」'},
+
+ {id:'DEF-046',n:'关闭评审签字',t:'人员',r:['质量部'],s:'P8',d:'进入「待关闭」即必填。驳回则退回整改'},
+ {id:'DEF-045',n:'关闭日期',t:'日期',r:['质量部'],s:'P8',d:'<span class="opt">选填</span>。判 3 档的须 DEF-038 = 通过'},
+ {id:'DEF-047',n:'复发监控到期日',t:'日期',r:['质量部'],s:'P8',d:'<span class="opt">选填</span>，建议 3~6 个月'},
+
+ {id:'DEF-001',n:'缺陷编号',t:'自动编号',r:['系统'],s:'AUTO',d:'系统生成 DC-YYYY-NNNN，人不碰'},
+ {id:'DEF-004',n:'创建时间',t:'日期',r:['系统'],s:'AUTO',d:'系统自带。<b>MTTC 的唯一合法起点</b>，不许手工字段替代'}
+];
+
+var REQ = {
+ 'DEF-002':'必填','DEF-003':'必填','DEF-004':'系统','DEF-005':'必填','DEF-006':'必填','DEF-007':'必填',
+ 'DEF-008':'选填','DEF-009':'必填','DEF-010':'必填','DEF-011':'选填','DEF-012':'必填','DEF-013':'选填',
+ 'DEF-014':'必填','DEF-015':'选填','DEF-016':'条件','DEF-017':'必填','DEF-018':'条件','DEF-019':'选填',
+ 'DEF-020':'条件','DEF-021':'条件','DEF-022':'条件','DEF-023':'选填','DEF-024':'条件','DEF-025':'选填',
+ 'DEF-026':'选填','DEF-027':'条件','DEF-028':'条件','DEF-029':'条件','DEF-030':'条件','DEF-031':'条件',
+ 'DEF-032':'条件','DEF-033':'条件','DEF-034':'条件','DEF-035':'条件','DEF-036':'条件','DEF-037':'条件',
+ 'DEF-038':'条件','DEF-039':'条件','DEF-040':'条件','DEF-041':'条件','DEF-042':'条件','DEF-043':'条件',
+ 'DEF-044':'条件','DEF-045':'选填','DEF-046':'条件','DEF-047':'选填','DEF-001':'系统'
+};
+
+var currentRole = 'all';
+
+function init(){
+  var flow = document.getElementById('flow');
+  STAGES.forEach(function(s,i){
+    var d = document.createElement('div');
+    d.className = 'fstep ' + s.cls;
+    d.setAttribute('data-k', s.k);
+    d.innerHTML = '<div class="no">' + s.no + '</div><div class="nm">' + s.nm + '</div>'
+      + '<div class="st">' + s.st + '</div><div class="who">' + s.who + '</div>';
+    d.onclick = function(){
+      var el = document.getElementById('stage-' + s.k);
+      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    };
+    flow.appendChild(d);
+    if(i < STAGES.length - 1){
+      var a = document.createElement('div');
+      a.className = 'farrow';
+      a.textContent = '›';
+      flow.appendChild(a);
+    }
+  });
+  renderAll();
+  renderStages();
+  renderSum();
+  document.querySelectorAll('.fbtn').forEach(function(b){
+    b.onclick = function(){
+      document.querySelectorAll('.fbtn').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      currentRole = b.getAttribute('data-r');
+      renderAll();
+      renderStages();
+    };
+  });
+}
+
+function pick(){
+  return F.filter(function(f){
+    return currentRole === 'all' || f.r.indexOf(currentRole) >= 0;
+  });
+}
+
+function renderAll(){
+  var list = pick();
+  var tb = document.getElementById('allrows');
+  var order = {};
+  F.forEach(function(f,i){ order[f.id] = i + 1; });
+  var html = '';
+  list.forEach(function(f){
+    var req = REQ[f.id] || '';
+    var rc = req === '必填' ? '#a32424' : (req === '条件' ? '#8a5312' : '#8b9aa9');
+    html += '<tr class="' + (f.s === 'AUTO' ? 'sysrow' : '') + '">'
+      + '<td class="ty">' + order[f.id] + '</td>'
+      + '<td class="id">' + f.id + '</td>'
+      + '<td class="nm">' + f.n + '</td>'
+      + '<td class="ty">' + f.t + '</td>'
+      + '<td class="ty" style="color:' + rc + '">' + f.r.join('、') + '</td>'
+      + '<td class="dep">' + f.d + '</td></tr>';
+  });
+  tb.innerHTML = html;
+}
+
+function renderStages(){
+  var box = document.getElementById('stages');
+  var html = '';
+  STAGES.forEach(function(s){
+    var list = pick().filter(function(f){ return f.s === s.k; });
+    if(!list.length) return;
+    var g = s.cls === 'gate';
+    html += '<div class="stage ' + s.cls + '" id="stage-' + s.k + '">'
+      + '<div class="shead"><div class="snum">' + s.no + '</div><div class="stitle">'
+      + '<div class="nm">' + s.nm + '　<span style="font-weight:400;font-size:12.5px;color:#6b7b8c">' + s.note + '</span></div>'
+      + '<div class="meta">' + s.st + '　·　' + s.who + '　·　本阶段 ' + list.length + ' 个字段</div>'
+      + '</div>' + (g ? '<span class="tagline red">卡口</span>' : '') + '</div>'
+      + '<table><thead><tr><th>序号</th><th>字段名</th><th>类型</th><th>必填态</th><th>谁填</th><th>前置依赖 / 触发条件</th></tr></thead><tbody>';
+    list.forEach(function(f){
+      var req = REQ[f.id] || '';
+      html += '<tr><td class="id">' + f.id + '</td>'
+        + '<td class="nm">' + f.n + '</td>'
+        + '<td class="ty">' + f.t + '</td>'
+        + '<td class="ty">' + req + '</td>'
+        + '<td class="ty">' + f.r.join('、') + '</td>'
+        + '<td class="dep">' + f.d + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  });
+  if(currentRole === '系统'){
+    html = '<div class="stage" id="stage-AUTO"><div class="shead"><div class="snum">0</div><div class="stitle">'
+      + '<div class="nm">系统自动生成（人不填）</div><div class="meta">新增记录时自动带出，任何人不许手改</div></div></div>'
+      + '<table><thead><tr><th>序号</th><th>字段名</th><th>类型</th><th>必填态</th><th>谁填</th><th>说明</th></tr></thead><tbody>';
+    F.filter(function(f){ return f.s === 'AUTO'; }).forEach(function(f){
+      html += '<tr class="sysrow"><td class="id">' + f.id + '</td><td class="nm">' + f.n + '</td>'
+        + '<td class="ty">' + f.t + '</td><td class="ty">系统</td><td class="ty">系统</td>'
+        + '<td class="dep">' + f.d + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+  box.innerHTML = html;
+}
+
+function renderSum(){
+  var html = '';
+  var roles = [
+    ['系统','系统自动','不需要人做事，但 MTTC 的起点靠它'],
+    ['一线','一线（报告人）','表单视图 13 格：10 必填 + 3 选填'],
+    ['质量部','质量部','受理定级、围堵、判定、关闭评审'],
+    ['研发','研发','根因、对策、横展项'],
+    ['测试','测试','验证方式与结论'],
+    ['认证对接','认证对接','报备、送检、外部跟进']
+  ];
+  roles.forEach(function(x){
+    var list = F.filter(function(f){ return f.r.indexOf(x[0]) >= 0; });
+    var must = list.filter(function(f){ return REQ[f.id] === '必填' || REQ[f.id] === '系统'; }).length;
+    var cond = list.filter(function(f){ return REQ[f.id] === '条件'; }).length;
+    var opt = list.filter(function(f){ return REQ[f.id] === '选填'; }).length;
+    html += '<div class="box"><div class="v">' + list.length + ' 个</div>'
+      + '<div class="k">' + x[1] + '</div>'
+      + '<div class="k" style="color:#5b6b7c;margin-top:6px">必填 ' + must + '　条件 ' + cond + '　选填 ' + opt + '</div></div>';
+  });
+  document.getElementById('sum').innerHTML = html;
+}
+
+init();
+</script>
+</body>
+</html>
