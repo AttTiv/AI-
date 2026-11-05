@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W4-③ · 用扣子搭第一个知识库 · 嘉哥</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#ffffff; --panel2:#f0efea; --text:#1c1c1a; --muted:#6a6a64;
+    --line:#e3e2db; --accent:#2b6cb0; --ok:#1d8f6b; --warn:#a9761a; --bad:#c0392b;
+    --purple:#6b46c1; --code:#f2f0e9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#12141a; --panel:#1a1d26; --panel2:#21252f; --text:#e6e8ee; --muted:#9aa0b0;
+      --line:#2c313d; --accent:#6ea8fe; --ok:#4dd0a7; --warn:#f0b354; --bad:#e8736b;
+      --purple:#a78bfa; --code:#21252f;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:36px 20px 90px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.8}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:24px;font-weight:600;margin:0 0 8px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:8px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 30px}
+  .tag{background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:3px 12px;font-size:12px;color:var(--muted)}
+  h2{font-size:18px;font-weight:600;margin:42px 0 14px;padding-left:11px;border-left:3px solid var(--accent)}
+  h3{font-size:15px;font-weight:600;margin:24px 0 8px}
+  p{margin:9px 0}
+  .lead{color:var(--muted)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0}
+  .key{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0}
+  .key b{color:var(--accent)}
+  .warn{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0;font-size:14px}
+  .bad{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--bad);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0;font-size:14px}
+  .ok{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--ok);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0;font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12.5px;background:var(--panel2)}
+  tr:last-child td{border-bottom:none}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px;
+    font-family:ui-monospace,Consolas,monospace}
+  pre{background:var(--code);border:1px solid var(--line);padding:13px 15px;border-radius:8px;
+    overflow-x:auto;font-size:12.5px;line-height:1.65;font-family:ui-monospace,Consolas,monospace;margin:10px 0}
+  pre .c{color:var(--muted)}
+  ul,ol{margin:8px 0 12px;padding-left:24px}
+  li{margin:5px 0}
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:18px 16px 10px;margin:16px 0}
+  .cap{text-align:center;color:var(--muted);font-size:12.5px;margin:10px 0 6px}
+  .num{display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;
+    background:var(--accent);color:var(--bg);border-radius:11px;font-size:12px;
+    font-weight:600;margin-right:7px}
+  .q{background:var(--panel2);border-radius:8px;padding:12px 15px;margin:10px 0;font-size:14px}
+  .q b{color:var(--purple)}
+  .ans{color:var(--muted);font-size:13.5px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+  .mark{font-size:12px;padding:1px 8px;border-radius:4px;margin-right:6px}
+  .m-ok{background:rgba(77,208,167,.14);color:var(--ok)}
+  .m-bad{background:rgba(232,115,107,.14);color:var(--bad)}
+  .m-q{background:rgba(240,179,84,.14);color:var(--warn)}
+  footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:12.5px;line-height:1.9}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 20px;font-size:14px}
+  .toc a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+  .toc a:hover{border-bottom-color:var(--accent)}
+  .flow{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;font-size:12px;text-align:center}
+  .step{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 4px;line-height:1.45}
+  .step .n{display:block;font-weight:600;color:var(--accent);margin-bottom:3px}
+  .vis{font-size:11px;margin-top:6px;padding:2px 0;border-radius:4px}
+  .v1{background:rgba(77,208,167,.16);color:var(--ok)}
+  .v0{background:rgba(232,115,107,.16);color:var(--bad)}
+  .arrow{text-align:center;color:var(--muted);font-size:11px;margin-top:4px}
+  @media (max-width:760px){.flow{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>W4-③ · 用扣子（Coze）搭第一个知识库</h1>
+<div class="sub">从 16 份文档，到「问它一句，它能翻对那一页」—— 一份可照做的操作手册，含边界说明</div>
+<div class="meta">
+  <span class="tag">写入 2026-11-06</span>
+  <span class="tag">对应 W4 任务 ③</span>
+  <span class="tag">工具：扣子 coze.cn</span>
+  <span class="tag">语料已转好：corpus_pdf / 16 份</span>
+  <span class="tag">预计 40 分钟</span>
+</div>
+
+<div class="toc">
+  <b>本课目录</b><br>
+  1. 为什么是扣子，不是 Dify —— <a href="#s1">三个工具的取舍</a><br>
+  2. 语料已经替你转好了 —— <a href="#s2">16 份 PDF 与「为什么不是 HTML」</a><br>
+  3. 八步搭起来 —— <a href="#s3">每步该设什么值、该截什么图</a><br>
+  4. 扣子的参数地图 —— <a href="#s4">哪些能调、哪些调不了</a><br>
+  5. 三张记录表（本周作业） —— <a href="#s5">召回 / 切分 / 引文作答</a><br>
+  6. 它做不到的四件事 —— <a href="#s6">以及谁补位</a><br>
+  7. 五个坑 —— <a href="#s7">扣子版，全部会撞</a><br>
+  8. 验收清单 —— <a href="#s8">六条打勾才算过</a>
+</div>
+
+<div class="key">
+<b>一句话说清这份教程的定位：</b>扣子负责让你「今天就把知识库跑起来、看到端到端效果」；
+它<b>不负责</b>让你看清切分与排序的细节 —— 那部分由本地的 <code>mini_rag.py</code> 补。
+两个工具分工，不是二选一。
+</div>
+
+<h2 id="s1">一、为什么是扣子，不是 Dify</h2>
+
+<p>计划文件 W4-③ 原文写的是「用 Dify 或 LlamaIndex 搭第一个知识库」。那行是<b>举例</b>，不是限定。
+真要在你机器上落地，三个选项的实况是这样：</p>
+
+<table>
+  <tr><th style="width:16%">工具</th><th style="width:24%">起步门槛</th><th style="width:26%">你能看到什么</th><th>结论</th></tr>
+  <tr>
+    <td><b>Dify</b></td>
+    <td>Docker 全栈，运行要吃 4–6 GB 内存</td>
+    <td>全流程、可改代码、可换模型</td>
+    <td><b>你装不了。</b>本机总内存 13.8 G、实测空闲仅 2.5 G，Docker 与 Ollama 均未安装</td>
+  </tr>
+  <tr>
+    <td><b>LlamaIndex</b></td>
+    <td>要写 Python</td>
+    <td>一切，因为全是你的代码</td>
+    <td><b>和你的约束冲突。</b>你不学写、只学读，时间会全耗在调环境上</td>
+  </tr>
+  <tr>
+    <td><b>扣子</b></td>
+    <td>浏览器登录即可，免费版 1 GB 知识库空间</td>
+    <td>分段结果、召回测试、Score 分数、检索策略开关</td>
+    <td><span class="mark m-ok">选它</span>云端跑，不吃本机内存；W3 你已跑通过扣子工作流，账号现成</td>
+  </tr>
+</table>
+
+<div class="warn">
+<b>一条必须讲清的代价：</b>扣子是闭源平台，你的文档会上传到它的服务器。
+所以这份教程用的是<b>你自己写的设计文档 + 公开资讯</b>，不含真实缺陷记录、客户信息、报价。
+型号（AEC2301 等）算不算敏感，<b>你自己拍</b>——要更保险，上传前把型号替换成代号即可。
+</div>
+
+<h2 id="s2">二、语料已经替你转好了</h2>
+
+<p>你手上 17 份资产几乎全是 <code>.html</code>。<b>扣子的文本知识库不吃 html</b>，直接传会失败。
+我已经用无头浏览器把你的 HTML 渲染成 PDF，放在：</p>
+
+<pre>E:\workbuddy workspace\corpus_pdf\</pre>
+
+<table>
+  <tr><th style="width:10%">#</th><th style="width:40%">文件</th><th style="width:14%">大小</th><th>为什么选它</th></tr>
+  <tr><td>01</td><td>方案建议书 v1.4</td><td>1415 KB</td><td>主线文档，正确口径</td></tr>
+  <tr><td>02</td><td><b>方案建议书 v1.2（旧版）</b></td><td>1108 KB</td><td><b>故意留的</b>：制造「文档内部冲突」，见第 7 节坑④</td></tr>
+  <tr><td>03</td><td>字段填写顺序与依赖图</td><td>878 KB</td><td>Q1「围堵谁做」的正确答案在这份里</td></tr>
+  <tr><td>04</td><td>45 字段全流程图</td><td>475 KB</td><td>结构化强，测「按结构切」的效果</td></tr>
+  <tr><td>05</td><td>字段配置器</td><td>663 KB</td><td>字段定义，与台账互为交叉验证</td></tr>
+  <tr><td>06</td><td>建表作业单 v2</td><td>1205 KB</td><td>Q2「主表几列」的出处</td></tr>
+  <tr><td>07</td><td>企微表单建表作业单 v1</td><td>686 KB</td><td>又一份历史版本，增加干扰</td></tr>
+  <tr><td>08</td><td>任务拆分·交接卡</td><td>789 KB</td><td>样机判据 T3 的简版答案</td></tr>
+  <tr><td>09–10</td><td>硬件技能速查卡 / 验收报告</td><td>1.3 MB</td><td>与业务无关，测「跨主题会不会串」</td></tr>
+  <tr><td>11</td><td>Anthropic 文档中文精读</td><td>845 KB</td><td>长文，含明确章节，测结构切分</td></tr>
+  <tr><td>12–14</td><td>AI 硬件新闻周报 ×3</td><td>1.4 MB</td><td>时效性内容，测「旧闻会不会被当新闻答」</td></tr>
+  <tr><td>15–16</td><td>AI 学习计划 / W4 RAG 教程</td><td>1.8 MB</td><td>元文档，方便你验证它是不是真读到了</td></tr>
+</table>
+
+<p><b>合计 12.4 MB，最大单文件 1.4 MB</b>，全部远低于平台上限（单文件 100 MB、免费空间 1 GB）。</p>
+
+<div class="ok">
+<b>为什么是 16 份而不是 50 份：</b>任务要求 20–50 篇，是为了保证「检索有得挑」。
+16 份已产生 <b>三百多段</b>候选（按 500 字符切），足够让 Top-3 出现竞争、也足够暴露错排。
+先把链路跑通，再往 <code>corpus_pdf</code> 里加文件重新上传即可，不用重建知识库。
+</div>
+
+<h2 id="s3">三、八步搭起来</h2>
+
+<div class="fig">
+  <div class="flow">
+    <div class="step"><span class="n">① 上传</span>16 份 PDF<div class="vis v1">可见</div></div>
+    <div class="step"><span class="n">② 分段</span>切成一页页<div class="vis v1">可见</div></div>
+    <div class="step"><span class="n">③ 向量化</span>贴内容指纹<div class="vis v0">看不见</div></div>
+    <div class="step"><span class="n">④ 存库</span>建索引<div class="vis v0">看不见</div></div>
+    <div class="step"><span class="n">⑤ 检索</span>按问题捞<div class="vis v1">可见分数</div></div>
+    <div class="step"><span class="n">⑥ 拼 prompt</span>交给模型<div class="vis v0">看不见</div></div>
+  </div>
+  <div class="cap">图 1　六个环节里，扣子让你看见 ①②⑤，藏起 ③④⑥。本地 <code>mini_rag.py</code> 六个全给看。</div>
+</div>
+
+<p><b>看图就懂为什么两个工具要分工：</b>扣子把「看得见」的三步做得非常好用（分段能改、能抽样、能测召回），
+把「看不见」的三步封装得干干净净。你要学的是<b>这三步为什么这么设计</b>，那就得回本地脚本。</p>
+
+<h3><span class="num">1</span>登录，进资源库</h3>
+<p>浏览器打开 <code>coze.cn</code>，用 W3 那个账号登录 → 左侧栏「<b>资源库</b>」→ 右上角「<b>+ 资源</b>」→ 选「<b>知识库</b>」。
+类型选<b>文本格式</b>（另有表格、图片两类，这次用不上）。</p>
+
+<h3><span class="num">2</span>分段设置：一定要选「自定义」</h3>
+<p>新建时会让你选分段方式，两个选项差别巨大：</p>
+<table>
+  <tr><th style="width:22%">选项</th><th style="width:34%">平台怎么切</th><th>建议</th></tr>
+  <tr><td>自动分段与清洗</td><td>平台按预置规则切，你无法干预</td><td><span class="mark m-bad">不要</span>用了你什么都学不到</td></tr>
+  <tr><td><b>自定义</b></td><td>你指定分隔符 + 最大分段长度（<b>100–2000 字符</b>）+ 是否过滤连续空格/URL 邮箱</td><td><span class="mark m-ok">选这个</span></td></tr>
+</table>
+
+<p>具体这样填：</p>
+<pre>分段标识符：  换行符（先用默认；你的文档标题层级明显，也可以填 <span class="c">##</span> 或 <span class="c">第 X 章</span> 试）
+最大分段长度：<b>500</b> 字符
+过滤连续空格/换行/制表符：<b>开</b>
+过滤所有 URL 和邮箱：<b>开</b></pre>
+
+<div class="q">
+<b>为什么是 500？</b><br>
+不是抄来的，是你在本地 mini_rag 里实测过的那一档（200 / 500 / 1000 三档对比，500 的解释最完整）。
+<b>两边都用 500，差异才可比</b> —— 这是做实验的基本要求：一次只改一个变量。
+<span class="ans">注意单位是「字符」不是 token。中文里 500 字符 ≈ 330～500 token，跟本地脚本的 500 字基本同量级。</span>
+</div>
+
+<h3><span class="num">3</span>上传 16 份，等解析</h3>
+<p>把 <code>corpus_pdf</code> 里 16 个 PDF 全选拖进去。单批上传会更稳，失败的文件会在列表里标红，重传即可。</p>
+<p>等状态从「处理中」变「已完成」。这一步平台在做：抽文本 → 按你的规则切段 → 逐段算向量 → 入库。</p>
+
+<h3><span class="num">4</span>抽样检查分段质量（这一步别跳）</h3>
+<p>点进知识库，看「<b>分段</b>」列表。<b>随机点开 5 段，逐条看三件事：</b></p>
+<ol>
+  <li><b>中文是不是正常</b>（有没有变成乱码或一串问号）</li>
+  <li><b>有没有半句话被切断</b>（比如「T3 ≤ T2」后面直接没了 —— 这正是本地脚本踩过的坑②）</li>
+  <li><b>一段里是不是只讲一件事</b>（混了三件事说明 500 太大，混不到一件事说明太小）</li>
+</ol>
+<div class="warn">
+<b>PDF 的已知副作用：</b>从 PDF 抽文本时，某些排版会在汉字之间插入空格（「围 堵 措 施」）。
+如果你看到大量这种，<b>字面匹配会变差</b>（这也是为什么平台默认用「混合检索」而不是纯字面）。
+这是 PDF 转换的代价，不是平台的问题 —— 想彻底避开，得改用 docx 或 md 上传。
+</div>
+
+<h3><span class="num">5</span>建一个 Bot，把知识库挂上去</h3>
+<p>左侧「<b>工作空间 / 项目开发</b>」新建一个智能体，名字随意（比如「闭环系统问答」）。
+在编排页左侧找「<b>知识库</b>」→ 点「+」→ 选中刚建的知识库。</p>
+
+<h3><span class="num">6</span>召回设置：这是全篇最关键的四个开关</h3>
+<table>
+  <tr><th style="width:24%">设置项</th><th style="width:26%">本次填什么</th><th>为什么</th></tr>
+  <tr><td><b>调用方式</b></td><td>自动调用</td><td>按需调用要你在提示词里写「什么情况查哪个库」，第一次用别自找麻烦</td></tr>
+  <tr><td><b>搜索策略</b></td><td>先选<b>混合</b></td><td>混合 = 全文检索（关键词）+ 语义检索，两路一起排。专有名词靠字面、同义词靠语义，<b>本地脚本缺的就是这一路</b></td></tr>
+  <tr><td><b>最大召回数量</b></td><td><b>3</b>（先按默认）</td><td>取太多噪声进 prompt，先固定 3，第五节的实验中再改</td></tr>
+  <tr><td><b>最小匹配度</b></td><td><b>0.55</b> 起（可调范围 0.01–0.99）</td><td>低于这个分数的段不返回。<b>设太高会「什么都搜不到」，设太低会「什么都往里塞」</b></td></tr>
+</table>
+<p>另外把「<b>显示来源</b>」打开 —— 你需要看到它到底引了哪一段；「<b>无召回回复</b>」设成「资料中未提及」。</p>
+
+<h3><span class="num">7</span>跑三道题，看它捞对没有</h3>
+<p>直接用 W4 那三道题。每题问完，<b>点开引用来源，把命中段和分数抄进第五节的表</b>。</p>
+<div class="q">
+<b>Q1</b>　临时围堵措施由谁在什么时候做？<br>
+<b>Q2</b>　主表建了几列，47 个字段里必填几个？<br>
+<b>Q3</b>　样机判据是「T3 ≤ T2」吗？
+</div>
+
+<h3><span class="num">8</span>做一次「引文作答」对照</h3>
+<p>在 Bot 的提示词里加一条硬规矩，然后再问同样三题：</p>
+<pre>回答规则：
+1. 先逐字引用你检索到的原文段落（用 [1][2] 标号），再给结论。
+2. 引用的段落里没有的信息，一律回答「资料中未提及」，禁止补充。
+3. 如果不同段落说法冲突，把两种说法都列出来，指出各自来自哪个文件。</pre>
+<p>第 3 条是给你埋的 —— 因为语料里同时存在 v1.2 和 v1.4 两份方案书，<b>只要它老实列冲突，就说明这条规矩生效了</b>。</p>
+
+<h2 id="s4">四、扣子的参数地图：哪些能调、哪些调不了</h2>
+
+<p>这张表是给你以后判断「该不该上平台」用的。左列是环节，中列是扣子的可控度，右列是本地脚本的对照。</p>
+
+<table>
+  <tr><th style="width:20%">环节</th><th style="width:38%">扣子（截至 2026-11 官方文档）</th><th>本地 mini_rag</th></tr>
+  <tr><td>切分规则</td><td><b>能</b>：自定义分隔符 + 最大分段 100–2000 字符 + 两个清洗开关</td><td>能：<code>--chunk 200/500/1000</code></td></tr>
+  <tr><td>分段重叠 overlap</td><td><span class="mark m-bad">未见参数</span> 官方分段参数只有 separator / max_tokens / 两个清洗开关，<b>没有 overlap</b> ❓</td><td>能：<code>OVERLAP = 50</code></td></tr>
+  <tr><td>向量模型 embedding</td><td><span class="mark m-bad">不可选</span> 平台固定 ❓（未查到可选模型的说明）</td><td>能换：改 <code>build_index</code> 一处即可</td></tr>
+  <tr><td>检索方式</td><td><b>能</b>：混合 / 语义 / 全文 三选一</td><td>只有字面（TF-IDF），<b>这正是差距所在</b></td></tr>
+  <tr><td>返回条数 TopK</td><td><b>能</b>：Bot 侧「最大召回数量」；API 侧 <code>top_k</code> 取值 1–20</td><td>能：<code>--topk</code></td></tr>
+  <tr><td>相似度阈值</td><td><b>能</b>：Bot 侧「最小匹配度」；API 侧 <code>score_threshold</code> 0–1（默认 0.2）</td><td>能：内部按分数排序，没有阈值开关</td></tr>
+  <tr><td>拼 prompt</td><td><span class="mark m-bad">不能改</span> 你只能改提示词，模板结构由平台定 ❓</td><td>能：<code>PROMPT_TMPL</code> 原文可读可改</td></tr>
+  <tr><td>看召回分数</td><td><b>能</b>：召回测试里直接给 Score</td><td>能给相似度数值，但口径是 TF-IDF 余弦，不可直接对比</td></tr>
+  <tr><td>文件格式</td><td>PDF / Word / TXT / MD / Excel / CSV 等；<b>不吃 html</b></td><td>只吃 html / csv（正好互补）</td></tr>
+</table>
+
+<p class="ans">标 ❓ 的三项：我在官方文档里没有查到明确说明，若你在后台看到对应设置，以你看到的为准，回头告诉我更好。</p>
+
+<h2 id="s5">五、三张记录表（本周作业）</h2>
+
+<p>W4 的产出要求是「一个可演示的知识库 + 一份实验记录」。知识库由扣子出，记录靠这三张表。
+<b>表不用好看，字要能对得上。</b></p>
+
+<h3>表 1 · 召回记录（每题一问）</h3>
+<table>
+  <tr><th style="width:26%">问题</th><th style="width:34%">命中的前 3 段（文件 + 首句）</th><th style="width:14%">最高 Score</th><th>判断</th></tr>
+  <tr><td>Q1 围堵谁做</td><td></td><td></td><td></td></tr>
+  <tr><td>Q2 主表几列</td><td></td><td></td><td></td></tr>
+  <tr><td>Q3 样机判据</td><td></td><td></td><td></td></tr>
+  <tr><td>自加一题：和你岗位真相关的问题</td><td></td><td></td><td></td></tr>
+</table>
+<p class="ans">「判断」栏只填三种：<b>对</b>（含答案）/ <b>沾边</b>（同主题无答案）/ <b>错</b>（不相干）。填完你就有了第一份召回率的雏形 —— W5 会把它扩成 50 题。</p>
+
+<h3>表 2 · 切分对比（本地 + 平台并排）</h3>
+<table>
+  <tr><th style="width:24%">切分</th><th style="width:16%">段数</th><th style="width:30%">Q3 命中的第一段</th><th>结论</th></tr>
+  <tr><td>本地 200 字</td><td>362</td><td>交接卡（只给结论不给理由）</td><td>已实测</td></tr>
+  <tr><td>本地 500 字</td><td>114</td><td>方案书（完整解释为什么不能一刀切）</td><td>已实测，最优</td></tr>
+  <tr><td>本地 1000 字</td><td>53</td><td>判据表那段，但 Top2/Top3 落到无关块</td><td>已实测，稀释</td></tr>
+  <tr><td><b>扣子 500 字符</b></td><td></td><td></td><td><b>你来填</b></td></tr>
+</table>
+<p class="ans">重点不是「谁更好」，是<b>同一份文档、同一个问题，换了实现，命中结果为什么不同</b>。差异的原因写出来，这一栏就值钱。</p>
+
+<h3>表 3 · 引文作答对照</h3>
+<table>
+  <tr><th style="width:20%">问题</th><th style="width:40%">直接作答</th><th>先引用再作答</th></tr>
+  <tr><td>Q1</td><td></td><td></td></tr>
+  <tr><td>Q3</td><td></td><td></td></tr>
+  <tr><td>Q2（有 31/32 冲突）</td><td></td><td><b>看它会不会主动报冲突</b></td></tr>
+</table>
+
+<h2 id="s6">六、它做不到的四件事（以及谁补位）</h2>
+
+<table>
+  <tr><th style="width:30%">做不到</th><th style="width:34%">后果</th><th>补位方案</th></tr>
+  <tr><td>看不到「块 → 向量」这一步</td><td>你没法验证「向量化到底把意思压成了什么」</td><td>本地 <code>_out/index.json</code> 里有每段的词权重，打开看</td></tr>
+  <tr><td>不能设 overlap</td><td>结论被切断这个坑，你只能认</td><td>本地 <code>OVERLAP=50</code> 改 100 试一次，看命中变化</td></tr>
+  <tr><td>不能换 embedding</td><td>「换算法提升多少」这个实验做不了</td><td>W5 或本地装真 embedding 时再做</td></tr>
+  <tr><td>不给代码</td><td>读代码 4/12 练不了</td><td><code>mini_rag.py</code>（275 行）就是那个练习对象</td></tr>
+</table>
+
+<div class="key">
+<b>所以 W4 剩下两件事的处理器很明确：</b><br>
+· <b>任务④ 切分对比</b> → 本地跑 <code>--chunk 200/500/1000</code>，一条命令一次<br>
+· <b>任务⑦ 读代码 4/12</b> → <code>mini_rag.py</code> 的四段数据流，能指出行号<br>
+· <b>任务③ 搭知识库</b> → 扣子，出一份能点开演示的东西
+</div>
+
+<h2 id="s7">七、五个坑（扣子版）</h2>
+
+<table>
+  <tr><th style="width:26%">坑</th><th style="width:32%">现象</th><th>怎么修</th></tr>
+  <tr><td><b>① 直接传 html</b></td><td>提示格式不支持 / 解析出空白</td><td>先转 PDF（我已在 <code>corpus_pdf</code> 转好），或另存为 docx</td></tr>
+  <tr><td><b>② 把「字符」当「token」</b></td><td>设 500 以为跟本地一样，实际段数对不上</td><td>500 字符 ≈ 330～500 token，比本地 500 字略短。<b>对比时看段数，不看设定值</b></td></tr>
+  <tr><td><b>③ 阈值设太高</b></td><td>「资料中未提及」连发，什么都搜不到</td><td>一个跨多个知识点的问题，匹配度可能只有 0.3–0.6。<b>降到 0.3 试，或把召回数量加到 5</b></td></tr>
+  <tr><td><b>④ 旧版本混进去</b><br><span class="mark m-q">故意埋的</span></td><td>它引用 v1.2 的旧口径，理直气壮地答错</td><td><b>这就是真实世界的常态。</b>修法不是删文件，是让它报冲突（第三张表要测的）</td></tr>
+  <tr><td><b>⑤ PDF 抽取夹空格</b></td><td>分段里出现「围 堵 措 施」，字面匹配变差</td><td>优先用「混合检索」；长期解法是改用 docx / md 上传</td></tr>
+</table>
+
+<div class="bad">
+<b>第 ④ 条要专门说一句：</b>你会在召回结果里看到 v1.2 和 v1.4 同时被命中，而且旧版可能分数更高（写得更啰嗦）。
+<b>这不是 bug，是 RAG 的本性 —— 它不知道哪份是现行版本。</b>
+真实工程里的解法是给文档打「版本/状态」元数据，检索时只查现行版。
+你现在能做的：只上传现行版建第二个库，和混合库对比一次，把差异写进表 1。
+</div>
+
+<h2 id="s8">八、验收清单</h2>
+
+<table>
+  <tr><th style="width:6%">✓</th><th style="width:44%">项目</th><th>标准</th></tr>
+  <tr><td>1</td><td>知识库建好且能打开</td><td>16 份全在，状态「已完成」，分段数能看到</td></tr>
+  <tr><td>2</td><td>抽样 5 段看过</td><td>能说出至少 1 处切得不好的地方</td></tr>
+  <tr><td>3</td><td>三道题跑过并记录</td><td>表 1 填满，Score 有数字</td></tr>
+  <tr><td>4</td><td>切分对比有平台这一行</td><td>表 2 第四行不是空的</td></tr>
+  <tr><td>5</td><td>引文作答对照做过</td><td>表 3 填了两列，冲突那条有结论</td></tr>
+  <tr><td>6</td><td>能回答「为什么用扣子」</td><td>说得出 Dify 装不了的原因（内存实测数字），说得出口子在哪</td></tr>
+</table>
+
+<div class="ok">
+<b>做完这六条，W4-③ 就算落地了。</b>你手上会有：一个能点开演示的知识库链接、三张记录表、
+以及一句能在面试里用的话 ——
+「我用扣子搭了知识库，但它不给我 overlap 和 embedding 的选择，所以切分实验我是在本地脚本上做的，
+两边结果差在<b>混合检索</b>这一路。」
+<span class="ans">这句话之所以值钱，是因为它同时证明了你会用平台、也知道平台的天花板在哪。</span>
+</div>
+
+<p class="lead">下一步（W4 后半）：把本地 <code>mini_rag.py</code> 的 TF-IDF 换成真 embedding，再回来跟扣子的混合检索对比。
+W5 建 50 条评测集时，表 1 那四行就是种子。</p>
+
+<footer>
+来源：扣子官方文档「使用限制」（文件数 300 / 单文件 100 MB / 分段上限 10000 / 单段最大 5000 字符 / 个人免费版 1 GB）、
+「分段参数 ChunkStrategy」（chunk_type 0 自动、1 自定义；max_tokens 100–2000）、
+「数据向量化写入与检索」（分隔符、分片大小、Score 阈值、TopK）、
+「Add knowledge bases to your agent」（混合/语义/全文三种搜索策略、最大召回数量、最小匹配度、显示来源、无召回回复）、
+「接入三方知识库」（top_k 1–20、score_threshold 0–1 默认 0.2、query_type 0/1/2）。<br>
+标 ❓ 的三处（overlap 是否有隐藏设置、embedding 是否可选、prompt 模板可否改）为官方文档未明确说明，以你后台实见为准。<br>
+最小匹配度默认 0.55、可选范围 0.01–0.99 为第三方教程口径，非官方文档原文。<br>
+本文件为本地 HTML，双击即可打开，不联网、不加载任何外部资源；教程中操作需访问 coze.cn。
+</footer>
+
+</div>
+</body>
+</html>

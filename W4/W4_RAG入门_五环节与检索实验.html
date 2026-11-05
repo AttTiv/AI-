@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W4 第一课 · RAG 五环节与检索实验 · 嘉哥</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#ffffff; --panel2:#f0efea; --text:#1c1c1a; --muted:#6a6a64;
+    --line:#e3e2db; --accent:#2b6cb0; --ok:#1d8f6b; --warn:#a9761a; --bad:#c0392b;
+    --purple:#6b46c1; --code:#f2f0e9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#12141a; --panel:#1a1d26; --panel2:#21252f; --text:#e6e8ee; --muted:#9aa0b0;
+      --line:#2c313d; --accent:#6ea8fe; --ok:#4dd0a7; --warn:#f0b354; --bad:#e8736b;
+      --purple:#a78bfa; --code:#21252f;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:36px 20px 90px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.8}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:24px;font-weight:600;margin:0 0 8px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:8px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 30px}
+  .tag{background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:3px 12px;font-size:12px;color:var(--muted)}
+  h2{font-size:18px;font-weight:600;margin:42px 0 14px;padding-left:11px;border-left:3px solid var(--accent)}
+  h3{font-size:15px;font-weight:600;margin:24px 0 8px}
+  p{margin:9px 0}
+  .lead{color:var(--muted)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0}
+  .key{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0}
+  .key b{color:var(--accent)}
+  .warn{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0;font-size:14px}
+  .bad{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--bad);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0;font-size:14px}
+  .ok{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--ok);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0;font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12.5px;background:var(--panel2)}
+  tr:last-child td{border-bottom:none}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px;
+    font-family:ui-monospace,Consolas,monospace}
+  pre{background:var(--code);border:1px solid var(--line);padding:13px 15px;border-radius:8px;
+    overflow-x:auto;font-size:12.5px;line-height:1.65;font-family:ui-monospace,Consolas,monospace;margin:10px 0}
+  pre .c{color:var(--muted)}
+  ul,ol{margin:8px 0 12px;padding-left:24px}
+  li{margin:5px 0}
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:16px 12px 8px;margin:16px 0}
+  .cap{text-align:center;color:var(--muted);font-size:12.5px;margin:6px 0 8px}
+  .num{display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;
+    background:var(--accent);color:var(--bg);border-radius:11px;font-size:12px;
+    font-weight:600;margin-right:7px}
+  .q{background:var(--panel2);border-radius:8px;padding:12px 15px;margin:10px 0;font-size:14px}
+  .q b{color:var(--purple)}
+  .ans{color:var(--muted);font-size:13.5px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+  .mark{font-size:12px;padding:1px 8px;border-radius:4px;margin-right:6px}
+  .m-ok{background:rgba(77,208,167,.14);color:var(--ok)}
+  .m-bad{background:rgba(232,115,107,.14);color:var(--bad)}
+  .m-q{background:rgba(240,179,84,.14);color:var(--warn)}
+  footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:12.5px;line-height:1.9}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 20px;font-size:14px}
+  .toc a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+  .toc a:hover{border-bottom-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>W4 第一课 · RAG 五环节与检索实验</h1>
+<div class="sub">从「你亲手找资料」到「脚本自动找资料」—— 这一课要做的事，是把检索这一环从黑箱里拽出来</div>
+<div class="meta">
+  <span class="tag">W4 · RAG 入门</span>
+  <span class="tag">配套脚本 tools/mini_rag/mini_rag.py</span>
+  <span class="tag">实测语料 47,598 字 / 114 块</span>
+  <span class="tag">写入 2026-11-03</span>
+</div>
+
+<div class="toc">
+  <b>本课目录</b><br>
+  1. 一句话说透 RAG —— <a href="#s1">开卷考试这个比喻</a><br>
+  2. 五个环节长什么样 —— <a href="#s2">流水线图 + 硬件类比</a><br>
+  3. 为什么这一课不装 Dify —— <a href="#s3">你机器的实测数据</a><br>
+  4. 三组对照实验（本周核心作业） —— <a href="#s4">含三道题与参考答案</a><br>
+  5. 跑一遍脚本 —— <a href="#s5">读代码 4/12：四段数据流</a><br>
+  6. 切分大小对比实验 —— <a href="#s6">200 / 500 / 1000</a><br>
+  7. 答错了到底是谁的错 —— <a href="#s7">一张诊断树</a><br>
+  8. 五个必踩的坑 —— <a href="#s8">含本次实测撞到的两个</a><br>
+  9. 能不能做多层 RAG —— <a href="#s9">「一级二级三级」这个想法对不对</a><br>
+  10. 验收自测 —— <a href="#s10">四问，全部有标准答案</a>
+</div>
+
+<h2 id="s1">一、一句话说透 RAG</h2>
+
+<p><b>RAG 不是给模型加知识，是给它一份参考资料，让它开卷考试。</b></p>
+
+<p>你现在用的模型，脑子里装的是全人类的公开语料，它不知道你公司的样机判据怎么定、不知道你主表为什么是 20 列。
+你想让它在你的文档上答题，有两条路：</p>
+
+<table>
+  <tr><th style="width:22%">路子</th><th style="width:26%">做法</th><th>代价</th></tr>
+  <tr><td><b>微调</b>（不改这周学）</td><td>把你的文档喂进去重新训练一遍参数</td><td>贵、慢、改一次要重训；而且模型会「记混」——它把文档压缩进参数，细节就丢了，还会一本正经地编</td></tr>
+  <tr><td><b>RAG</b>（本周学）</td><td>文档不动，每次提问时先把相关段落<strong>查出来</strong>，连同问题一起塞给模型</td><td>文档随时改、随时生效；答案能标注出处；查不到就说查不到</td></tr>
+</table>
+
+<div class="key">
+  <b>记住这一句就够本课了：</b>RAG 里模型没变聪明，变的是它答题时手边多了几页复印件。
+  所以<strong>答案准不准，八成取决于「那几页复印件找得对不对」</strong>，不到两成取决于模型本身。
+  这也是为什么 W5 要花一整周去优化「召回率」—— 找错了页，模型再强也只能照着错页答。
+</div>
+
+<h2 id="s2">二、五个环节长什么样</h2>
+
+<div class="fig">
+<svg viewBox="0 0 860 300" width="100%" height="300" role="img" aria-label="RAG 五环节流水线">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+
+  <!-- 上排：建库（离线，一次性） -->
+  <text x="14" y="24" font-size="12.5" fill="var(--muted)" font-weight="600">① 建库（离线做一次，文档变了再重做）</text>
+
+  <rect x="14" y="36" width="150" height="58" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="89" y="58" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">原始文档</text>
+  <text x="89" y="78" text-anchor="middle" font-size="11.5" fill="var(--muted)">7 个文件 4.76 万字</text>
+
+  <rect x="196" y="36" width="150" height="58" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="271" y="58" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">② 切分 chunk</text>
+  <text x="271" y="78" text-anchor="middle" font-size="11.5" fill="var(--muted)">切成 114 块 / 每块≤500字</text>
+
+  <rect x="378" y="36" width="150" height="58" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="453" y="58" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">③ 向量化</text>
+  <text x="453" y="78" text-anchor="middle" font-size="11.5" fill="var(--muted)">每块变成一组数字</text>
+
+  <rect x="560" y="36" width="150" height="58" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="635" y="58" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">④ 存向量库</text>
+  <text x="635" y="78" text-anchor="middle" font-size="11.5" fill="var(--muted)">带索引的柜子</text>
+
+  <line x1="164" y1="65" x2="194" y2="65" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ar)"/>
+  <line x1="346" y1="65" x2="376" y2="65" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ar)"/>
+  <line x1="528" y1="65" x2="558" y2="65" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ar)"/>
+
+  <!-- 下排：问答（每次提问都跑） -->
+  <text x="14" y="140" font-size="12.5" fill="var(--muted)" font-weight="600">② 问答（每问一次跑一次）</text>
+
+  <rect x="14" y="152" width="150" height="58" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="89" y="174" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">你的问题</text>
+  <text x="89" y="194" text-anchor="middle" font-size="11.5" fill="var(--muted)">"临时围堵谁做"</text>
+
+  <rect x="196" y="152" width="150" height="58" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="271" y="174" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">⑤ 检索</text>
+  <text x="271" y="194" text-anchor="middle" font-size="11.5" fill="var(--muted)">找最像的 3 块</text>
+
+  <rect x="378" y="152" width="150" height="58" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="453" y="174" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">拼 prompt</text>
+  <text x="453" y="194" text-anchor="middle" font-size="11.5" fill="var(--muted)">3 块原文 + 问题</text>
+
+  <rect x="560" y="152" width="150" height="58" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="635" y="174" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">⑥ 生成</text>
+  <text x="635" y="194" text-anchor="middle" font-size="11.5" fill="var(--muted)">照着 3 块答 + 标出处</text>
+
+  <line x1="164" y1="181" x2="194" y2="181" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ar)"/>
+  <line x1="346" y1="181" x2="376" y2="181" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ar)"/>
+  <line x1="528" y1="181" x2="558" y2="181" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ar)"/>
+
+  <!-- 库与检索的连线 -->
+  <path d="M635,94 L635,120 L271,120 L271,150" fill="none" stroke="var(--accent)"
+        stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+  <text x="440" y="114" text-anchor="middle" font-size="11" fill="var(--accent)">从库里查，不是把库倒出来</text>
+
+  <!-- 底部提示 -->
+  <rect x="14" y="238" width="696" height="44" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+  <text x="30" y="258" font-size="12" fill="var(--muted)">这一课你要亲手跑通的全部过程 = 上面两排 6 个框。真正难的只有两个：</text>
+  <text x="30" y="274" font-size="12" fill="var(--text)" font-weight="600">② 切多大　⑤ 怎么找得准</text>
+</svg>
+<div class="cap">图 1 · RAG 六个环节。上半截建库只做一次，下半截每次提问都跑一遍</div>
+</div>
+
+<h3>用你熟的场景翻译一遍</h3>
+<table>
+  <tr><th style="width:16%">环节</th><th style="width:32%">RAG 里的动作</th><th>硬件语境里的对应物</th></tr>
+  <tr><td><span class="num">1</span>语料</td><td>把你的一堆文档收进来、转成纯文字</td><td>把方案书、作业单、台账统统摊在桌上 —— 注意 PDF 扫描件要先 OCR，这一步最容易出脏数据</td></tr>
+  <tr><td><span class="num">2</span>切分</td><td>长文档切成一小块一小块</td><td>把整本说明书拆成一页页 <b>SSOP 工位卡</b>：一张卡只说一件事，工人拿起来就能干活。切太碎则一句话没说完就断，切太大则一张卡混了三件事</td></tr>
+  <tr><td><span class="num">3</span>向量化</td><td>每块算出一组数字（向量）</td><td>给每张卡打<b>特性指纹</b>，像器件丝印编码：同型号的指纹挨得近。这一步之后，"围堵"和"止血"即使字不同，指纹也可能很近</td></tr>
+  <tr><td><span class="num">4</span>存库</td><td>把指纹和原文一起存进数据库</td><td>带坐标索引的<b>物料柜</b>：抽屉按指纹相似度排，抽哪一格不用翻全柜</td></tr>
+  <tr><td><span class="num">5</span>检索</td><td>问题也算成指纹，找最像的 K 块</td><td>拿故障现象去柜子里<b>抽 3 张卡</b>，不是把整个柜子倒出来</td></tr>
+  <tr><td><span class="num">6</span>生成</td><td>3 块原文 + 问题一起给模型</td><td>把 3 张卡的复印件夹在工单后面交给工程师：<b>照卡答，不许凭记忆</b></td></tr>
+</table>
+
+<div class="warn">
+  <b>一个数字先记住：</b>你这份语料切完是 <b>114 块</b>，检索只取 <b>3 块</b>。
+  也就是说，模型每次只看到全部资料的 <b>约 2.9%</b>（3×463÷47598 = 1,389/47,598）。
+  <b>剩下 97.1% 它一辈子也看不到。</b>这就是 RAG 全部威力和全部风险的来源 —— 找对了是神力，找错了是灾难。
+</div>
+
+<h2 id="s3">三、为什么这一课不装 Dify</h2>
+
+<p>计划文件里 W4 任务三写的是"用 Dify 或 LlamaIndex 搭第一个知识库"。我建议这一课先不装，理由是实测数据：</p>
+
+<table>
+  <tr><th style="width:26%">项目</th><th style="width:20%">实测值</th><th>结论</th></tr>
+  <tr><td>本机总内存</td><td>13.8 GB</td><td>—</td></tr>
+  <tr><td><b>当前空闲内存</b></td><td><b>2.5 GB</b></td><td>Dify 全栈（约 15 个容器）要 4–6 GB，<b>现在装必然吃 swap</b></td></tr>
+  <tr><td>Docker</td><td>未安装</td><td>装 Docker Desktop 本身再吃 1–2 GB</td></tr>
+  <tr><td>Ollama（本地模型）</td><td>未安装</td><td>7B 量化模型要 5 GB 以上，更不可能</td></tr>
+</table>
+
+<div class="ok">
+  <b>所以本周的路线：先看清，再上工具。</b><br>
+  用<b>本地 Python 脚本 + 你已有的 DeepSeek key</b> 跑通五环节 —— 内存只要几十 MB，全程看得见每一步的输入输出。
+  等你亲手见过"切分—索引—检索"长什么样，再去 Dify 里点按钮，才知道那些按钮在替你干什么。
+  <b>反过来先学 Dify，你会变成"会拖节点但不知道节点在干嘛"的人</b>——这正是招聘里说的"vibe coding 但不懂架构"。
+</div>
+
+<p class="lead">Dify 什么时候上：W5 建评测集的时候。那时你需要频繁改配置、跑批量对比，界面的效率才划算。届时先关掉一半浏览器标签把内存清到 6 GB 以上。</p>
+
+<h2 id="s4">四、三组对照实验（本周核心作业）</h2>
+
+<p>这一步<b>先不用脚本</b>，让你亲手当一次检索器。做完你会得到一个别人讲不明白的体感：
+<b>同一份资料、同一个模型，只是"给它的资料范围"不同，答案质量能差出两个档次。</b></p>
+
+<h3>语料：你自己写的 7 份文档</h3>
+<pre><span class="c"># 实测规模（2026-11-03）</span>
+新国标大点位控制器_缺陷闭环系统_方案建议书_v1.4.html    16,204 字
+缺陷闭环系统_字段配置器.html                            1,977 字
+缺陷闭环系统_智能表格建表作业单_v2.html                12,944 字
+缺陷闭环系统_字段填写顺序与依赖图.html                  2,779 字
+缺陷闭环系统_45字段全流程图.html                          983 字
+任务拆分_交接卡.html                                    7,525 字
+缺陷闭环系统_字段总台账.csv                             5,186 字
+─────────────────────────────────────────────────────────────
+合计 7 个文件 / 47,598 字 → 切成 114 块 / 平均 463 字一块</pre>
+
+<div class="warn">
+<b>先纠正我上一轮的一个判断。</b>我原估这 7 份"约 25 万字"，实测只有 <b>4.76 万字</b>。
+所以实验设计改了：<b>不拿"塞不下"当卖点</b> —— 4.76 万字约 3.2 万 token，豆包 25.6 万窗口塞得进，才占 12%。
+真正的痛点不是装不下，是<b>成本和"塞进去了它也找不着"</b>。下面的实验按这个来。
+</div>
+
+<h3>三道题（答案只在上面这堆文档里，你熟，能秒判对错）</h3>
+<div class="q">
+  <b>Q1 · 跨文档对照</b>　「紧急围堵措施」和「围堵措施（临时）」，分别是哪个阶段填、谁填、什么时候填？
+  <div class="ans"><span class="mark m-ok">答案</span>紧急围堵 = <b>质量部</b>，受理当天就做，S/A 级才触发（C 组"定级与围堵"字段）；围堵措施（临时）= <b>研发</b>，根因分析之后做（E 组"对策"字段）。两者信息前提不同，前后差 3~5 个工作日，所以不能合并。<b>出处</b>：依赖图 第五节「五个最容易填错的地方」第 4 条 / 方案书 v1.4 第三节「② 定级围堵」</div>
+</div>
+<div class="q">
+  <b>Q2 · 数字对账</b>　主表建了几列？47 个字段里必填几个？还有多少列延后？
+  <div class="ans"><span class="mark m-ok">答案</span>主表 <b>20 列</b> = 用到其中 <b>16 个字段</b> + 4 个系统/状态列（创建人、最后更新时间、当前状态、当前责任人）；47 个字段里<b>必填 10 个</b>。延后数量见下方冲突提示。</div>
+</div>
+<div class="q">
+  <b>Q3 · 判据防误导</b>　样机判据是不是「T3 ≤ T2」？
+  <div class="ans"><span class="mark m-ok">答案</span><b>不是，不能一刀切。</b>要拆成 T3a（方案锁定，必然 ≤ T2）和 T3b（物理齐套：改固件应 ≤ T2，<b>换料必然 &gt; T2</b>）。拿"T3 ≤ T2"去考核等于考核一件物理上做不到的事。<b>出处</b>：方案书 v1.4 第二节「为什么 T3 要拆成 T3a / T3b」/ 交接卡「已经定死、不要重新讨论的决策」里的"样机判据"那一条</div>
+</div>
+
+<div class="bad">
+<b>Q2 里我埋了一个真实的坑，你自己核一下。</b><br>
+建表作业单 v2 原文写「主表 20 列 = 用到其中 16 个字段 + 4 个系统/状态列……<b>其余 32 个字段延后</b>」。<br>
+但算一遍：<code>47 − 16 = 31</code>。差 1。 ❓<br>
+两种可能：① "32" 是笔误，应为 31；② 口径里把某个系统列也算成了一个待建字段。
+<b>这个我不替你定</b> —— 你确认后我改文档。这也正好是本周的活教材：<b>RAG 会把文档里原有的错误，原样放大成"权威答案"。</b>
+</div>
+
+<h3>三组怎么做（每组 10 分钟）</h3>
+<table>
+  <tr><th style="width:10%">组</th><th style="width:30%">你做什么</th><th>预期看到什么</th></tr>
+  <tr><td><b>A 全塞</b></td><td>把 7 份文档的全文（或尽量多）一次性贴进对话框，然后问 Q1</td><td>答得大致对，但会开始"综合"和"脑补"，出处说不清。</td></tr>
+  <tr><td><b>B 人工检索</b></td><td>只贴<b>下面那个灰框里的原文</b>（依赖图「五个最容易填错的地方」第 4 条），再问 Q1</td><td>答得干净、准确、能指出依据。这就是 RAG 的终态。</td></tr>
+  <tr><td><b>C 错检索</b></td><td>只贴<b>方案书里"定级围堵"阶段</b>那段（只讲紧急围堵、没提临时围堵），再问 Q1</td><td><b>模型会理直气壮地答错</b>：它会说围堵就是质量部受理当天做。它没撒谎 —— 它只看到那一页。</td></tr>
+</table>
+
+<div class="card">
+  <b>B 组要贴的原文，直接从这里复制，不用去翻文件：</b>
+  <pre style="margin-top:10px"><span class="c">4　把「围堵」和「临时对策」当成一件事</span>
+C 组「紧急围堵措施」（质量部，受理当天，S/A 级才填）＝先把客户的货挡住，在根因还不知道的时候做。
+E 组「围堵措施（临时）」（研发，根因分析之后）＝知道了原因之后采取的短期手段，是和永久对策配套的。
+两者信息前提不同，所以不能合并，前后大概差 3~5 个工作日。</pre>
+  <div class="lead" style="font-size:13px;margin-top:8px">
+    <b>出处</b>：<code>缺陷闭环系统_字段填写顺序与依赖图.html</code> → 第五节「五个最容易填错的地方」第 4 条（源文件第 239 行起）。<br>
+    <b>顺带说清「第 77 块」是什么</b>：那是脚本把文档切成 114 块后给每块编的内部序号，存在 <code>_out/index.json</code> 里，<b>原文档页面上看不到</b>。
+    想按编号查原文，用 <code>python mini_rag.py --show 77</code>。上一版教程只给了编号没给原文，是我表述不清。
+  </div>
+</div>
+
+<div class="card">
+  <b>C 组要贴的原文（故意缺一半的那一页），也直接复制：</b>
+  <pre style="margin-top:10px"><span class="c">② 定级围堵</span>
+严重程度定级；先止血：库存隔离 / 在制品拦截 / 客户端更换 / 固件回滚；
+并给出上报 / 召回处置的初判
+质量经理 + 研发主管会签（S/A 级须 24h 内）
+出口标准：围堵动作已执行并有证据；影响范围已锁定；是否上报 / 召回已由人决策并记录</pre>
+  <div class="lead" style="font-size:13px;margin-top:8px">
+    <b>出处</b>：<code>新国标大点位控制器_缺陷闭环系统_方案建议书_v1.4.html</code> → 第三节「生命周期五阶段与出口标准」表格里「② 定级围堵」那一行（脚本里是第 5 块）。<br>
+    <b>为什么这页会坑人</b>：它把围堵写得完整又权威 —— 有动作、有责任人、有出口标准，唯独没说"这只是紧急围堵，临时围堵是杀完根因之后研发做的"。
+    模型拿到这一页，没有任何理由怀疑自己答错了。
+  </div>
+</div>
+
+<div class="key">
+<b>C 组这一下必须做。</b>它让你亲身看到：<b>模型不会说"资料不足"，它会用手里那点资料编出一个完整答案。</b>
+这就是 RAG 系统翻车的 90% 原因，也是 W5 要建评测集的理由。
+</div>
+
+<h3>顺手记录（这就是作业产出）</h3>
+<table>
+  <tr><th style="width:12%">组</th><th style="width:30%">答案对不对</th><th style="width:26%">有没有编</th><th>能不能说出依据</th></tr>
+  <tr><td>A 全塞</td><td></td><td></td><td></td></tr>
+  <tr><td>B 人工检索</td><td></td><td></td><td></td></tr>
+  <tr><td>C 错检索</td><td></td><td></td><td></td></tr>
+</table>
+
+<h2 id="s5">五、跑一遍脚本（读代码 4/12 的实物）</h2>
+
+<p>脚本放在 <code>E:\workbuddy workspace\tools\mini_rag\</code>，两个文件：<code>mini_rag.py</code>（275 行，零第三方依赖）和 <code>run.bat</code>（一键菜单，双击就能用）。</p>
+
+<div class="warn">
+<b>先纠正上一版教程的一个疏漏：我只写了「在目录下执行 python mini_rag.py」，没写「在哪个窗口、怎么进到那个目录」。</b><br>
+  这一步对不熟悉命令行的人是硬门槛 —— 双击 .py 文件窗口一闪就没，从「开始菜单」打开 cmd 又停在 C:\Users\lenovo，敲什么都是「找不到文件」。
+  所以下面按<b>「双击」「敲命令」两条路</b>分开写，你选一条即可。
+</div>
+
+<h3>方式一：双击 run.bat（推荐，不用记任何命令）</h3>
+<ol>
+  <li>按 <b>Win + E</b> 打开文件资源管理器，<b>在地址栏里直接粘贴</b>这一行再回车：<br>
+      <code>E:\workbuddy workspace\tools\mini_rag</code><br>
+      <span class="ans">比一层层点进去快，也不会点错目录。</span></li>
+  <li>窗口里应该看到三样：<code>mini_rag.py</code>、<code>run.bat</code>、<code>_out</code>（文件夹）。<br>
+      <b>双击 <code>run.bat</code></b>（图标带齿轮/窗口那个）。</li>
+  <li>弹出一个黑窗口，标题是「mini_rag 最小检索实验台」，下面是 7 行菜单。<br>
+      <b>可能弹一次「Windows 已保护你的电脑」→ 点「更多信息」→「仍要运行」</b>（bat 是本机脚本，不是下载的安装包）。</li>
+  <li>键盘输入 <b>2</b>，回车。<b>这就是第一件事</b>：跑 Q1，只看检索、不调模型，所以不需要任何 API key。</li>
+  <li>屏幕刷出五段，末尾一行「按任意键回菜单」。<b>敲一下回车</b>回菜单，输 <b>0</b> 回车退出。</li>
+</ol>
+
+<table>
+  <tr><th style="width:10%">序号</th><th style="width:38%">跑什么</th><th>什么时候用</th></tr>
+  <tr><td><b>1</b></td><td>自己输入一个问题，跑完整五段</td><td>最后一步会调 DeepSeek 模型。<b>没配 key 会报错，先跳过</b>，等第六节看完再说</td></tr>
+  <tr><td><b>2</b></td><td>Q1「临时围堵谁做」，只看第 4 段</td><td><b>先跑这个</b>。免 key，出的结果就是第四节 B 组要的原文</td></tr>
+  <tr><td><b>3</b></td><td>Q2「主表建了几列」，多捞 2 块（--topk 5）</td><td>看「多给几块」会不会反而带进更多噪声</td></tr>
+  <tr><td><b>4 / 5</b></td><td>同一个问题，切 200 字 / 1000 字</td><td>第六节的切分对比实验，两次跑完自己填表</td></tr>
+  <tr><td><b>6</b></td><td>按编号看某一块原文（默认 77）</td><td>第 4 段说「77 块」时，用它调出全文核对，别靠预览下结论</td></tr>
+  <tr><td><b>0</b></td><td>退出</td><td>—</td></tr>
+</table>
+
+<h3>方式二：自己敲命令（想改参数时用）</h3>
+<ol>
+  <li>同样先打开那个文件夹窗口（地址栏粘 <code>E:\workbuddy workspace\tools\mini_rag</code> 回车）。</li>
+  <li><b>在地址栏把路径全删掉，输入 <code>cmd</code>，回车。</b>黑窗口直接开在这个目录里 —— 这是 Windows 自带的技巧，不用装终端、不用配环境。</li>
+  <li>确认没进错目录：敲 <code>dir</code> 回车，列表里能看到 <code>mini_rag.py</code> 就对了。<br>
+      <span class="ans">黑窗口提示符前面显示的就是当前目录。这一步的目的就是「先确认站对地方，再敲命令」。</span></li>
+  <li>粘贴下面任意一行回车：</li>
+</ol>
+
+<pre>python mini_rag.py "临时围堵措施由谁在什么时候做"          <span class="c"># 五段全跑，最后调模型</span>
+python mini_rag.py "临时围堵措施由谁在什么时候做" --no-llm  <span class="c"># 只检索，不调模型（免 key）</span>
+python mini_rag.py "主表建了几列" --topk 5                 <span class="c"># 多捞几块</span>
+python mini_rag.py "样机判据" --chunk 200 --no-llm         <span class="c"># 切分实验</span>
+python mini_rag.py --show 77                              <span class="c"># 按编号看某块全文</span></pre>
+
+<p>你机器上 <code>python</code> 已经在 PATH 里（3.13.14），所以上面这样写就能跑。<b>万一换了电脑报「'python' 不是内部或外部命令」</b>，把 <code>python</code> 换成完整路径：</p>
+
+<pre>"C:\Users\lenovo\.workbuddy\binaries\python\envs\default\Scripts\python.exe" mini_rag.py "你的问题"</pre>
+
+<h3>报错对照表：照症状找原因</h3>
+<table>
+  <tr><th style="width:32%">屏幕上出现</th><th style="width:26%">真实原因</th><th>怎么办</th></tr>
+  <tr><td><code>'python' 不是内部或外部命令</code></td><td>python 不在 PATH，或这台机器没装</td><td>用上面的完整路径；或直接双击 <code>run.bat</code>，它会自己找 python</td></tr>
+  <tr><td><code>can't open file 'mini_rag.py': [Errno 2]</code></td><td><b>当前目录不对</b>（最常见）</td><td>敲 <code>dir</code> 看有没有这个文件；没有就先 <code>cd /d "E:\workbuddy workspace\tools\mini_rag"</code></td></tr>
+  <tr><td>中文显示成 <code>锟斤拷</code> 之类</td><td>窗口代码页不是 936</td><td>双击 <code>run.bat</code>（已内置处理）；或敲 <code>chcp 936</code> 再跑</td></tr>
+  <tr><td><code>ModuleNotFoundError</code></td><td>不该出现（本脚本零依赖）</td><td>说明 <code>python</code> 指向了别的环境，用完整路径跑</td></tr>
+  <tr><td>窗口一闪就关</td><td>你双击的是 <code>.py</code> 而不是 <code>.bat</code></td><td>双击 <code>run.bat</code>；或按方式二先开 cmd</td></tr>
+</table>
+
+<h3>跑出来应该长什么样（我 11-03 的实测输出，节选）</h3>
+<p>选 <b>2</b> 之后，依次刷出五段。<b>每一段的标题就是那一环的名字</b>，这就是图 1 那六个框的实际执行：</p>
+
+<pre>===== 第 1 段 读文件 =====
+  [读取] 新国标大点位控制器_缺陷闭环系统_方案建议书_v1.4.html      16204 字
+  [读取] 缺陷闭环系统_字段配置器.html                              1977 字
+  ...（共 7 个文件）
+  合计 7 个文件，47598 字
+
+===== 第 2 段 切分（每块 500 字上限，重叠 50）=====
+  切成 114 块，平均 463 字/块
+
+===== 第 3 段 建索引（双字切片 + TF-IDF，存成 json 供查看）=====
+  词表 8745 个，索引已写入 _out/index.json（可以打开看看长什么样）
+
+===== 第 4 段 检索（问题：临时围堵措施由谁在什么时候做）=====
+  [1] 0.190  《缺陷闭环系统_字段总台账.csv》第 107 块
+  [2] 0.131  《缺陷闭环系统_字段填写顺序与依赖图.html》第 77 块
+  [3] 0.113  《缺陷闭环系统_智能表格建表作业单_v2.html》第 65 块
+
+===== 第 5 段 拼 prompt =====
+  prompt 共 1663 字，已写入 _out/prompt.txt（这就是交给模型的全部内容）</pre>
+
+<div class="bad">
+<b>第 4 段这三行，是这一课最值钱的东西，别扫一眼就过。</b><br>
+<b>排第 1 的是一行 CSV，跟问题毫无关系</b>（它是字段说明里"相似历史缺陷编号"那一行的副本）；<b>真正能回答的依赖图第 77 块只排第 2</b>。<br>
+为什么？因为你的问题里「围堵」「临时」「措施」这些词，在 CSV 的字段说明里出现得更密。<b>TF-IDF 只数字面，不懂你在问什么。</b><br>
+这就是「检索到了，但没排到第一」—— 工程上靠 <code>--topk 3</code> 兜住，靠 rerank 排序，靠评测集验证。<b>你现在看到的是问题的原型，不是脚本写坏了。</b><br>
+想亲手确认第 2 名那段就是答案：菜单选 <b>6</b>，输 <code>77</code>，全文直接打出来，和第四节 B 组那张卡对照。
+</div>
+
+<p><b>顺带一句：<code>run.bat</code> 是纯文本</b>，右键「编辑」就能看到它其实只有十几行、每行就是一条命令。这也是读代码 —— 而且是你唯一能 100% 看懂的代码。</p>
+
+<h3>四段数据流：这就是 4/12 要求你指出的四件事</h3>
+<table>
+  <tr><th style="width:22%">问题</th><th style="width:20%">在哪（行号）</th><th>代码在做什么</th></tr>
+  <tr><td><b>① 读了哪些文件</b></td><td><code>配置区 24–32</code><br><code>load_files 54–66</code></td><td>把 7 个文件名写死在一个列表里；<code>strip_html()</code> 剥掉 HTML 标签只留人话，CSV 直接读</td></tr>
+  <tr><td><b>② 切成什么</b></td><td><code>chunk_docs 72–93</code></td><td>先按段落切，再贪心累加到 ≤500 字；相邻块重叠 50 字，防止一句话被拦腰截断</td></tr>
+  <tr><td><b>③ 存到哪</b></td><td><code>build_index 114–132</code><br>落盘在 <code>_out/index.json</code></td><td>给每块算"词权重向量"，连同原文一起写进 json。<b>打开这个文件看一眼</b>，你就知道"向量库"里到底存了什么</td></tr>
+  <tr><td><b>④ 怎么查出来</b></td><td><code>search 137–150</code></td><td>问题也切成同样的词 → 算权重 → 跟 114 块逐一算余弦相似度 → 排序取前 K</td></tr>
+</table>
+
+<div class="warn">
+<b>一个必须现在讲清的差别：这个脚本的"向量化"是穷人版。</b><br>
+它用<b>中文双字切片 + TF-IDF</b>（"紧急围堵"→ 紧急/急围/围堵），只能匹配<b>字面</b>。
+真 embedding 是模型算出来的几百维向量，能匹配<b>意思</b>：你问"怎么止血"，它能捞到写着"围堵"的那块。<br>
+本脚本做不到这一点。<b>这不是缺陷，是设计</b> —— 让你先看清"检索"这个骨架，再换算法。
+换真 embedding 只需改第 3 段和第 4 段（<code>build_index</code>/<code>search</code>），其余四段一行不动。<br><br>
+<b>实测两例，你复现时注意区别：</b><br>
+· 问「产品出问题后怎么先止血」→ <b>能捞到</b>，因为文档原文里本来就有"先止血"三个字。这是字面命中，不是理解了意思。<br>
+· 问「供应商来料有问题怎么开单」→ <b>翻车</b>，Top-1 落到"加列可以，改类型不行"那块。因为文档里没有"来料""开单"这种说法。<br>
+<b>字面命中 ≠ 语义命中。</b>分不清这两者，你就会误以为检索器"能用"。
+</div>
+
+<h2 id="s6">六、切分大小对比实验</h2>
+
+<p>计划文件 W4 第四条要求"亲手对比 200/500/1000，别信别人的结论"。用同一个问题跑三次，只改 <code>--chunk</code>：</p>
+
+<pre>python mini_rag.py "样机判据是 T3 小于等于 T2 吗" --chunk 200
+python mini_rag.py "样机判据是 T3 小于等于 T2 吗" --chunk 500
+python mini_rag.py "样机判据是 T3 小于等于 T2 吗" --chunk 1000</pre>
+
+<table>
+  <tr><th style="width:14%">切分</th><th style="width:16%">块数</th><th style="width:30%">Top1 捞到什么</th><th>判断</th></tr>
+  <tr><td>200 字</td><td>362 块（平均 180 字）</td><td>交接卡「样机判据分两档：T3a…」——<b>只给结论，不给理由</b></td><td>命中快、解释少；问"为什么"就会答不出来</td></tr>
+  <tr><td>500 字</td><td>114 块（平均 463 字）</td><td>方案书那块——<b>完整解释了"为什么不能一刀切"</b></td><td>本次基线，解释最完整</td></tr>
+  <tr><td>1000 字</td><td>53 块（平均 938 字）</td><td>方案书判据表那段，但 <b>Top2/Top3 落到完全无关的块</b></td><td>大块混主题，相似度被平均稀释，垃圾进榜</td></tr>
+</table>
+
+<div class="bad">
+<b>更正一处：我上一版把这个实验看错了，写进教程的是错的，现在改过来。</b><br>
+我原先写"Top1 那块话说一半就断了、结论被切到下一块"。<b>错了。</b>我是拿脚本打印的 <b>110 字预览</b>当成了块全文 ——
+用 <code>--show 11</code> 调出全文才发现，方案书那块 484 字，从"为什么 T3 要拆成 T3a / T3b"一直写到三种整改类型的判据表，<b>答案完整。</b><br><br>
+<b>这个乌龙本身值得记：</b>预览截断 ≠ 块截断。以后排查"是没检索到还是检索到了没用上"，<b>必须调全文，不能看预览下结论</b>。我这次就栽在这儿。<br><br>
+<b>那到底有没有被切伤的地方？有，但在别处：</b>同一块的结尾，判据表第三行「改工艺 / 改检验 / 更新文件」<b>只写了半行</b>就断了 ——
+<code>--show 11</code> 的最后一个词是"不涉及样机状态"，后面没了。它不影响本题（答案在前半段），但换一个问法就会缺一块。<br>
+<b>所以准确的说法是：切伤要看切在哪一句，不是切了就有害。</b>这就是为什么第 6 节这张表必须你自己跑 —— 你问的问题不同，结论可能相反。
+</div>
+
+<h2 id="s7">七、答错了到底是谁的错</h2>
+
+<p>计划文件 W4 第五条要求你分清"没检索到"和"检索到了没用上"。这两种病治法完全相反，判断方法只有一步：<b>先看检索结果里有没有正确答案。</b></p>
+
+<div class="fig">
+<svg viewBox="0 0 860 260" width="100%" height="260" role="img" aria-label="RAG 答错诊断树">
+  <rect x="330" y="10" width="200" height="44" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="430" y="38" text-anchor="middle" font-size="13.5" fill="var(--text)" font-weight="600">模型答错 / 答不全</text>
+
+  <line x1="430" y1="54" x2="430" y2="76" stroke="var(--muted)" stroke-width="1.4"/>
+  <rect x="300" y="76" width="260" height="46" rx="8" fill="none" stroke="var(--accent)"/>
+  <text x="430" y="98" text-anchor="middle" font-size="12.5" fill="var(--text)">第 1 步：先看 <tspan font-weight="600">Top-3 原文</tspan></text>
+  <text x="430" y="114" text-anchor="middle" font-size="11.5" fill="var(--muted)">里面有没有能直接回答的那一句？</text>
+
+  <line x1="430" y1="122" x2="430" y2="140" stroke="var(--muted)" stroke-width="1.4"/>
+  <line x1="180" y1="140" x2="680" y2="140" stroke="var(--muted)" stroke-width="1.4"/>
+  <line x1="180" y1="140" x2="180" y2="158" stroke="var(--muted)" stroke-width="1.4"/>
+  <line x1="680" y1="140" x2="680" y2="158" stroke="var(--muted)" stroke-width="1.4"/>
+  <text x="180" y="136" text-anchor="middle" font-size="11.5" fill="var(--bad)" font-weight="600">没有</text>
+  <text x="680" y="136" text-anchor="middle" font-size="11.5" fill="var(--warn)" font-weight="600">有</text>
+
+  <!-- 左：检索病 -->
+  <rect x="40" y="158" width="280" height="42" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="180" y="184" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">检索病（占八成）</text>
+  <rect x="40" y="206" width="280" height="46" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+  <text x="56" y="224" font-size="11.5" fill="var(--muted)">治法：改切分 / 加关键词检索 / 加 rerank</text>
+  <text x="56" y="241" font-size="11.5" fill="var(--muted)">这是 W5 的主战场</text>
+
+  <!-- 右：生成病 -->
+  <rect x="540" y="158" width="280" height="42" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="680" y="184" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">生成病（占两成）</text>
+  <rect x="540" y="206" width="280" height="46" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+  <text x="556" y="224" font-size="11.5" fill="var(--muted)">治法：改 prompt（先引用再作答）、降温度</text>
+  <text x="556" y="241" font-size="11.5" fill="var(--muted)">这是提示词工程的活，W1-2 你已经学过</text>
+</svg>
+<div class="cap">图 2 · 先判病再开药。搞反了就会陷入"疯狂改 prompt 但检索一直是错的"的死循环</div>
+</div>
+
+<div class="key">
+<b>脚本里已经给你留了这个钩子。</b>第 4 段会把每一块的原文打出来 —— <b>不要只看最终答案，先看那 3 段原文</b>。
+养成这个习惯，你排查 RAG 问题的速度会比别人快一个数量级。
+</div>
+
+<h3>让模型"先引用再作答"</h3>
+<p>计划文件 W4 第六条要求试这个官方技巧。脚本的 prompt 模板（<code>第 153–177 行</code>）已经按这个写法定好了三条规则：</p>
+<pre><span class="c"># PROMPT_TMPL 里的三条硬规矩</span>
+1. 每条结论后面用 [编号] 标出来自哪一段资料，禁止凭记忆补充。
+2. 资料里没有的，直接回答"资料中未提及"，不要猜。
+3. 如果不同资料说法不一致，把两种说法都列出来并指出冲突。</pre>
+<p>第 3 条不是凑数 —— <b>Q2 那个 31/32 的数字冲突，就是靠这条规矩才被暴露出来的</b>。没有它，模型会挑一个数字直接说，你永远不知道文档里有两个版本。</p>
+
+<h2 id="s8">八、五个必踩的坑</h2>
+
+<table>
+  <tr><th style="width:26%">坑</th><th style="width:30%">现象</th><th>怎么认 / 怎么修</th></tr>
+  <tr><td><b>① 字面匹配抓不到同义词</b><br><span class="mark m-bad">本次已撞到</span></td><td>问"供应商来料有问题怎么开单"，Top-1 居然落到"加列可以，改类型不行"那一块，完全不相干</td><td>本脚本必然如此（TF-IDF 只认字面，"来料/开单"在文档里不这么写）。修法：换真 embedding。这也是你以后判断"该不该上向量库"的依据</td></tr>
+  <tr><td><b>② 切块把结论切断</b><br><span class="mark m-bad">本次已撞到</span></td><td>方案书那块（<code>--show 11</code>）结尾停在"改工艺 / 改检验 / 更新文件…不涉及样机状态"，判据表第三行的结论没了</td><td>本例不影响原问题（答案在前半段），换问法就会缺。修法：加大 <code>OVERLAP</code>，或按标题层级切而不是按字数切</td></tr>
+  <tr><td><b>③ 切太小 / 切太大</b></td><td>太小：一块半句话，模型看不懂上下文<br>太大：一块混三件事，相似度被稀释</td><td>用第 6 节的三次对比定，别抄别人的 500</td></tr>
+  <tr><td><b>④ 只取 Top-3 太吝啬</b></td><td>答案在第 5 块，但只喂了前 3 块</td><td><code>--topk 5</code> 试一次；代价是 prompt 变长、成本上升 —— 这就是要用 W3 成本表算的地方</td></tr>
+  <tr><td><b>⑤ 文档本身就是错的</b><br><span class="mark m-q">本次已撞到</span></td><td>31 还是 32，文档自己没对齐</td><td>RAG 会把错误原样放大成权威答案。修法是改文档，不是改模型 —— 这也是为什么你的缺陷台账必须只有一个"唯一定义源"</td></tr>
+</table>
+
+<h2 id="s9">九、能不能做多层 RAG（11-04 追加）</h2>
+
+<p class="lead">原提问：素材很大时（例如《PMBOK 指南》17 万字），是不是可以做一级 RAG、二级 RAG、三级 RAG 这样往下叠，就能把内容检索得更充分？</p>
+
+<div class="bad">
+<b>结论：方向半对，做法反了。</b><br>
+「分层检索」是真的、也真的在用（有正式名字），但<b>你设想的「一级筛完给二级、二级筛完给三级」恰好是论文里被否掉的那种走法</b>；
+而且 17 万字<b>远不到需要它的量级</b>。你现在的问题不是「层不够多」，是「第一层就常排错」。
+</div>
+
+<h3>先承认：这门技术存在，只是不叫「一级二级三级」</h3>
+<table>
+  <tr><th style="width:26%">正式名字</th><th style="width:32%">它怎么分层</th><th>什么时候用</th></tr>
+  <tr><td><b>父子文档检索</b><br><code>parent-child</code> / small-to-big</td><td>小块拿去检索，命中后把它的<b>父块（整节）</b>喂给模型</td><td>生产上最常用。<b>这正是「两层」的正确形态：细找、粗给</b></td></tr>
+  <tr><td><b>RAPTOR</b><br>递归摘要树</td><td>把块聚类 → 让模型写摘要 → 摘要再聚类再摘要，形成多层树</td><td>问题需要<b>全局综合</b>时（"这本书主线是什么"），单层检索根本答不出</td></tr>
+  <tr><td><b>查询路由</b><br><code>routing</code></td><td>先判断该查哪一章 / 哪张表，再进那一块里检索</td><td>语料有清晰目录结构时，最便宜的一层</td></tr>
+</table>
+
+<p><b>注意共同点：这三个的分层都是用来「改变粒度」的，没有一个用来「逐级淘汰」。</b></p>
+
+<h3>为什么「逐级往下筛」会亏</h3>
+
+<p>不用讲概率，一条逻辑就够：<b>第二级只能在第一级交上来的候选里挑。第一级没留住的那块，后面永远拿不回来。</b>
+所以串联结构里，<b>最终召回率的上限被第一级锁死</b>，叠得越多，能答对的机会只会更少、不会更多。</p>
+
+<p>如果每级各自有 90% 的把握留住正确答案，串起来是这样：</p>
+
+<table>
+  <tr><th style="width:28%">每级留住正确答案</th><th>串 2 级</th><th>串 3 级</th><th>串 4 级</th></tr>
+  <tr><td>95%</td><td>90%</td><td>86%</td><td>81%</td></tr>
+  <tr><td>90%</td><td>81%</td><td>73%</td><td>66%</td></tr>
+  <tr><td><b>80%</b></td><td>64%</td><td>51%</td><td><b>41%</b></td></tr>
+</table>
+
+<p class="ans">真实系统里各级并非彼此独立（第一级给的范围越大，后面越容易救回来），实际衰减比这张表缓一些。
+但方向不会变：<b>每多一级，就多一个「必须对」的关口。</b></p>
+
+<div class="warn">
+<b>RAPTOR 原论文自己做过这两种走法的对比，结论对你不利：</b><br>
+· <b>Tree Traversal（逐层下降）</b>：从根往下，每层只进选中节点的子树 —— <b>一旦顶层摘要和问题措辞对不上（词汇不匹配）或摘要过度抽象，整棵子树就被永久排除</b>。<br>
+· <b>Collapsed Tree（压平）</b>：把叶块和各级摘要<b>倒进同一个池子</b>，一次相似度打分，跨层取前 k —— 论文实测<b>一致优于</b>逐层下降。<br>
+换句话说：树可以建，但<b>检索时不能顺着树往下爬，要横着捞</b>。
+</div>
+
+<h3>那 17 万字到底要不要分层</h3>
+
+<table>
+  <tr><th style="width:30%">先算三个数</th><th>结果</th></tr>
+  <tr><td>17 万字大概多少 token</td><td>按你 7 份文档实测的 <b>0.67 token/字</b>折算 ≈ <b>11.4 万 token</b>。豆包 25.6 万窗口<b>塞得下</b></td></tr>
+  <tr><td>切成 500 字一块是多少块</td><td>约 <b>340 块</b></td></tr>
+  <tr><td>取 Top-5 喂给模型是多少</td><td>2500 字 ≈ <b>全文的 1.5%</b></td></tr>
+</table>
+
+<p>所以 17 万字的真正难点不是「装不下」，是<b>「怎么让对的 5 块排进前 5」</b>。这件事跟层数无关，跟排序质量有关。</p>
+
+<div class="ok">
+<b>判断口诀：问「在哪」用一层，问「整体」才要树。</b><br>
+· PMBOK 的题九成是「某过程的输入输出是什么」「变更要走哪几步」—— <b>定位型</b>，一层足够，叠层只有坏处。<br>
+· 只有「十个知识领域之间怎么耦合」「这本书的管理思想怎么演变」这类<b>全局综合题</b>，单层真的捞不到，那时树才有意义。<br>
+<span class="ans">按这个标准，你手上「缺陷闭环系统」的提问 95% 是定位型（某字段谁填、某状态能不能跳）。<b>你不需要树。</b></span>
+</div>
+
+<h3>想提精度，按这个顺序做（性价比从高到低）</h3>
+<table>
+  <tr><th style="width:22%">手段</th><th style="width:34%">怎么做</th><th>为什么排这个位置</th></tr>
+  <tr><td><b>① 结构过滤</b><br>（元数据）</td><td>先按章节 / 阶段把范围缩到一章，再在章内检索</td><td><b>成本接近零</b>。PMBOK 的目录、你文档的 8 阶段 47 字段，本身就是现成的过滤器。这一层不叫 RAG，叫「先别乱找」</td></tr>
+  <tr><td><b>② 混合检索</b></td><td>BM25（字面）+ 向量（语义）两路并取</td><td>专有名词（SCAR、ECN、T3b）靠 BM25 才稳；同义词靠向量。<b>第 8 节那个「来料/开单」翻车，就是只有字面这一路</b></td></tr>
+  <tr><td><b>③ rerank 重排</b></td><td>先取前 50 块，再用重排模型挑出前 5</td><td><b>提升最大的一步</b>。你现在 Top-1 常是垃圾、正确块排第 2，就是缺这一下</td></tr>
+  <tr><td><b>④ 父块回填</b></td><td>小块检索，命中后把整节喂进去</td><td>解决「块切断了结论」（第 8 节坑②）。<b>这才是两层：不是筛两次，是细找粗给</b></td></tr>
+</table>
+
+<h3>真要建树，记住两条</h3>
+<p><b>一、检索时压平，不要往下爬</b>（上面 RAPTOR 那段）。<b>二、先算代价：</b>
+建树要在入库阶段额外让模型写摘要，约多花 <b>0.3～0.5 倍语料</b>的 token；索引规模膨胀到 <b>1.3～1.5 倍</b>；<b>文档一改，上层摘要就失效</b>。
+<span class="ans">（数字来自 RAPTOR 论文及其工程解读，不同来源口径略有差异，量级可信、精确值别当定论 ❓）</span></p>
+
+<p>最后一条对你最致命：你的方案书还在 v1.3 → v1.4.2 迭代，字段口径还在改 —— <b>每改一次就要重建上层摘要</b>。
+树适合稳定的语料，不适合天天改的活文档。<b>你现在这套文档，恰恰是后者。</b></p>
+
+<div class="ok">
+<b>一句话带走</b>：多层 RAG 不是「检索得更充分」，是「用不同粒度回答不同层级的问题」。<br>
+你现在缺的是<b>排序精度</b>，不是<b>层级数量</b>。所以 W5 该做的是评测集 + rerank，<b>不是往上叠层</b>。<br>
+<span class="ans">来源：RAPTOR 原论文（Sarthi 等，ICLR 2024）及两篇工程解读；「压平优于逐层下降」为论文结论，「召回提升 20%–35%、索引膨胀 1.3–1.5 倍」为二手汇总口径。</span>
+</div>
+
+<h2 id="s10">十、验收自测（读代码 4/12）</h2>
+
+<p>四个问题，都能在代码里指出位置才算过。<b>不需要会写，只需要能指出。</b></p>
+
+<table>
+  <tr><th style="width:52%">问题</th><th>标准答案</th></tr>
+  <tr><td>① 它读哪些文件？</td><td><code>配置区 24–32 行</code> 的 <code>CORPUS</code> 列表，7 个文件名，都拼在 <code>BASE</code> 目录下</td></tr>
+  <tr><td>② 切成什么？</td><td><code>chunk_docs</code>（72–93 行）：按段落切 → 累加到 ≤500 字 → 相邻块重叠 50 字</td></tr>
+  <tr><td>③ 存到哪？</td><td><code>_out/index.json</code>，里面是 <code>{chunk_size, chunks[{id,src,text}], idf_top}</code>。<b>打开看一遍</b></td></tr>
+  <tr><td>④ 怎么查出来？</td><td><code>search</code>（137–150 行）：问题同样切词 → TF-IDF 权重 → 与每块算余弦 → 排序取前 K</td></tr>
+</table>
+
+<div class="ok">
+<b>加一道更硬的（能答出这题，说明你真读懂了）：</b><br>
+「想换用真 embedding，要改哪几行？为什么其余部分不用动？」<br>
+<b>答</b>：改第 3 段的 <code>build_index</code>（114–132）和第 4 段的 <code>search</code>（137–150），把"双字切片 + TF-IDF"换成"调 embedding 接口拿到向量 + 算余弦"。
+其余四段不用动 —— 因为<b>切分、存储、拼 prompt 这三件事跟用什么算法算向量完全无关</b>。
+这个"接口不变、内部可换"的分层，就是你能看懂任何 RAG 框架（LlamaIndex / Dify）的底层原因。
+</div>
+
+<h2>十一、本课产出清单</h2>
+<table>
+  <tr><th style="width:34%">产出</th><th>对应计划任务</th></tr>
+  <tr><td>7 份文档切成的 114 块 + <code>_out/index.json</code></td><td>W4-① 搞懂五环节</td></tr>
+  <tr><td>三组对照记录表（A 全塞 / B 人工检索 / C 错检索）</td><td>W4-⑤ 分清两种病</td></tr>
+  <tr><td>切分 200/500/1000 三次对比记录</td><td>W4-④ 亲手测切分</td></tr>
+  <tr><td>能指出四段数据流的行号</td><td>W4-⑦ 读代码 4/12</td></tr>
+</table>
+
+<div class="warn">
+<b>还有两件 W3 遗留，建议在这周顺手补掉（各 15 分钟）：</b><br>
+① <b>读代码 3/12 没落地</b>：真改一次 key 跑通一次 API 调用。你的 DeepSeek key 在 Galapagos 里能拿到，改 <code>call_llm()</code> 的环境变量即可 —— <b>不做这步，W5 看报错会卡在第一行</b>。<br>
+② <b>「三个自动化」大概率只做了教程</b>：挑最简单的"日报素材自动汇总"实跑一次，留截图。宁可记录"只跑了 1 个"，也别写"3 个完成"。
+</div>
+
+<p class="lead">下一课（W4 后半）：把穷人版检索换成真 embedding，然后把语料扩到 20-50 篇，看块数从 114 涨到多少、Top-3 命中率怎么变。W5 再回来建 50 条评测集 —— 那才是"专业"和"玩票"的分界。</p>
+
+<footer>
+<b>本课说明</b><br>
+· 本文件是本机文件，双击即可打开，<b>不联网、不依赖任何平台、不上传任何数据</b>。<br>
+· 文中所有规模数字（47,598 字 / 114 块 / 463 字/块）均为 2026-11-03 在本机实跑所得，非估算。<br>
+· 内存数据（总 13.8 GB / 空闲 2.5 GB / Docker 与 Ollama 均未安装）为 2026-11-03 21:10 实测。<br>
+· token 换算按中文 1.5 字/token 粗算，实际以 API 返回的 <code>usage</code> 字段为准。<br>
+· 「其余 32 个字段延后」与 <code>47 − 16 = 31</code> 的差 1，标 ❓ 待嘉哥确认，不擅自改文档。<br>
+· <b>建议归档</b>：本文件请与 W3 其余教程放在同一目录，别再丢了 —— W3 那 6 份教程目前只剩一份验收记录在盘上。<br>
+· 巴蒂 for 嘉哥 · 2026-11-03
+</footer>
+
+</div>
+</body>
+</html>
