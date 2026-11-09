@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W4-⑥ 让模型先引用再作答 · 对照实验教程 · 嘉哥</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#ffffff; --panel2:#f0efea; --text:#1c1c1a; --muted:#6a6a64;
+    --line:#e3e2db; --accent:#2b6cb0; --ok:#1d8f6b; --warn:#a9761a; --bad:#c0392b;
+    --purple:#6b46c1; --code:#f2f0e9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#12141a; --panel:#1a1d26; --panel2:#21252f; --text:#e6e8ee; --muted:#9aa0b0;
+      --line:#2c313d; --accent:#6ea8fe; --ok:#4dd0a7; --warn:#f0b354; --bad:#e8736b;
+      --purple:#a78bfa; --code:#21252f;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:36px 20px 90px;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.8}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:24px;font-weight:600;margin:0 0 8px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13.5px;margin-bottom:8px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 30px}
+  .tag{background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+    padding:3px 12px;font-size:12px;color:var(--muted)}
+  h2{font-size:18px;font-weight:600;margin:42px 0 14px;padding-left:11px;border-left:3px solid var(--accent)}
+  h3{font-size:15px;font-weight:600;margin:24px 0 8px}
+  p{margin:9px 0}
+  .lead{color:var(--muted)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0}
+  .key{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0}
+  .key b{color:var(--accent)}
+  .warn{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0;font-size:14px}
+  .bad{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--bad);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0;font-size:14px}
+  .ok{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--ok);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:14px 0;font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:500;font-size:12.5px;background:var(--panel2)}
+  tr:last-child td{border-bottom:none}
+  code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:13px;
+    font-family:ui-monospace,Consolas,monospace}
+  pre{background:var(--code);border:1px solid var(--line);padding:13px 15px;border-radius:8px;
+    overflow-x:auto;font-size:12.5px;line-height:1.65;font-family:ui-monospace,Consolas,monospace;margin:10px 0}
+  pre .c{color:var(--muted)}
+  ul,ol{margin:8px 0 12px;padding-left:24px}
+  li{margin:5px 0}
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:16px 12px 8px;margin:16px 0}
+  .cap{text-align:center;color:var(--muted);font-size:12.5px;margin:6px 0 8px}
+  .num{display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;
+    background:var(--accent);color:var(--bg);border-radius:11px;font-size:12px;
+    font-weight:600;margin-right:7px}
+  .q{background:var(--panel2);border-radius:8px;padding:12px 15px;margin:10px 0;font-size:14px}
+  .q b{color:var(--purple)}
+  .ans{color:var(--muted);font-size:13.5px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+  .mark{font-size:12px;padding:1px 8px;border-radius:4px;margin-right:6px}
+  .m-ok{background:rgba(77,208,167,.14);color:var(--ok)}
+  .m-bad{background:rgba(232,115,107,.14);color:var(--bad)}
+  .m-q{background:rgba(240,179,84,.14);color:var(--warn)}
+  footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:12.5px;line-height:1.9}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 20px;font-size:14px}
+  .toc a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+  .toc a:hover{border-bottom-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>W4-⑥ 先引用、再作答 —— 对照实验</h1>
+<div class="sub">计划原文：让模型先引用检索到的原文、再基于引文作答，对比直接作答的效果差异（详见 Anthropic 中文精读 2.3）</div>
+<div class="meta">
+  <span class="tag">W4 · 任务六</span>
+  <span class="tag">配套脚本已加 --mode 开关</span>
+  <span class="tag">含本地引文校验器</span>
+  <span class="tag">写入 2026-11-09</span>
+</div>
+
+<div class="toc">
+  <b>本课目录</b><br>
+  1. 一句话结论 —— <a href="#s1">这个技巧买到的是什么</a><br>
+  2. 官方原文四条 —— <a href="#s2">你手上精读 2.3 的英文出处</a><br>
+  3. 为什么先引用会起作用 —— <a href="#s3">三个机制，不是玄学</a><br>
+  4. 三种做法 A / B / C —— <a href="#s4">直接 / 引用 / 引用+自检</a><br>
+  5. 实验设计 —— <a href="#s5">六道题、十八次调用、四栏判分</a><br>
+  6. 怎么跑 —— <a href="#s6">三条命令，或零代码贴网页版</a><br>
+  7. 怎么判读 —— <a href="#s7">五种结果，两种算成功</a><br>
+  8. 五个坑 —— <a href="#s8">伪引用最危险</a><br>
+  9. 这条技巧治不了什么 —— <a href="#s9">官方自己划的边界</a><br>
+  10. 验收标准 —— <a href="#s10">做完你该有哪三样东西</a>
+</div>
+
+<h2 id="s1">一、一句话结论</h2>
+
+<p><b>这个技巧真正买到的是「可核验」，不是「更聪明」。</b></p>
+
+<p>你现在的处境是这样：模型给了一段很漂亮的答案，你看着挺对，但<b>你没有办法在三十秒内判断它是不是编的</b>。要么全信，要么全文翻一遍。加一句"先引用原文"，等于要求它把答案的出处摊在桌上 —— 从"这答案对不对"，变成"这句话在不在原文里"。后者你能在十秒内查完，甚至可以让脚本替你查。</p>
+
+<p>顺带的好处是准确率会涨一点：模型为了能摘出引文，必须先真的去读原文，而不是凭印象接话。<b>但幅度别期待太高，也绝不是归零</b> —— 后面第八、九节会讲它怎么失效。</p>
+
+<div class="key">
+<b>给你的默认建议：</b>凡是"结论要拿去用"的场景（写方案、回客户、出报告），一律用 B 组写法；凡是"只是自己查一下"，A 组就够，别为省下的那点核验成本多花输出 token。
+</div>
+
+<h2 id="s2">二、官方原文四条</h2>
+
+<p>你计划里写的"Anthropic 中文精读 2.3"，指的就是你本地那份 <code>Anthropic官方文档_中文精读.html</code> 的第 2.3 节「长上下文技巧」。我把官方原文找回来了，逐条对上：</p>
+
+<table>
+  <tr><th style="width:22%">官方条目</th><th style="width:38%">英文原文（关键句）</th><th>翻成人话</th></tr>
+  <tr>
+    <td><b>① 长数据放最前</b></td>
+    <td>"Place your long documents and inputs near the top of your prompt, above your query, instructions, and examples."</td>
+    <td>长文档、长资料放最上面，指令和问题放它下面</td>
+  </tr>
+  <tr>
+    <td><b>② 问题放最后</b></td>
+    <td>"Queries at the end can improve response quality by up to 30 percent in tests, especially with complex, multidocument inputs."</td>
+    <td>问题放末尾，官方自测最多提升 30%（多文档复杂输入时最明显）</td>
+  </tr>
+  <tr>
+    <td><b>③ 多文档用 XML 分层</b></td>
+    <td>wrap each document in <code>&lt;document&gt;</code> tags with <code>&lt;document_content&gt;</code> and <code>&lt;source&gt;</code> subtags</td>
+    <td>每份资料套一层标签，里面再放正文和来源，让模型分得清哪句来自哪份</td>
+  </tr>
+  <tr>
+    <td><b>④ 先引用再作答</b><br><span class="mark m-q">本次任务</span></td>
+    <td>"For long document tasks, ask Claude to quote relevant parts of the documents first before carrying out its task. This helps Claude focus on the relevant content and ignore the rest of the document."</td>
+    <td>先把相关原句摘出来，再干活。作用是帮它聚焦相关内容、忽略其余部分</td>
+  </tr>
+</table>
+
+<div class="warn">
+<b>两处必须交代清楚的地方：</b><br>
+1. <b>那个 30% 是 Anthropic 自己测 Claude 的结果</b>，不是普适定律。换模型、换语料、换语言都要重测 —— 你手上跑的 DeepSeek 不能直接套这个数。<br>
+2. <b>官方原页在你所在地区打不开</b>（我实测会跳到 app-unavailable-in-region）。上面的英文句子是从官方文档的可访问副本核到的，与你精读 2.3 的中文表述一致。你要是想自己核，得走代理 ❓。
+</div>
+
+<h3>为什么这四条必须一起看</h3>
+
+<p>前三条是<b>布局</b>，第四条是<b>作答方式</b>。它们解决的是同一个问题的两个面：模型在长资料里会走神。</p>
+
+<p>这一点对你的实验设计有直接影响：<b>做 A/B 对照时，前三条必须钉死不动，只改第四条。</b>如果你顺手把 prompt 结构也调了，最后答得更好，你根本不知道是"先引用"起的作用，还是"问题挪到最后"起的作用。这是对照实验最基础的规矩，也是大多数人做这类测试时最容易犯的错。</p>
+
+<div class="ok">
+<b>脚本里已经替你钉死了。</b>三份 prompt 的【资料】拼接方式、编号格式、问题位置完全相同，唯一的差别就是"作答要求"那一段。这一点你可以自己打开 <code>_out/prompt_direct.txt</code> 和 <code>_out/prompt_quote.txt</code> 逐行比对。
+</div>
+
+<h2 id="s3">三、为什么先引用会起作用</h2>
+
+<p>不是玄学，三个机制，一层比一层实在。</p>
+
+<div class="fig">
+<svg viewBox="0 0 860 420" width="100%" height="420" role="img" aria-label="三种作答路径对比">
+  <text x="30" y="26" font-size="12.5" fill="var(--muted)">同一份【资料】+ 同一个问题，只改「作答要求」</text>
+
+  <!-- 列标题 -->
+  <text x="160" y="56" text-anchor="middle" font-size="13.5" fill="var(--bad)" font-weight="600">A · 直接作答</text>
+  <text x="430" y="56" text-anchor="middle" font-size="13.5" fill="var(--accent)" font-weight="600">B · 先引用再作答</text>
+  <text x="700" y="56" text-anchor="middle" font-size="13.5" fill="var(--ok)" font-weight="600">C · 引用 + 自检</text>
+
+  <!-- A 列 -->
+  <rect x="40" y="70" width="240" height="52" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="160" y="92" text-anchor="middle" font-size="12.5" fill="var(--text)">读问题</text>
+  <text x="160" y="109" text-anchor="middle" font-size="11.5" fill="var(--muted)">顺手扫一眼资料</text>
+  <line x1="160" y1="122" x2="160" y2="144" stroke="var(--muted)" stroke-width="1.4"/>
+  <path d="M160 150 l-4 -7 l8 0 z" fill="var(--muted)"/>
+  <rect x="40" y="150" width="240" height="52" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="160" y="172" text-anchor="middle" font-size="12.5" fill="var(--text)">直接写答案</text>
+  <text x="160" y="189" text-anchor="middle" font-size="11.5" fill="var(--muted)">靠印象接话，快</text>
+  <line x1="160" y1="202" x2="160" y2="224" stroke="var(--muted)" stroke-width="1.4"/>
+  <path d="M160 230 l-4 -7 l8 0 z" fill="var(--muted)"/>
+  <rect x="40" y="230" width="240" height="56" rx="8" fill="none" stroke="var(--bad)" stroke-dasharray="4 3"/>
+  <text x="160" y="252" text-anchor="middle" font-size="12" fill="var(--bad)">答案</text>
+  <text x="160" y="270" text-anchor="middle" font-size="11" fill="var(--muted)">无出处，对错只能靠你判</text>
+
+  <!-- B 列 -->
+  <rect x="310" y="70" width="240" height="52" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="430" y="92" text-anchor="middle" font-size="12.5" fill="var(--text)">读问题</text>
+  <text x="430" y="109" text-anchor="middle" font-size="11.5" fill="var(--muted)">先定位到具体行</text>
+  <line x1="430" y1="122" x2="430" y2="144" stroke="var(--muted)" stroke-width="1.4"/>
+  <path d="M430 150 l-4 -7 l8 0 z" fill="var(--muted)"/>
+  <rect x="310" y="150" width="240" height="52" rx="8" fill="var(--panel2)" stroke="var(--accent)"/>
+  <text x="430" y="172" text-anchor="middle" font-size="12.5" fill="var(--text)">逐字摘引文</text>
+  <text x="430" y="189" text-anchor="middle" font-size="11.5" fill="var(--muted)">不许改写，摘不出就明说</text>
+  <line x1="430" y1="202" x2="430" y2="224" stroke="var(--muted)" stroke-width="1.4"/>
+  <path d="M430 230 l-4 -7 l8 0 z" fill="var(--muted)"/>
+  <rect x="310" y="230" width="240" height="56" rx="8" fill="none" stroke="var(--accent)" stroke-dasharray="4 3"/>
+  <text x="430" y="252" text-anchor="middle" font-size="12" fill="var(--accent)">答案 + 引文</text>
+  <text x="430" y="270" text-anchor="middle" font-size="11" fill="var(--muted)">引文可被脚本逐字核对</text>
+
+  <!-- C 列 -->
+  <rect x="580" y="70" width="240" height="52" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="700" y="92" text-anchor="middle" font-size="12.5" fill="var(--text)">先写草稿</text>
+  <text x="700" y="109" text-anchor="middle" font-size="11.5" fill="var(--muted)">允许它先自由发挥</text>
+  <line x1="700" y1="122" x2="700" y2="144" stroke="var(--muted)" stroke-width="1.4"/>
+  <path d="M700 150 l-4 -7 l8 0 z" fill="var(--muted)"/>
+  <rect x="580" y="150" width="240" height="52" rx="8" fill="var(--panel2)" stroke="var(--ok)"/>
+  <text x="700" y="172" text-anchor="middle" font-size="12.5" fill="var(--text)">逐条回头配引文</text>
+  <text x="700" y="189" text-anchor="middle" font-size="11.5" fill="var(--muted)">配不上的那条，写「无」</text>
+  <line x1="700" y1="202" x2="700" y2="224" stroke="var(--muted)" stroke-width="1.4"/>
+  <path d="M700 230 l-4 -7 l8 0 z" fill="var(--muted)"/>
+  <rect x="580" y="230" width="240" height="56" rx="8" fill="none" stroke="var(--ok)" stroke-dasharray="4 3"/>
+  <text x="700" y="252" text-anchor="middle" font-size="12" fill="var(--ok)">删掉无据结论</text>
+  <text x="700" y="270" text-anchor="middle" font-size="11" fill="var(--muted)">留下的每条都能追到原句</text>
+
+  <!-- 底部对比条 -->
+  <rect x="40" y="316" width="240" height="76" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="56" y="338" font-size="11.5" fill="var(--muted)">模型多做的事：无</text>
+  <text x="56" y="357" font-size="11.5" fill="var(--muted)">输出长度：最短</text>
+  <text x="56" y="376" font-size="11.5" fill="var(--bad)">你的核对成本：最高</text>
+
+  <rect x="310" y="316" width="240" height="76" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="326" y="338" font-size="11.5" fill="var(--muted)">模型多做的事：定位 + 抄写</text>
+  <text x="326" y="357" font-size="11.5" fill="var(--muted)">输出长度：约翻倍</text>
+  <text x="326" y="376" font-size="11.5" fill="var(--accent)">你的核对成本：十秒</text>
+
+  <rect x="580" y="316" width="240" height="76" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
+  <text x="596" y="338" font-size="11.5" fill="var(--muted)">模型多做的事：草稿 + 自检</text>
+  <text x="596" y="357" font-size="11.5" fill="var(--muted)">输出长度：最长</text>
+  <text x="596" y="376" font-size="11.5" fill="var(--ok)">你的核对成本：目视即可</text>
+</svg>
+<div class="cap">图 1 · 三条路径的差别只在「作答要求」这一段，其余输入完全一致</div>
+</div>
+
+<p><span class="num">1</span><b>把回忆题改成了抄写题。</b></p>
+<p>不给引文要求时，模型可以直接从参数记忆里吐一个答案 —— 这条路径短、快、而且它对"看起来合理"毫无抵抗力。要求先摘引文，等于强制它先去原文里找到一个具体的句子。而<b>抄一个不存在的句子，比编一段不存在的话要难得多</b>：编的话只要读着顺就行，抄的句子得在上下文里真能对得上。</p>
+
+<p><span class="num">2</span><b>给了一个可以自动核对的锚点。</b></p>
+<p>这是三条里最实在的一条。答案对不对，只能人来判；<b>引文在不在原文里，机器能判</b>。我给你的脚本加了一个校验器：把引文去掉空格标点，看它是不是原文的子串。命中的算真，命不中的标出来。这件事零成本、不花 token、也不用模型。</p>
+
+<p><span class="num">3</span><b>给了「找不到」一个台阶。</b></p>
+<p>模型不敢说"不知道"，很多时候是因为没台阶 —— 直接作答时，不说话就等于交白卷，它就挑一个最像的说。先摘引文这个动作把"沉默"变成了一个可执行的动作：摘不出来，那就是"没有"。台阶一给，它反而敢承认。</p>
+
+<h2 id="s4">四、三种做法</h2>
+
+<table>
+  <tr><th style="width:12%">组</th><th style="width:30%">作答要求（唯一变量）</th><th style="width:28%">能治哪种病</th><th>代价</th></tr>
+  <tr>
+    <td><b>A 直接</b></td>
+    <td>只依据资料回答，资料里没有就说"资料中未提及"</td>
+    <td>不治病，这是<b>基线</b>。你平时问 AI 就是这么问的</td>
+    <td>无</td>
+  </tr>
+  <tr>
+    <td><b>B 引用</b></td>
+    <td>先逐字摘 <code>&lt;quotes&gt;</code>，再只依据引文写 <code>&lt;answer&gt;</code></td>
+    <td>编造、张冠李戴、抓不住重点（"检索到了没用上"里的一大半）</td>
+    <td>输出变长，成本升；多花几秒</td>
+  </tr>
+  <tr>
+    <td><b>C 自检</b></td>
+    <td>先写草稿，再逐条配引文，配不上的删掉，只留终稿</td>
+    <td>B 组漏掉的那一类：<b>引文是真的，结论却超出引文</b></td>
+    <td>输出最长，模型要多想一遍；有时会把对的内容也删掉</td>
+  </tr>
+</table>
+
+<p><b>A 和 B 是必须做的，C 选做。</b>理由：A/B 一对比，你就知道这条技巧在你语料上到底值不值；C 是用来解释"为什么 B 还不够"的，等你先看到 B 的残留问题，再上 C 才有意义。</p>
+
+<div class="bad">
+<b>C 组有个副作用要注意：它会让答案变"瘦"。</b>模型为了保险，会把拿不准的结论全删掉，包括本该保留的。所以 C 组的代价不是钱，是<b>召回率下降</b> —— 少说但说准。这在法规、证照这类"宁可不答也别答错"的场景是优点；在"我要一个尽量完整的清单"的场景就是缺点。同一技巧，两个方向，你自己权衡。
+</div>
+
+<h2 id="s5">五、实验设计</h2>
+
+<p>计划里只写"对比效果差异"，没说要几张题。但<b>一道题测不出东西</b>：碰上简单题，三组全对，你会误以为这技巧没用；碰上语料里根本没有的题，三组全错，你会误以为它坏了。所以要按题型分组。</p>
+
+<p>六道题，分三类，每类考的是不同的事：</p>
+
+<h3>第一类：能答、且答案唯一（2 道）</h3>
+<div class="q">
+<b>Q1</b>　临时围堵措施由谁做、在什么阶段做？
+<div class="ans">考的是"能不能抄对"。理论上三组都该答对。如果 A 都答对了，说明这道题<b>没有区分度</b>，别拿它当证据。</div>
+</div>
+<div class="q">
+<b>Q2</b>　主表建几列？47 个字段里必填几个、其余多少延后？
+<div class="ans">考的是"会不会被两个数字绕进去"。你文档里 31 和 32 有冲突（20 列 = 16 字段 + 4 系统列，47−16=31），正好看三组谁会把冲突说出来。</div>
+</div>
+
+<h3>第二类：语料里根本没有（2 道）<span class="mark m-q">最关键</span></h3>
+<p><b>Q3 / Q4</b>　自己编两道<b>听起来该有、实际没有</b>的题。建议直接用你业务里的真问题，比如"型式试验报告的编号规则是什么"、"EMC 传导骚扰的限值取哪一档"。这两道题问下去，差别最明显：</p>
+<ul>
+  <li>A 组：高概率给你一个像模像样的答案，甚至编出数字和条款号</li>
+  <li>B 组：多半会说"资料中未提及"，因为摘不出引文</li>
+</ul>
+<div class="key">
+<b>这两道题才是整个实验的核心。</b>真实业务里，"AI 编了一个不存在的规范条款"造成的损失，远大于"AI 说不知道"。你花一次调用就能看到这个差别，很划算。
+</div>
+
+<h3>第三类：跨文档 / 有冲突（2 道）</h3>
+<div class="q">
+<b>Q5</b>　样机判据 T3 的口径是什么？我改过几次、为什么改？
+<div class="ans">考跨文档整合。正确口径在方案书 v1.4 和交接卡里，v1.2 里是旧说法。看三组会不会把旧说法端出来。</div>
+</div>
+<div class="q">
+<b>Q6</b>　紧急围堵和临时围堵有什么区别？谁负责？
+<div class="ans">考"两件事别混成一件"。这正是你之前在依赖图第 4 条里记的那个坑。</div>
+</div>
+
+<h3>判分：四栏，不要只填"对/错"</h3>
+<table>
+  <tr><th style="width:14%">题号</th><th style="width:12%">组</th><th style="width:14%">答案对不对</th><th style="width:14%">有没有编</th><th style="width:16%">引文真伪</th><th>引文是否支撑结论</th></tr>
+  <tr><td>Q1</td><td>A</td><td>对 / 错 / 不全</td><td>有 / 无</td><td>—（无引文）</td><td>—</td></tr>
+  <tr><td>Q1</td><td>B</td><td></td><td></td><td>真 / 假 / 混</td><td>支撑 / 部分 / 不支撑</td></tr>
+  <tr><td>Q1</td><td>C</td><td></td><td></td><td></td><td></td></tr>
+  <tr><td colspan="6" style="color:var(--muted);font-size:12.5px">共 6 题 × 3 组 = 18 行。「引文真伪」这一栏由脚本自动给，你不用手判。</td></tr>
+</table>
+
+<p><b>为什么「引文真伪」和「引文是否支撑结论」要分两栏？</b>因为它们是两件不同的事，而第二件才是真问题。模型完全可以引一句真实存在的原句，然后下一个原句里没有的结论 —— 引文是真的，结论是编的。这类错误比"整段瞎编"更难发现，因为你一看有引文就放松了。</p>
+
+<h2 id="s6">六、怎么跑</h2>
+
+<h3>路 A：本地脚本（推荐，能自动校验引文）</h3>
+
+<p><b>最省事的做法：双击 <code>run.bat</code>，菜单里新加了五项：</b></p>
+<table>
+  <tr><th style="width:12%">序号</th><th style="width:40%">跑什么</th><th>要不要 key</th></tr>
+  <tr><td><b>7</b></td><td>对照 A · 直接作答</td><td>要（调模型）</td></tr>
+  <tr><td><b>8</b></td><td>对照 B · 先引用再作答</td><td>要</td></tr>
+  <tr><td><b>9</b></td><td>对照 C · 引用 + 自检</td><td>要</td></tr>
+  <tr><td><b>10</b></td><td>自检引文校验器</td><td><b>不要</b>，不花 token —— 先跑这个</td></tr>
+  <tr><td><b>11</b></td><td>停在本目录打开命令行</td><td>—</td></tr>
+</table>
+
+<div class="warn">
+<b>7/8/9 要先用你的 DeepSeek key。</b>当前这台机器上 <code>DEEPSEEK_API_KEY</code> 没设置，直接跑会提示"未设置，跳过实际生成"。设一次就行：在菜单 [11] 打开的命令行里敲<br>
+<code>set DEEPSEEK_API_KEY=你的key</code>　（只对当前窗口有效，关掉就没了）<br>
+要长期有效，就在「系统属性 → 环境变量」里加一条用户变量。key 是你自己的资产，别贴进任何文档、别发给别人。
+</div>
+
+<p>想自己敲命令的话，<code>--mode</code> 选三档：</p>
+
+<pre><span class="c"># 在 E:\workbuddy workspace\tools\mini_rag 目录下（run.bat 菜单 [11] 就是这个目录）</span>
+python mini_rag.py "临时围堵措施由谁在什么时候做" --mode direct
+python mini_rag.py "临时围堵措施由谁在什么时候做" --mode quote
+python mini_rag.py "临时围堵措施由谁在什么时候做" --mode verify
+
+<span class="c"># 先确认这个功能本身是好的（不花 token、不用 key）</span>
+python mini_rag.py "紧急围堵谁做" --selftest</pre>
+
+<p><code>--selftest</code> 我实测过，它会拿一句真引文和一句我故意编的话去校验（真引文取检索到的第一块，所以每次跑的句子不一样）。实际输出：</p>
+
+<pre>===== 自检：引文校验器 =====
+  真引文（摘自第 1 段开头 40 字）：只扣送检外部等待段；总计口径含送检。否则全员超期…
+  伪引文（我故意编的）：围堵措施必须由质量部在 24 小时内完成，且无需研发主管会签。
+  校验结果：逐字命中 2 条，找不到 1 条
+  被判定为编造的：围堵措施必须由质量部在 24 小时内完成，且无需研发主管会签
+  结论：校验器工作正常 —— 真引文过、伪引文被抓。</pre>
+
+<p>真跑 B 组时，校验会自动跟在答案后面：</p>
+
+<pre>===== 引文校验（本地逐字比对，不花一个 token）=====
+  逐字命中：4 条　找不到：1 条
+    ✗ 原文里没有这句：围堵措施应在 24 小时内完成并抄送客户
+  注：引文全真 ≠ 结论正确。引文真但结论超出引文，仍属编造。</pre>
+
+<div class="warn">
+<b>我这台环境没有你的 DeepSeek key</b>（<code>DEEPSEEK_API_KEY</code> 未设置），所以模型侧的真实回答我跑不出来，也不能替你编。<b>上面那段"引文校验"的输出格式是脚本真实打印的，具体条数要你自己跑出来填。</b>这是这次唯一需要你动手的地方。
+</div>
+
+<h3>路 B：零代码，贴到网页版</h3>
+
+<p>不想折腾命令的话，脚本已经把三份 prompt 写成文件了，你打开复制就行：</p>
+
+<ol>
+  <li>打开 <code>E:\workbuddy workspace\tools\mini_rag\_out\</code></li>
+  <li>看到 <code>prompt_direct.txt</code>、<code>prompt_quote.txt</code>、<code>prompt_verify.txt</code></li>
+  <li>用记事本打开其中一个，<b>Ctrl+A 全选、Ctrl+C 复制</b>，整段贴进 DeepSeek 对话框</li>
+  <li>拿到回答后，把 <code>&lt;quotes&gt;</code> 里的话逐条粘回原文搜一遍（Ctrl+F）</li>
+</ol>
+
+<p>这条路唯一的损失是没有自动校验，得手动搜。但<b>手动搜一次，你会对"伪引用"长什么样有肌肉记忆</b>，比看十遍解释强。</p>
+
+<h3>我实测的三个数字</h3>
+<table>
+  <tr><th style="width:22%">模式</th><th style="width:22%">prompt 字数</th><th>说明</th></tr>
+  <tr><td>A direct</td><td><b>1674</b></td><td>基线</td></tr>
+  <tr><td>B quote</td><td>1831</td><td>指令多 157 字（+9.4%），这部分<b>几乎不花钱</b></td></tr>
+  <tr><td>C verify</td><td>1876</td><td>指令多 202 字（+12.1%）</td></tr>
+</table>
+
+<div class="key">
+<b>真正的成本增量不在输入，在输出。</b>引文本身要占字数，输出会接近翻倍。而输出 token 一般比输入贵（各家定价不同，你 W3 那张成本表可以拿来套）。所以这笔账是：<b>多花一倍输出费，换"十秒能核完"</b>。值不值，看你这份答案的用途 —— 自己看就不值，发出去给客户或进方案书就值。
+</div>
+
+<h2 id="s7">七、怎么判读</h2>
+
+<p>跑完 18 行，你会落到下面五种情况之一。别急着下"有用/没用"的结论，先对号。</p>
+
+<table>
+  <tr><th style="width:26%">你看到的现象</th><th style="width:30%">说明什么</th><th>该怎么办</th></tr>
+  <tr>
+    <td><b>① 三组全对</b></td>
+    <td>这道题太简单，模型不需要技巧也能答对。<b>不是技巧没用，是题没区分度</b></td>
+    <td>换更难的题，或直接跳过这类题。别把它算进结论</td>
+  </tr>
+  <tr>
+    <td><b>② A 错、B 对</b></td>
+    <td>这就是你要的证据。通常是 A 编了、或抓错了重点</td>
+    <td>记下 A 错在哪一栏（编造 / 张冠李戴），这是最值钱的记录</td>
+  </tr>
+  <tr>
+    <td><b>③ A 对、B 也对，B 多了引文</b></td>
+    <td><b>也算成功。</b>准确率没变，但可核验性变了 —— 换个人来查，B 的答案十分钟能复核完，A 的要重读一遍原文</td>
+    <td>在记录里写清"准确率持平、可审计性提升"。别只盯准确率一个数</td>
+  </tr>
+  <tr>
+    <td><b>④ B 的引文是假的</b></td>
+    <td><b>最危险的情况。</b>伪引用比没引用更糟，因为它看起来像已经核实过</td>
+    <td>这道题必须记进"已知失效场景"。同时上 C 组，看自检能不能挡掉</td>
+  </tr>
+  <tr>
+    <td><b>⑤ B 引文全真，但结论超出引文</b></td>
+    <td>第二常见。引文是真的，结论是推出来的、甚至加料了</td>
+    <td>这是 C 组存在的理由。人工核的时候盯着"结论那半句有没有原句支撑"</td>
+  </tr>
+</table>
+
+<div class="ok">
+<b>一句话判据：</b>别问"B 是不是比 A 准"，问<b>"B 错了的时候，我能不能在十秒内发现"</b>。前者依赖题目难度，后者才是这个技巧的真实价值。
+</div>
+
+<h2 id="s8">八、五个坑</h2>
+
+<table>
+  <tr><th style="width:24%">坑</th><th style="width:32%">长什么样</th><th>怎么认 / 怎么修</th></tr>
+  <tr>
+    <td><b>① 伪引用</b><br><span class="mark m-bad">最危险</span></td>
+    <td>引文读着极像原文，但原文里搜不到这句。模型把几句话缝成了一句"更顺"的</td>
+    <td>Ctrl+F 搜原句，或让脚本跑校验。<b>校验器抓的就是这个</b></td>
+  </tr>
+  <tr>
+    <td><b>② 引文真、结论假</b></td>
+    <td>引了"临时围堵由研发在根因分析后做"，结论却说"所以围堵都是研发的事" —— 偷换了范围</td>
+    <td>逐条问：这个结论，引文里真的说了吗？说不出来就是加料</td>
+  </tr>
+  <tr>
+    <td><b>③ 引用变装饰</b></td>
+    <td>开头引一句，后面五段全是自由发挥</td>
+    <td>看引文覆盖率：结论有几句、引文配了几条。差太远就是没照做</td>
+  </tr>
+  <tr>
+    <td><b>④ 只引不复述</b></td>
+    <td>整段照抄原文，等于把资料又贴了一遍，你还是得自己读</td>
+    <td>要求"引文之后必须用一句话给出结论"，别让它拿抄写代替回答</td>
+  </tr>
+  <tr>
+    <td><b>⑤ 把"有引用"当"已核实"</b></td>
+    <td>看到 [2] 就放心了，实际没点开看过</td>
+    <td>这是人的问题，不是模型的问题。引用只是把核对成本从"重读"降到"点两下"，不是归零</td>
+  </tr>
+</table>
+
+<h2 id="s9">九、这条技巧治不了什么</h2>
+
+<p>三条边界，必须写清楚，否则你会高估它。</p>
+
+<p><span class="num">1</span><b>它治不了"语料里没有"，也治不了"没检索到"。</b><br>
+如果正确内容压根没进那三块，先引用只会让它更精确地引用错的东西。<b>这个技巧作用在生成环节，不在检索环节。</b>上一节那张"两种病"的表，它只对右半边有效。</p>
+
+<p><span class="num">2</span><b>它不能消除幻觉，只能减少。</b><br>
+官方自己（减少幻觉那篇文档）的表述大意是：这些技巧显著减少幻觉，但<b>不能完全消除</b>，高风险决策仍需人工核验。这句我是从多处转述核到的，官方原页在你这儿打不开，标 ❓ 待你核。我的实测也支持"减少而非消除"：伪引用能被抓出来，说明它确实会编。</p>
+
+<p><span class="num">3</span><b>它会把语料本身的错误，原样放大成"有出处的权威答案"。</b><br>
+这一条对你最要紧。你建表作业单 v2 里"其余 32 个"和 47−16=31 对不上；你的语料里还并存着 v1.2 和 v1.4。<b>加了引用之后，模型引的是你真文档里的那句错话，看起来反而更可信了。</b>所以引用这套东西，必须配一条"发现冲突就并列两种说法"的规矩 —— 你脚本里那条第 3 规则就是干这个的，别删。</p>
+
+<div class="bad">
+<b>给你的红线：</b>凡是涉及型式试验、认证报备、送检判据的结论，无论 A/B/C 哪一组，<b>一律人工复核原文</b>。引用解决的是"它有没有编"，不解决"这句原文本身对不对"。
+</div>
+
+<h2 id="s10">十、验收标准</h2>
+
+<p>计划里这条任务的产出是"对比记录"。做到下面四条，这条任务就算完：</p>
+
+<ol>
+  <li><b>18 行记录表填满</b>（6 题 × 3 组），四栏都不空。空着的行标"未测"，别猜。</li>
+  <li><b>至少抓到 1 个真实差异</b>，并能说清差异出在哪一栏 —— 是编造、是张冠李戴、还是引文不支撑结论。</li>
+  <li><b>至少抓到 1 条伪引用</b>（B 或 C 组），或者能证明"我这语料上没出现伪引用"（那也是结论，但要写明测了几次）。</li>
+  <li><b>能用一句话回答：这套东西在我这儿值不值。</b>值，是因为哪类题受益；不值，是因为哪类题没差别。</li>
+</ol>
+
+<div class="key">
+<b>面试时怎么说这件事：</b>别说"我用了 Anthropic 的引用技巧"。说"我用自己的 7 份文档做了 6 题 3 组的对照，发现在语料覆盖不到的题上，直接作答有 X 次编造，先引用后降到 Y 次；但引文真、结论假的残留问题需要第二道自检才能挡；成本上输出 token 接近翻倍，所以只用在对外交付的场景"。<b>后面这段才是工程判断，前面那句只是名词。</b>
+</div>
+
+<footer>
+本课配套：<br>
+· 脚本 <code>E:\workbuddy workspace\tools\mini_rag\mini_rag.py</code>（新增 <code>--mode</code>、<code>--selftest</code>、引文校验）<br>
+· prompt 样例 <code>_out\prompt_direct.txt</code> / <code>prompt_quote.txt</code> / <code>prompt_verify.txt</code><br>
+· 来源：Anthropic《Prompting best practices》long context prompting 四条（英文原文已核）；你本地 <code>Anthropic官方文档_中文精读.html</code> 第 2.3 节；官方减少幻觉文档（原页地区不可达，表述为转述 ❓）<br>
+· 本文件为本机文件，双击打开即可，不联网，不属于任何平台
+</footer>
+
+</div>
+</body>
+</html>

@@ -92,7 +92,7 @@
   4. 三组对照实验（本周核心作业） —— <a href="#s4">含三道题与参考答案</a><br>
   5. 跑一遍脚本 —— <a href="#s5">读代码 4/12：四段数据流</a><br>
   6. 切分大小对比实验 —— <a href="#s6">200 / 500 / 1000</a><br>
-  7. 答错了到底是谁的错 —— <a href="#s7">一张诊断树</a><br>
+  7. 答错了到底是谁的错 —— <a href="#s7">两种病，各有三个具体故障点</a><br>
   8. 五个必踩的坑 —— <a href="#s8">含本次实测撞到的两个</a><br>
   9. 能不能做多层 RAG —— <a href="#s9">「一级二级三级」这个想法对不对</a><br>
   10. 验收自测 —— <a href="#s10">四问，全部有标准答案</a>
@@ -481,14 +481,14 @@ python mini_rag.py "样机判据是 T3 小于等于 T2 吗" --chunk 1000</pre>
 
   <!-- 左：检索病 -->
   <rect x="40" y="158" width="280" height="42" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
-  <text x="180" y="184" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">检索病（占八成）</text>
+  <text x="180" y="184" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">检索病 · 模型没看到</text>
   <rect x="40" y="206" width="280" height="46" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
   <text x="56" y="224" font-size="11.5" fill="var(--muted)">治法：改切分 / 加关键词检索 / 加 rerank</text>
   <text x="56" y="241" font-size="11.5" fill="var(--muted)">这是 W5 的主战场</text>
 
   <!-- 右：生成病 -->
   <rect x="540" y="158" width="280" height="42" rx="8" fill="var(--panel2)" stroke="var(--line)"/>
-  <text x="680" y="184" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">生成病（占两成）</text>
+  <text x="680" y="184" text-anchor="middle" font-size="13" fill="var(--text)" font-weight="600">生成病 · 看到了没用</text>
   <rect x="540" y="206" width="280" height="46" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
   <text x="556" y="224" font-size="11.5" fill="var(--muted)">治法：改 prompt（先引用再作答）、降温度</text>
   <text x="556" y="241" font-size="11.5" fill="var(--muted)">这是提示词工程的活，W1-2 你已经学过</text>
@@ -499,6 +499,91 @@ python mini_rag.py "样机判据是 T3 小于等于 T2 吗" --chunk 1000</pre>
 <div class="key">
 <b>脚本里已经给你留了这个钩子。</b>第 4 段会把每一块的原文打出来 —— <b>不要只看最终答案，先看那 3 段原文</b>。
 养成这个习惯，你排查 RAG 问题的速度会比别人快一个数量级。
+</div>
+
+<h3>再往下拆：这两种病，其实各有三种</h3>
+
+<p>上面那棵树只分了两支，够你判断方向，但不够你开药。工程上真正要区分的是<b>六个具体故障点</b>。这个分类不是我编的 —— 来自 Barnett 等人 2024 年的经验报告《Seven Failure Points When Engineering a RAG System》（CAIN 2024），基于三个真实案例（论文审阅、38 篇文档的教学助手、4,017 篇文献的生物医学问答）。它最有价值的一句话是：<b>七个故障点里，有三个发生在模型看到任何内容之前，四个发生在看到之后。</b></p>
+
+<p><b>第一类 · 没检索到</b>（模型根本没看见）</p>
+<table>
+  <tr><th style="width:18%">具体故障</th><th style="width:30%">说人话</th><th style="width:26%">典型原因</th><th>解法（按性价比排）</th></tr>
+  <tr>
+    <td><b>① 语料里本来就没有</b><br><span class="mark m-bad">最常被跳过</span></td>
+    <td>不是检索没找到，是库里从来没这本书。模型却会编一个听起来合理的答案，而不是说"不知道"</td>
+    <td>新流程还没写进文档；文档只写到 v1.3，你在问 v1.4 才有的口径</td>
+    <td>补语料是唯一解。<b>检索算法再改也救不了</b>；同时在 prompt 里硬性要求"资料没有就说没有"</td>
+  </tr>
+  <tr>
+    <td><b>② 有，但没排进前 k</b></td>
+    <td>书在架上，管理员也翻到了，但没放进"给模型的那三本"里</td>
+    <td>只用字面匹配，问法和原文用词不同（"怎么止血" vs "围堵"）；专有名词被泛词淹没</td>
+    <td>混合检索（BM25 + 向量）→ rerank 重排 → 查询改写 → 最后才是加大 k。<b>你 Q1 的 Top-1 是无关 CSV 行、正确答案排第 2，就是这一类</b></td>
+  </tr>
+  <tr>
+    <td><b>③ 排进了，但被挤掉</b></td>
+    <td>管理员抱来 20 本，桌子只放得下 5 本，剪裁时把最要紧那本丢了</td>
+    <td>召回数设得很大（k=20），拼 prompt 时按 token 上限截断，截掉的正好是答案</td>
+    <td>召回多、<b>喂给模型少</b>：用 rerank 从 20 里挑 3~5。或改用父块回填（小块检索、整节喂进去）</td>
+  </tr>
+</table>
+
+<p><b>第二类 · 检索到了但没用上</b>（模型看见了，没使上）</p>
+<table>
+  <tr><th style="width:18%">具体故障</th><th style="width:30%">说人话</th><th style="width:26%">典型原因</th><th>解法（按性价比排）</th></tr>
+  <tr>
+    <td><b>④ 被噪声或矛盾搞混</b><br><span class="mark m-bad">你语料的高危项</span></td>
+    <td>答案就在眼前，可旁边还堆着十段无关内容，或者两段互相打架，模型挑了个错的</td>
+    <td>Top-k 里混进大量沾边不相关的块；<b>同一件事有新旧两个版本共存</b></td>
+    <td>降 k + rerank 提纯；给块打版本元数据，检索时只取现行版；prompt 硬性要求"说法不一致就并列两种并指出冲突"</td>
+  </tr>
+  <tr>
+    <td><b>⑤ 位置太靠中间</b></td>
+    <td>一本书摊开，人眼总先看开头和结尾，中间那段最容易走神。模型也是这样</td>
+    <td>上下文太长，答案落在中段</td>
+    <td>最相关的放首尾；指令放开头和结尾各一遍；<b>根本解还是减少块数</b></td>
+  </tr>
+  <tr>
+    <td><b>⑥ 只答了一半</b></td>
+    <td>问"这三份文档各写了什么"，只答了两份，第三份明明在上下文里</td>
+    <td>一个提问里塞了多个子问题；输出太长时后段被压缩</td>
+    <td>拆成子问题分别问；prompt 里列清单式要求（"逐份回答，不得遗漏"）</td>
+  </tr>
+</table>
+
+<div class="key">
+<b>这两条有实测数字支撑，不是我推的。</b><br>
+刘等人《Lost in the Middle》（TACL 2024）做过一个很直接的实验：给模型 20 篇文档，答案只在一篇里，然后只改这篇的位置。结果是一条 <b>U 型曲线</b> —— 放开头和结尾答得最好，<b>放中间时 GPT-3.5-Turbo 的准确率甚至低于不给任何文档的 56.1%</b>。<br>
+更值得记的一个数：把召回从 20 篇加到 50 篇，GPT-3.5-Turbo 只提升约 <b>1.5%</b>，Claude-1.3 约 <b>1%</b>。<b>也就是说"多给几块"几乎没用，这是反直觉但被反复验证的。</b>
+</div>
+
+<h3>为什么这两种病的治法正好相反</h3>
+<table>
+  <tr><th style="width:22%">你的动作</th><th style="width:39%">对「没检索到」</th><th>对「检索到了没用上」</th></tr>
+  <tr><td>加大 top-k</td><td>有帮助，能兜住排在后面的正确块</td><td><b>有害</b>，噪声变多，正确块被稀释、被推到中段</td></tr>
+  <tr><td>把文档切得更细</td><td>有帮助，命中更准</td><td><b>有害</b>，块更碎，结论容易被切断</td></tr>
+  <tr><td>加 rerank 重排</td><td>有帮助</td><td>有帮助 —— <b>唯一两边都受益的动作</b></td></tr>
+  <tr><td>改 prompt</td><td><b>几乎无用</b>，内容压根没进来</td><td>有效，尤其"先引用再作答"</td></tr>
+</table>
+
+<div class="bad">
+<b>这就是为什么必须先分诊。</b>Barnett 那篇的原话意思是：只调 prompt 的团队，只在七个故障点里的四个上工作，另外三个碰都碰不到 —— 而检索和切块恰恰是错误最集中的地方。<br>
+落到你身上：<b>如果 Top-3 原文里没有那句答案，改 prompt 改到天亮也没用。</b>
+</div>
+
+<h3>怎么验证：两个指标，必须分开测</h3>
+<p>这两种病不能合成一个"准确率"看，否则永远不知道往哪修。RAGAS 这套评测框架的做法是拆成四个指标，其中两个正好对应你这两个病：</p>
+<table>
+  <tr><th style="width:24%">指标</th><th style="width:30%">问的是什么</th><th>对应哪种病</th></tr>
+  <tr><td><b>上下文召回</b><br>context recall</td><td>标准答案里的每个要点，在检索出来的块里<b>找得到吗</b></td><td>没检索到（①②③）</td></tr>
+  <tr><td><b>上下文精度</b><br>context precision</td><td>检索出来的块里，<b>有几块真的有用</b>；正确块排第几</td><td>没检索到（②③）</td></tr>
+  <tr><td><b>忠实度</b><br>faithfulness</td><td>答案的每一句，<b>能在给出的块里找到依据吗</b></td><td>检索到了没用上（④⑤⑥）</td></tr>
+  <tr><td><b>答案相关性</b><br>answer relevancy</td><td>答的东西，是不是你问的那件事</td><td>没用上（⑥ 答偏）</td></tr>
+</table>
+<p><b>好消息是前两个可以零成本手算</b>：你手上有标准答案，只要把正确那块在第几名找出来，召回和排名就都有了 —— 不需要再调一次模型。这也正是 W5 建评测集的起点：<b>先能测，才谈得上优化。</b></p>
+
+<div class="warn">
+<b>补一条上一版教程的更正。</b>我原来在诊断树上写了"检索病占八成、生成病占两成"。<b>这个比例我没有来源，是我拍的，已经删掉。</b>可靠的说法只有定性的一条：多项研究和工程实践都指向"检索与切块是错误最集中的环节"，但没有一个公认的精确百分比 —— 它跟语料、切分、模型都相关，你要测自己的。这类数字以后我一律不写。
 </div>
 
 <h3>让模型"先引用再作答"</h3>

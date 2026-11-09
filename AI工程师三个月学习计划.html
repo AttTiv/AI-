@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 应用工程师 12 周转型计划 · 嘉哥</title>
+<style>
+:root{
+  --bg:#12141a; --card:#1a1d26; --card2:#21252f; --line:#2c313d;
+  --tx:#e6e8ee; --tx2:#9aa0b0; --tx3:#6b7280;
+  --blue:#6ea8fe; --teal:#4dd0a7; --amber:#f0b354; --red:#e8736b; --purple:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;line-height:1.7;font-size:14px;padding:0 0 80px}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+header{padding:48px 0 32px;border-bottom:1px solid var(--line);margin-bottom:36px}
+h1{font-size:26px;font-weight:600;letter-spacing:-.3px;margin-bottom:10px}
+.sub{color:var(--tx2);font-size:14px}
+.meta{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
+.tag{background:var(--card2);border:1px solid var(--line);border-radius:20px;padding:4px 13px;font-size:12px;color:var(--tx2)}
+h2{font-size:19px;font-weight:600;margin:44px 0 16px;padding-left:12px;border-left:3px solid var(--blue)}
+h3{font-size:15px;font-weight:600;margin:22px 0 10px;color:var(--tx)}
+p{margin-bottom:12px;color:var(--tx)}
+.lead{color:var(--tx2)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+ul{margin:8px 0 12px 20px;color:var(--tx)} li{margin-bottom:6px}
+code{background:var(--card2);padding:1px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:12.5px;color:var(--teal)}
+.b{color:var(--blue)}.t{color:var(--teal)}.a{color:var(--amber)}.r{color:var(--red)}.p{color:var(--purple)}.m{color:var(--tx2)}
+strong{font-weight:600;color:var(--tx)}
+.verdict{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:8px}
+@media(max-width:720px){.verdict{grid-template-columns:1fr}}
+.v{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;border-top:3px solid var(--tx3)}
+.v.ok{border-top-color:var(--teal)} .v.mid{border-top-color:var(--blue)} .v.no{border-top-color:var(--red)}
+.v h4{font-size:14px;font-weight:600;margin-bottom:8px}
+.v .ans{font-size:12px;color:var(--tx2);margin-bottom:10px;min-height:38px}
+.v .why{font-size:12.5px;color:var(--tx2);line-height:1.6;border-top:1px dashed var(--line);padding-top:10px}
+.roadmap{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 8px}
+@media(max-width:720px){.roadmap{grid-template-columns:repeat(2,1fr)}}
+.ph{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.ph .wk{font-size:11px;color:var(--tx3);letter-spacing:.5px}
+.ph .nm{font-size:13px;font-weight:600;margin:4px 0 2px}
+.ph .hr{font-size:11px;color:var(--tx2)}
+.week{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.whead{display:flex;align-items:center;gap:14px;padding:14px 20px;background:var(--card2);border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+.whead:hover{background:#262b36}
+.wnum{background:var(--blue);color:#0d1017;font-weight:600;font-size:12px;border-radius:6px;padding:3px 9px;white-space:nowrap}
+.wnum.p2{background:var(--teal)} .wnum.p3{background:var(--purple)} .wnum.p4{background:var(--amber)}
+.wtitle{flex:1;font-weight:600;font-size:14.5px}
+.wgoal{font-size:12px;color:var(--tx2);font-weight:400;display:block;margin-top:3px}
+.wbody{padding:18px 20px}
+.wbody[hidden]{display:none}
+.chev{color:var(--tx3);font-size:12px;transition:transform .15s}
+.week.open .chev{transform:rotate(90deg)}
+.task{display:flex;gap:10px;padding:7px 0;align-items:flex-start;border-bottom:1px dashed #232833}
+.task:last-of-type{border-bottom:none}
+.task input{margin-top:5px;accent-color:var(--teal);cursor:pointer;flex-shrink:0}
+.task label{cursor:pointer;font-size:13.5px;line-height:1.6}
+.task input:checked + label{text-decoration:line-through;color:var(--tx3)}
+.rt{display:inline-block;background:#2a2438;color:var(--purple);font-size:11px;padding:1px 7px;border-radius:4px;margin-right:6px;font-weight:600;white-space:nowrap}
+.task label:has(+ .rt){}
+code + .rt{margin-left:6px}
+.out{background:#151922;border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin-top:14px;font-size:13px}
+.out .lbl{font-size:11.5px;color:var(--amber);letter-spacing:.5px;margin-bottom:5px;font-weight:600}
+.ref{background:#151b26;border:1px solid var(--line);border-radius:8px;padding:11px 15px;margin-top:14px;font-size:13px;line-height:1.9}
+.ref b{color:var(--tx2);font-weight:500;font-size:12px;margin-right:4px}
+.res a{color:var(--blue);text-decoration:none;border-bottom:1px solid #2a3547}
+.res a:hover{border-bottom-color:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--tx2);font-weight:500;font-size:12px;background:var(--card2)}
+td:first-child{white-space:nowrap;color:var(--tx)}
+.badge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:4px;margin-left:6px}
+.free{background:#123a2c;color:var(--teal)} .paid{background:#3a2412;color:var(--amber)} .cn{background:#1e2740;color:var(--blue)} .loc{background:#2a2438;color:var(--purple)}
+.warn{background:#2a1a1a;border:1px solid #4a2a2a;border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:12px;font-size:13.5px}
+.tip{background:#141f1c;border:1px solid #24453a;border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:12px;font-size:13.5px}
+.bar{height:8px;background:var(--card2);border-radius:4px;overflow:hidden;margin-top:8px}
+.bar > i{display:block;height:100%;background:var(--teal);width:0;transition:width .3s}
+.progbox{position:sticky;top:0;background:rgba(18,20,26,.94);backdrop-filter:blur(8px);z-index:9;padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:8px}
+.progtxt{font-size:12.5px;color:var(--tx2);display:flex;justify-content:space-between}
+footer{margin-top:50px;padding-top:20px;border-top:1px solid var(--line);color:var(--tx3);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>AI 应用工程师 · 12 周转型计划</h1>
+  <div class="sub">给嘉哥的定制版 — 不学编程语言写法，但补齐"能读懂代码"这一块</div>
+  <div class="meta">
+    <span class="tag">目标赛道：AI 应用 / 智能体工程师</span>
+    <span class="tag">时间预算：约 300 小时</span>
+    <span class="tag">差异化：硬件行业 + AI</span>
+    <span class="tag">制定：2026-09-28</span>
+  </div>
+</header>
+
+<div class="progbox">
+  <div class="progtxt"><span>总体进度</span><span id="pnum">0 / 0</span></div>
+  <div class="bar"><i id="pbar"></i></div>
+</div>
+
+<h2>一、先把话说透：三个判断</h2>
+
+<div class="verdict">
+  <div class="v no">
+    <h4>ML / 研究工程师</h4>
+    <div class="ans">三个月：<span class="r">不可能</span></div>
+    <div class="why">训练模型、复现论文。硬门槛是线性代数 + PyTorch + 分布式训练，2026 年主流岗位仍偏好硕博。别往这条路上撞。</div>
+  </div>
+  <div class="v mid">
+    <h4>AI 应用工程师</h4>
+    <div class="ans">三个月：<span class="b">可达初级</span></div>
+    <div class="why">在现成大模型之上做系统：RAG 知识库、Agent 智能体、API 集成、评估体系。模型是别人给的，系统是你建的。<b>推荐主攻这条。</b></div>
+  </div>
+  <div class="v ok">
+    <h4>智能体 / 低代码工程师</h4>
+    <div class="ans">三个月：<span class="t">最快可达</span></div>
+    <div class="why">Coze / Dify / n8n 搭工作流。国内确有岗位写明"专业不限、接受转行"，但薪资集中在 7-15k 档，天花板明显。</div>
+  </div>
+</div>
+
+<div class="warn">
+  <strong>关于"我不想学编程语言"——诉求成立，但有个必须补的缺口。</strong><br>
+  不用手写代码这条路在 2026 年真实可行。但三个现实得先摆明：<br>
+  ① <b>薪资分档</b>：不要求 Python 的智能体岗多在 7-8k 起（成都实招），要求 Python 的 Agent 岗在 9-18k 档，大厂更高。不碰代码 ≈ 主动砍掉上面一档。<br>
+  ② <b>招聘红旗</b>：2026 年技术面试官已明确把"vibe coding 但不懂架构"列为红旗；Meta、Google 等允许面试用 AI，但考的是你如何拆分需求、如何验证 AI 输出。<br>
+  ③ <b>安全盲区</b>：多项独立研究显示约 65% 的 AI 生成应用带安全问题（API key 硬编码、越权、注入）。你读不懂代码，就发现不了。<br><br>
+  <span class="t">破法：不学"写"，只学"读"。</span>目标是 AI 生成的代码你能看懂逻辑、报错能定位、明显漏洞能看出来。全程约 30-40 小时，<b>已拆成 12 段内嵌进下面的每周任务里</b>（带 <span class="rt">读代码 x/12</span> 标记），是这份计划里性价比最高的一项。
+</div>
+
+<div class="tip">
+  <strong>你最大的牌不是"0 基础"，是硬件背景。</strong><br>
+  严格说你不是零基础：硬件设计 + 项目管理、EMC/PCB/BOM 全流程、还用 AI 搭出了 Galapagos 工作台（含云数据 + AI 接入 + 前端），也跑过 Python 脚本。这是真工程底子。<br><br>
+  <span class="t">战略建议：不要去跟几十万年轻人抢"通用 AI 应用工程师"，走「硬件 / 制造 + AI」的交叉位。</span>
+  把 EMC 案例库、器件选型、BOM 审核、故障排查做成行业 AI 系统。这类岗位竞争小得多，而你的行业 know-how 别人三年学不会。
+  更稳的路径是：<b>先在公司内部落地一个真业务系统 → 拿着真实成果转岗或跳槽</b>，比空投简历强十倍。
+</div>
+
+<h2>二、12 周路线图</h2>
+<div class="roadmap">
+  <div class="ph"><div class="wk">WEEK 1-2</div><div class="nm">地基</div><div class="hr">原理直觉 + 提示词</div></div>
+  <div class="ph"><div class="wk">WEEK 3-5</div><div class="nm">能交付</div><div class="hr">工作流 + RAG</div></div>
+  <div class="ph"><div class="wk">WEEK 6-9</div><div class="nm">能进阶</div><div class="hr">Agent + 工具调用</div></div>
+  <div class="ph"><div class="wk">WEEK 10-12</div><div class="nm">够专业</div><div class="hr">评估 + 作品集</div></div>
+</div>
+<p class="lead">点击每一周展开任务清单，勾选会自动保存进度。每周默认 3 个晚上 × 1.5 小时 + 周末半天，约 25 小时。<br>
+带 <span class="rt">读代码 x/12</span> 标记的任务是「读代码能力线」，<b>已按 12 周递进内嵌，不再单列</b>：从认全 Python 五种零件 → 读懂脚本 → 读懂项目 → 能独立 review。每周一条，约 3 小时。</p>
+
+<div id="weeks"></div>
+
+<h2>三、学习资源库</h2>
+
+<h3>A. 必修 · 官方一手资料（免费，质量最高）</h3>
+<div class="card res">
+  <ul>
+    <li><a href="https://www.deeplearning.ai/short-courses/" target="_blank" rel="noopener">DeepLearning.AI 短课程</a> <span class="badge free">免费</span> — 吴恩达团队，每门 1-2 小时。优先上：<i>ChatGPT Prompt Engineering for Developers</i>、<i>Building Systems with ChatGPT</i>、<i>Building and Evaluating Advanced RAG</i>、<i>AI Agents in LangGraph</i>。（MCP 相关短课是否存在 ❓ 建议直接在站内搜 MCP）</li>
+    <li><a href="Anthropic官方文档_中文精读.html">Anthropic 提示词工程官方指南 · 中文精读</a> <span class="badge loc">本地文档</span> — <b>官方域名不对中国大陆开放</b>（打开显示 App unavailable in region，<span class="r">不是链接失效</span>），内容已由巴蒂抓取整理成本地文档</li>
+    <li><a href="https://www.promptingguide.ai/zh" target="_blank" rel="noopener">Prompt Engineering Guide 中文版</a> <span class="badge free">免费</span><span class="badge cn">中文</span> — DAIR.AI 出品，<b>官方文档的首选在线替代</b>，实测可访问</li>
+    <li><a href="Anthropic官方文档_中文精读.html">Anthropic《Building Effective Agents》· 中文精读</a> <span class="badge loc">本地文档</span> — <b>Agent 领域必读第一文</b>，讲清 workflow 和 agent 的区别，读完能少走三个月弯路。<span class="a">注意</span>：原文 2024-12 发布，官方已声明其中工具体系有变，模式思想仍有效</li>
+    <li><a href="https://cookbook.openai.com/" target="_blank" rel="noopener">OpenAI Cookbook</a> <span class="badge free">免费</span> — 官方示例集，当成"菜谱"查</li>
+    <li>Google《Prompt Engineering》白皮书（Lee Boonstra）<span class="badge free">免费</span> — 搜 "Prompt Engineering Google Kaggle whitepaper" 可得 PDF，讲 prompt 技巧最系统的一份</li>
+    <li><a href="https://huggingface.co/learn" target="_blank" rel="noopener">Hugging Face 免费课程</a> <span class="badge free">免费</span> — 想补 LLM 原理时看 LLM Course</li>
+  </ul>
+</div>
+
+<h3>B. 中文资源</h3>
+<div class="card res">
+  <ul>
+    <li>李宏毅机器学习课程（B 站 / YouTube）<span class="badge free">免费</span><span class="badge cn">中文</span> — 讲 LLM 原理最清楚的中文课，看 2024 或 2025 版中关于大模型/提示词的章节即可，<b>不用全看</b></li>
+    <li><a href="https://github.com/datawhalechina" target="_blank" rel="noopener">Datawhale 开源学习组织</a> <span class="badge free">免费</span><span class="badge cn">中文</span> — <i>happy-llm</i> 是从零实现大模型的中文教程。<i>Hello-Agents</i> 是否存在于该组织下 ❓ 请自行在 GitHub 搜索确认</li>
+    <li>通往 AGI 之路（WayToAGI）<span class="badge free">免费</span><span class="badge cn">中文</span> — 国内最大的中文 AI 知识库，查工具选型时很好用</li>
+    <li><a href="https://baoyu.io" target="_blank" rel="noopener">宝玉的博客</a> <span class="badge free">免费</span><span class="badge cn">中文</span> — 翻译大量一手 AI 工程文章，质量高</li>
+  </ul>
+</div>
+
+<h3>C. 建立直觉（不想碰数学就看这两个）</h3>
+<div class="card res">
+  <ul>
+    <li><a href="https://www.bilibili.com/video/BV1KtM16cEDZ" target="_blank" rel="noopener">【极致中配】3Blue1Brown · 神经网络合集</a> <span class="badge free">免费</span><span class="badge cn">中文配音</span> — <b>首选这套</b>，中配比英文原版省一半力气。9 集，按 W1 卡片的取舍清单看，别从头刷</li>
+    <li>3Blue1Brown 官方频道（YouTube + B 站 "3Blue1Brown" 账号）<span class="badge free">免费</span> — 想看英文原版或后续更新时再去</li>
+    <li>Karpathy《Neural Networks: Zero to Hero》（YouTube）<span class="badge free">免费</span> — 想真正搞懂底层再上，时间不够可跳过</li>
+  </ul>
+</div>
+
+<h3>D. 系统化的书</h3>
+<div class="card res">
+  <ul>
+    <li>Chip Huyen《AI Engineering: Building Applications with Foundation Models》（O'Reilly）<span class="badge paid">付费</span> — 目前这个领域最系统的一本书，覆盖 RAG、Agent、评估、成本。啃完这一本顶十门课。<b>W5 之后再读效果最好。</b></li>
+  </ul>
+</div>
+
+<h3>E. 工具清单</h3>
+<div class="card res">
+  <table>
+    <tr><th>用途</th><th>推荐</th><th>说明</th></tr>
+    <tr><td>自然语言编程</td><td>WorkBuddy / Cursor / Claude Code</td><td>你已在用 WorkBuddy，继续用即可；做代码类项目再上 Cursor</td></tr>
+    <tr><td>低代码智能体</td><td>Coze（扣子）、Dify、n8n</td><td>Dify 开源可私有部署，企业场景更吃香；n8n 擅长流程自动化串接</td></tr>
+    <tr><td>向量库</td><td>pgvector</td><td>Postgres 的一个插件，最简单，别一上来就 Pinecone/Weaviate</td></tr>
+    <tr><td>编排框架</td><td>LlamaIndex / LangChain</td><td>先学概念，别死记 API —— 框架半年一换，概念不变</td></tr>
+    <tr><td>评估 / 可观测</td><td>Ragas、Promptfoo、Langfuse</td><td>这是"专业"和"玩票"的分水岭，W10 重点</td></tr>
+    <tr><td>模型 API</td><td>DeepSeek、通义千问、Kimi、Claude、GPT</td><td>国内落地优先国产（合规 + 便宜），能力对标用 Claude/GPT</td></tr>
+  </table>
+</div>
+
+<h2>四、验收标准：什么算学成了</h2>
+<div class="card">
+  <p class="lead">12 周结束时，下面四件事你能独立完成，就算合格：</p>
+  <ul>
+    <li><b>能交付</b>：给一堆文档，做出一个问答系统，并且能说出"我的准确率是 X%，我用这 50 条测试集测的"——能量化，是专业和玩票的第一道分界线</li>
+    <li><b>能判断</b>：给一个业务流程，判断该不该上 AI、用 RAG 还是 Agent、成本每月多少、延迟能不能接受</li>
+    <li><b>能读懂</b>：AI 生成的代码你能看懂逻辑、能定位报错、能认出明显的安全问题<br>
+    <span class="m">自检方法：随手打开 AI 给你写的 100 行脚本，能回答三个问题 —— 它读什么输入、做了什么、写到哪里去。答得上来就够了，<b>不需要能默写</b>。</span></li>
+    <li><b>能说服</b>：能向不懂技术的人讲清楚这个 AI 系统能干什么、不能干什么、失败时怎么兜底</li>
+  </ul>
+  <div class="out">
+    <div class="lbl">作品集三件套（W11 与 W12 产出）</div>
+    ① 行业 RAG 知识库（建议做 EMC 案例库 —— 你的独家数据，别人抄不走）<br>
+    ② 一个业务 Agent（建议做器件选型助手 / BOM 审核助手）<br>
+    ③ 一份评测报告 + 复盘文档（写了哪些坑、怎么解决的 —— 面试官最看这个）<br>
+    <span class="m">每个项目都要部署上线，让面试官能点开就用。</span>
+  </div>
+</div>
+
+<h2>五、风险提示（这三条别忽略）</h2>
+<div class="warn">
+  <strong>1. 三个月后是"初级"，起薪可能不如你现在。</strong> 要有心理准备 —— 真正的回报在第 12-24 个月。建议走"内部转岗 + 带着成果跳槽"，而不是裸辞转型。
+</div>
+<div class="warn">
+  <strong>2. 只学低代码、完全不碰代码，天花板在 8-15k 这一档，且最容易被替代。</strong> 因为门槛低，供应增长最快。上面那 30-40 小时的"读代码"投入，是打破天花板的最便宜的办法。
+</div>
+<div class="warn">
+  <strong>3. 别追新模型、别比新框架。</strong> 2026 年模型三个月一换、框架半年一换，追不完。把时间花在<b>评估方法、系统设计、成本控制</b>上——这些不变的东西才是护城河。
+</div>
+
+<footer>
+  制定于 2026-09-28 · 巴蒂 for 嘉哥<br>
+  说明：薪资区间与岗位要求来自 2026 年公开招聘信息与行业调研，仅作参考，具体以当地实时招聘为准。标 ❓ 的资源请自行核实后使用。
+</footer>
+
+</div>
+
+<script>
+const DATA=[
+{w:"W1",p:"",t:"LLM 原理直觉 + 提示词基本功",g:"搞懂大模型为什么这样工作，写出稳定可复用的 prompt",tasks:[
+"看 3Blue1Brown 神经网络 <b>P1（什么是神经网络）+ P6（Transformer）+ P7（注意力机制）</b>，共约 61 分钟，建立直觉即可。<span class='r'>别从头刷到尾</span> —— 详见下方本周资源的取舍说明",
+"读 Google《Prompt Engineering》白皮书，做笔记：哪些技巧有效、哪些是玄学",
+"通读 <b>Anthropic 提示词工程官方指南中文精读</b>（本地文档，见第三节资源库），重点看结构化输出和 few-shot",
+"搞清楚五个概念并讲给别人听：token、上下文窗口、温度、embedding、幻觉",
+"实践：把日常 5 件重复工作改造成 prompt 模板（周报、评审意见、BOM 核对清单等）",
+"建立个人 Prompt 模板库（Git 仓库或在线文档），<b>带版本号</b> —— 这是你的第一个资产",
+"<span class='rt'>读代码 1/12</span> 认全 Python 的五种基本零件：变量、字符串、dict/list、if/for、函数定义。<b>方法</b>：让 AI 写个小脚本，再让它逐行讲给你听 —— 只求认得，不求会写"
+],ref:"<a href='https://www.bilibili.com/video/BV1KtM16cEDZ' target='_blank' rel='noopener'>【极致中配】3Blue1Brown · 神经网络合集</a>（UP：常青藤名校课，9 集共 2h31m）<br><b>必看</b>：P1 什么是神经网络 15:47 ＋ P6 Transformer 23:06 ＋ P7 注意力机制 22:05 ≈ 61 分钟<br><b>选看</b>：P2 梯度下降 17:02、P5 LLM 简述 6:28<br><b>跳过</b>：P4 反向传播演算（纯数学推导，转型半途而废的人多半卡在这一集）、P9 图像视频生成（与你的赛道无关）<br><b>→ 已排入 W5 任务</b>：P8 LLM 如何存储事实知识 18:57 —— 那周学 RAG 时再看，正好和「模型内部记忆 vs 外部检索」对照",
+out:"个人 Prompt 模板库 ≥10 条 + 一篇《我对大模型工作原理的理解》笔记（用自己的话写，不抄）+ 认全 Python 五种基本零件"},
+
+{w:"W2",p:"",t:"提示词工程进阶 + 结构化输出",g:"让 AI 的输出稳定到可以直接进系统，而不是靠运气",tasks:[
+"上 DeepLearning.AI 短课：ChatGPT Prompt Engineering for Developers",
+"掌握：结构化输出（JSON mode）、few-shot、chain-of-thought、系统提示词分层",
+"实践：让 AI 输出严格 JSON，并写校验逻辑（让 AI 帮你写校验脚本，你读一遍）",
+"理解并实测：为什么同样的 prompt 两次结果不同，怎么约束它",
+"上手 vibe coding 工具：用 WorkBuddy/Cursor 做一个小工具（比如本地文档批量处理）",
+"<span class='rt'>读代码 2/12</span> 逐行读懂 AI 写的第一个脚本，能回答三个问题：<b>它读什么、算什么、写到哪</b>。看不懂的行就让 AI 再讲一遍，直到整段过完"
+],out:"一个能稳定输出 JSON 的 prompt + 一个跑得起来的小工具（哪怕很丑）+ 一个被你逐行读懂的脚本"},
+
+{w:"W3",p:"p2",t:"LLM API + 工作流自动化",g:"让 AI 连上真实的数据和系统，不再只是聊天框",tasks:[
+"搞懂 API 调用这条主线：发请求 → 拿响应 → 解析 JSON → 落库/发通知",
+"装 Dify 或 n8n（本地 Docker 或云端都行），跑通第一个工作流",
+"算清楚 token 成本：做一个表，列明每个功能的输入/输出 token 和单价，算出月成本",
+"做 3 个自动化：① 消息/邮件 → AI 摘要 → 归档　② 日报素材自动汇总　③ 文档批量格式转换",
+"理解上下文窗口的实际限制：长文档怎么塞、超了怎么办",
+"<span class='rt'>读代码 3/12</span> 看懂 API 调用那条主线：<b>发请求 → 拿 JSON → 取字段 → 写文件</b>。能自己改 API key 和参数并跑通 —— 这是你以后读任何 AI 脚本的骨架"
+],out:"3 个跑通的自动化工作流 + 一张 token 成本测算表 + 能独立改参数跑通 API 脚本"},
+
+{w:"W4",p:"p2",t:"RAG 入门：让 AI 基于你的文档回答",g:"这是 AI 落地最值钱的一项技能，也是你作品集的核心",tasks:[
+"搞懂 RAG 的五个环节：切分 chunk → 向量化 → 存向量库 → 检索 → 拼进 prompt 生成",
+"上 DeepLearning.AI 短课：Building and Evaluating Advanced RAG",
+"用 Dify 或 LlamaIndex 搭第一个知识库（先用你的硬件规范文档，20-50 篇足够）",
+"亲手对比：切分大小 200/500/1000 字，检索效果差多少 —— <b>必须自己测，别信别人的结论</b>",
+"发现第一个坑：为什么它答错了？是没检索到，还是检索到了但没用上？（这两种病治法完全不同）",
+"试官方技巧：让模型<b>先引用检索到的原文、再基于引文作答</b>，对比直接作答的效果差异（详见 Anthropic 中文精读 2.3）",
+"<span class='rt'>读代码 4/12</span> 读懂一个 RAG 脚本的数据流：<b>读了哪些文件 → 切成什么 → 存到哪 → 怎么查出来</b>，能在代码里指出这四段分别在哪几行"
+],out:"第一个可演示的 RAG 知识库 + 一份切分策略对比实验记录 + 一张 RAG 代码数据流标注图"},
+
+{w:"W5",p:"p2",t:"RAG 进阶：召回率优化 + 建评测集",g:"从'能跑'到'跑得准'，这一步区分业余和专业",tasks:[
+"<b>建评测集</b>：50 个问题 + 标准答案（用你的硬件文档出题）—— 没有评测集的优化都是瞎调",
+"学会测两个指标：召回率（正确答案被检索出来了吗）、准确率（答案对不对）",
+"上混合检索：BM25 关键词 + 向量检索，实测提升多少",
+"加 rerank 重排序，实测提升多少",
+"每个改动都跑一遍评测集，<b>记录数字变化</b> —— 这张表是你面试时最有力的证据",
+"看 3Blue1Brown <b>P8：大语言模型是如何存储事实知识？</b>（18:57，1.5 倍速约 13 分钟）—— 搞懂模型的「内部记忆」为什么不可靠，才能讲清 RAG 到底在补什么洞。这集是 W1 看片计划里特意留到现在的",
+"开始读 Chip Huyen《AI Engineering》相关章节",
+"<span class='rt'>读代码 5/12</span> 学会看报错：拿到 traceback 能自己读到最后一行、判断是哪一类问题，再贴给 AI。<b>本周起立规矩：所有报错自己先看一遍再问 AI</b>"
+],ref:"<a href='https://www.bilibili.com/video/BV1KtM16cEDZ?p=8' target='_blank' rel='noopener'>3Blue1Brown P8 · 大语言模型是如何存储事实知识的？</a>（18:57）<br>承接 W1 的看片计划。这集讲清了模型把知识「压缩」进参数里会带来什么后果 —— 记不住细节、会编、改不掉。<b>理解了这个，你就明白 RAG 不是在给模型加知识，而是在补它三个结构性缺陷。</b>面试被问「为什么不直接微调」时，这集就是你的答案",
+out:"50 条评测集 + 一张优化前后对比表（召回率/准确率数字），这是作品集的硬核部分 + 报错能自己先读一遍 + 能用一句话讲清 RAG 和微调的分工"},
+
+{w:"W6",p:"p3",t:"Agent 智能体原理",g:"搞懂什么时候该用 Agent，什么时候一个工作流就够了",tasks:[
+"精读 <b>Anthropic《Building Effective Agents》中文精读</b>（本地文档）—— <b>这篇是 Agent 领域第一文献</b>。重点记三样：workflow 与 agent 的区别、五种 workflow 模式、以及「多数场景不用做 Agent」这条铁律",
+"搞懂核心区别：workflow（人定义步骤）vs agent（模型自己规划）。<b>结论先记住：多数业务场景用 workflow 就够，别上来就做自主 Agent</b>",
+"掌握 Agent 的四个组件：任务拆解、工具调用、记忆、循环终止条件",
+"理解并实测：Agent 为什么会死循环？怎么加步数上限和停止条件",
+"用 Dify/Coze 搭一个带工具调用的简单 Agent（查天气、查库存、搜文档）",
+"<span class='rt'>读代码 6/12</span> 读懂函数定义和参数传递：拿到一个工具函数，能说清它<b>接收什么、返回什么、在哪被调用</b> —— 这是看懂工具调用代码的钥匙"
+],out:"一篇《workflow vs agent 怎么选》的判断笔记 + 一个带工具调用的 Agent"},
+
+{w:"W7",p:"p3",t:"MCP 与工具生态",g:"让 AI 能调用你现有的系统和工具，这是 2026 年的标准协议",tasks:[
+"学 MCP（Model Context Protocol）：搞懂它解决什么问题 —— 工具和模型之间的统一插口",
+"看 MCP 官方文档，跑通一个 MCP server（官方有示例，让 AI 带你跑）",
+"给自己的系统挂工具：数据库查询、文件读写、内部 API 调用、网页搜索",
+"实践：做一个'硬件资料查询 Agent'，能查你的器件库 + 查规范文档 + 联网补最新信息",
+"搞懂权限边界：Agent 能碰哪些数据、哪些操作必须人工确认",
+"在 DeepLearning.AI 站内搜索 MCP 相关短课 ❓（若已上线则优先看官方课）",
+"<span class='rt'>读代码 7/12</span> 读懂一个 200 行项目的结构：哪段是配置、哪段是主逻辑、哪段是工具函数。<b>产出一张你自己的代码地图</b>（哪怕手画）"
+],out:"一个挂载了 ≥3 个工具的 Agent + 一份工具权限边界设计说明 + 一张 200 行项目的代码结构地图"},
+
+{w:"W8-9",p:"p3",t:"做你的王牌项目：硬件行业 AI 系统",g:"把前面所有东西整合到一个别人抄不走的项目里",tasks:[
+"<b>选定项目</b>：推荐 EMC 案例库 RAG（你的独家数据）、器件选型助手、或 BOM 审核 Agent",
+"完整走一遍：需求分析 → 数据准备 → 架构设计 → 实现 → 评测 → 迭代",
+"画一张系统架构图（不用很漂亮，但要能讲清楚数据怎么流）",
+"写评测报告：50-100 条测试集，准确率多少、失败案例归类、每个类别怎么改进",
+"踩坑复盘：至少记录 5 个真实踩过的坑和解法 —— <b>面试官最想看这个，比功能列表有价值十倍</b>",
+"部署上线，让别人能点开就用",
+"<span class='rt'>读代码 8-9/12</span> 完整 review 一遍 AI 为这个项目生成的代码，列出你发现的所有问题（哪怕是命名混乱、重复逻辑、没用的死代码）"
+],out:"王牌项目上线 + 架构图 + 评测报告 + 踩坑复盘文档 + 一份代码 review 问题清单。这五件套 = 你的核心竞争力"},
+
+{w:"W10",p:"p4",t:"专业化：评估体系 + 成本 + 安全",g:"这是区分'玩票'和'专业'的分水岭，大多数人跳过了",tasks:[
+"建立离线评测流水线：改一次 prompt 自动跑一遍测试集，对比前后分数",
+"学 LLM-as-judge（用模型给模型打分），并搞懂它的坑：位置偏差、自我偏好",
+"算清三笔账：单次调用成本、月成本、延迟预算。做一个'AI 功能成本核算表'",
+"<b>安全审查</b>：检查你的项目 —— API key 有没有硬编码、有没有越权查询、有没有防 prompt injection",
+"上线检查清单：超时重试、失败兜底、日志追踪、用户反馈回路",
+"上手一个可观测工具（Langfuse 或同类），看到每一次调用的 token 和耗时",
+"<span class='rt'>读代码 10/12</span> 学会认五类必查问题：<b>API key 硬编码、无异常处理、无超时重试、越权查询、无日志</b>。逐条对照检查你自己的项目，写进审查记录"
+],out:"一份《AI 功能上线检查清单》+ 成本核算表 + 安全审查记录。这份清单本身就是面试加分项"},
+
+{w:"W11",p:"p4",t:"作品集 + 简历",g:"把做过的事变成别人看得懂、愿意信的证据",tasks:[
+"整理 3 个项目，每个写成标准案例：<b>问题 → 方案 → 架构图 → 评测数据 → 踩坑复盘</b>",
+"全部部署上线，确保链接点开能用（面试前再点一遍，挂了就完了）",
+"写简历：不要写'熟悉 AI'，要写'搭建 XX 系统，准确率从 X% 提到 Y%，每月节省 Z 小时'",
+"建 GitHub / 个人主页，把项目文档和复盘放上去",
+"准备三个必问题目的答案：① 你怎么判断该不该上 AI　② 你的系统失败了怎么兜底　③ 你怎么证明它有效",
+"整理一份'我能给贵公司做什么'的方案 —— 针对硬件/制造行业，这是你的差异化弹药",
+"<span class='rt'>读代码 11/12</span> 读一个开源 AI 项目的 README + 核心代码（推荐 Dify 或 LlamaIndex），能说清它的架构分层。<b>这是面试常考题</b>，也是判断新框架该不该用的底层能力"
+],out:"作品集主页 + 面向硬件行业的转型简历 + 一份开源项目架构解读笔记"},
+
+{w:"W12",p:"p4",t:"求职 + 内部落地双线",g:"把能力换成位置，两条腿走路",tasks:[
+"<b>线一（推荐先做）</b>：在公司内部提案落地一个 AI 系统 —— 用你 W8-9 的项目原型去谈。拿到真实业务成果，比任何简历都硬",
+"<b>线二</b>：投简历。目标岗位关键词：AI 应用工程师、智能体应用工程师、AI 解决方案工程师、AI 产品经理（技术向）",
+"优先找：制造业/硬件行业的数字化团队、AI 咨询公司、给传统企业做 AI 落地的团队 —— <b>这些地方你的硬件背景是加分项而不是减分项</b>",
+"面试准备：把三个项目讲成三个故事，每个都能答'为什么这么做、不这么做会怎样'",
+"复盘 12 周：哪些学错了方向、哪些该更早开始，写下来 —— 这是下一阶段的起点",
+"<span class='rt'>读代码 12/12</span> 独立 review 一段 AI 写的代码，写出修改意见并让 AI 改。<b>这步做完，你不再需要靠 AI 判断它对不对</b>",
+"制定 4-12 个月的下一步计划：补 Python 工程能力？深耕某个行业？往 AI 架构方向走？"
+],out:"内部提案 or 面试机会 + 一份 4-12 个月后续成长计划 + 读代码能力闭环（能独立 review）"}
+];
+
+const box=document.getElementById('weeks');
+DATA.forEach((d,i)=>{
+  const el=document.createElement('div');
+  el.className='week'+(i===0?' open':'');
+  el.innerHTML=`<div class="whead"><span class="wnum ${d.p}">${d.w}</span><span class="wtitle">${d.t}<span class="wgoal">${d.g}</span></span><span class="chev">&#9654;</span></div>
+  <div class="wbody" ${i===0?'':'hidden'}>
+    ${d.tasks.map((t,j)=>`<div class="task"><input type="checkbox" id="t${i}_${j}"><label for="t${i}_${j}">${t}</label></div>`).join('')}
+    ${d.ref?`<div class="ref"><b>本周资源</b><br>${d.ref}</div>`:''}
+    <div class="out"><div class="lbl">本周产出</div>${d.out}</div>
+  </div>`;
+  box.appendChild(el);
+});
+box.addEventListener('click',e=>{
+  const h=e.target.closest('.whead'); if(!h) return;
+  const w=h.parentElement, b=w.querySelector('.wbody');
+  w.classList.toggle('open'); b.hidden=!w.classList.contains('open');
+});
+const boxes=[...document.querySelectorAll('.task input')];
+function save(){localStorage.setItem('aiplan12',JSON.stringify(boxes.map(b=>b.checked)));}
+function draw(){
+  const n=boxes.filter(b=>b.checked).length;
+  document.getElementById('pnum').textContent=n+' / '+boxes.length+' 项任务';
+  document.getElementById('pbar').style.width=(n/boxes.length*100)+'%';
+}
+let saved=[]; try{saved=JSON.parse(localStorage.getItem('aiplan12')||'[]')}catch(e){}
+boxes.forEach((b,i)=>{b.checked=!!saved[i]; b.addEventListener('change',()=>{save();draw();});});
+draw();
+</script>
+</body>
+</html>
