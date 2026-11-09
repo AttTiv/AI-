@@ -1,0 +1,498 @@
+{
+  "version": "v1.3",
+  "exportedAt": "2026-10-29T01:46:43.565Z",
+  "product": "新国标大点位控制器 AEC2301/AEC2393B/AEC2392BS/AEC2392BM",
+  "standard": "GB 16808-2025 消防强制性认证",
+  "fields": [
+    {
+      "id": "DEF-001",
+      "group": "A 标识与追溯",
+      "name": "缺陷编号",
+      "type": "自动",
+      "required": "auto",
+      "requiredText": "系统自动",
+      "show": true,
+      "note": "系统生成 DEF-YYYY-NNNN，全局唯一"
+    },
+    {
+      "id": "DEF-002",
+      "group": "A 标识与追溯",
+      "name": "来源渠道",
+      "type": "单选",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "售后 / 产线 / 来料 / 测试 / 市场 / 客诉"
+    },
+    {
+      "id": "DEF-003",
+      "group": "A 标识与追溯",
+      "name": "报告人 · 部门",
+      "type": "成员",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "便于回访补信息"
+    },
+    {
+      "id": "DEF-004",
+      "group": "A 标识与追溯",
+      "name": "报告日期",
+      "type": "日期",
+      "required": "auto",
+      "requiredText": "系统自动",
+      "show": true,
+      "note": "系统自动记录"
+    },
+    {
+      "id": "DEF-005",
+      "group": "A 标识与追溯",
+      "name": "产品型号",
+      "type": "单选",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "四选一：AEC2301 / AEC2393B / AEC2392BS / AEC2392BM"
+    },
+    {
+      "id": "DEF-006",
+      "group": "A 标识与追溯",
+      "name": "批次号",
+      "type": "文本",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "批次性问题的唯一抓手"
+    },
+    {
+      "id": "DEF-007",
+      "group": "A 标识与追溯",
+      "name": "序列号 SN",
+      "type": "文本",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": true,
+      "note": "单台定位；现场无法获取时注明原因"
+    },
+    {
+      "id": "DEF-008",
+      "group": "A 标识与追溯",
+      "name": "固件版本号",
+      "type": "文本",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "★ 控制器缺陷与固件强相关，无版本号无法归因"
+    },
+    {
+      "id": "DEF-009",
+      "group": "A 标识与追溯",
+      "name": "硬件 / PCB 版本",
+      "type": "文本",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": true,
+      "note": "与固件版本配合定位"
+    },
+    {
+      "id": "DEF-010",
+      "group": "A 标识与追溯",
+      "name": "发现环节",
+      "type": "单选",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "来料 / 过程 / 终测 / 老化 / 安装调试 / 客户使用"
+    },
+    {
+      "id": "DEF-011",
+      "group": "B 缺陷描述",
+      "name": "现象描述（原话）",
+      "type": "长文本",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "保留原始口语，不得改写"
+    },
+    {
+      "id": "DEF-012",
+      "group": "B 缺陷描述",
+      "name": "结构化现象",
+      "type": "长文本",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": true,
+      "note": "AI 提取 + 人工确认后的规范表述"
+    },
+    {
+      "id": "DEF-013",
+      "group": "B 缺陷描述",
+      "name": "附件",
+      "type": "文件/图片",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "照片 / 波形 / 日志 / 视频；硬件问题靠证据"
+    },
+    {
+      "id": "DEF-014",
+      "group": "B 缺陷描述",
+      "name": "复现条件",
+      "type": "文本",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": true,
+      "note": "能否稳定复现，决定根因分析难度"
+    },
+    {
+      "id": "DEF-015",
+      "group": "B 缺陷描述",
+      "name": "发生台数 / 频次",
+      "type": "数值",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "单台 / 多台 / 批次性"
+    },
+    {
+      "id": "DEF-016",
+      "group": "B 缺陷描述",
+      "name": "已出货影响范围",
+      "type": "文本",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": true,
+      "note": "涉及台数与区域，用于召回 / 围堵决策"
+    },
+    {
+      "id": "DEF-017",
+      "group": "C 定级与围堵",
+      "name": "严重度",
+      "type": "单选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "受理阶段由质量部定级（S/A/B/C），避免一线通胀"
+    },
+    {
+      "id": "DEF-018",
+      "group": "C 定级与围堵",
+      "name": "是否安全相关",
+      "type": "是否",
+      "required": "required",
+      "requiredText": "必填",
+      "show": true,
+      "note": "★ 是 → 强制走最高优先级（人身安全 / 火灾 / 触电）"
+    },
+    {
+      "id": "DEF-019",
+      "group": "C 定级与围堵",
+      "name": "紧急围堵措施",
+      "type": "长文本",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：严重度为 S / A 时必填"
+    },
+    {
+      "id": "DEF-020",
+      "group": "C 定级与围堵",
+      "name": "围堵完成日期",
+      "type": "日期",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": true,
+      "note": "用于统计响应速度"
+    },
+    {
+      "id": "DEF-021",
+      "group": "C 定级与围堵",
+      "name": "是否需上报 / 召回评估",
+      "type": "是否",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：安全相关或 S 级必填；★ 仅人工判定，AI 不得代判"
+    },
+    {
+      "id": "DEF-022",
+      "group": "D 根因分析",
+      "name": "根因分类",
+      "type": "单选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入③根因对策阶段必填（硬件/固件/来料/工艺/误用）"
+    },
+    {
+      "id": "DEF-023",
+      "group": "D 根因分析",
+      "name": "责任方",
+      "type": "单选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入③必填（研发/固件/结构/工艺/供应商/客户）"
+    },
+    {
+      "id": "DEF-024",
+      "group": "D 根因分析",
+      "name": "分析方法",
+      "type": "多选",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": false,
+      "note": "5Why / 鱼骨 / FTA / 失效复现"
+    },
+    {
+      "id": "DEF-025",
+      "group": "D 根因分析",
+      "name": "根因描述",
+      "type": "长文本",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入③必填，须写明因果链与证据"
+    },
+    {
+      "id": "DEF-026",
+      "group": "D 根因分析",
+      "name": "相似历史缺陷编号",
+      "type": "关联",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": false,
+      "note": "AI 检索推荐，工程师选定或否决"
+    },
+    {
+      "id": "DEF-027",
+      "group": "E 对策",
+      "name": "围堵措施（临时）",
+      "type": "长文本",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": true,
+      "note": "止血用的短期手段"
+    },
+    {
+      "id": "DEF-028",
+      "group": "E 对策",
+      "name": "永久对策",
+      "type": "长文本",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入③后必填"
+    },
+    {
+      "id": "DEF-029",
+      "group": "E 对策",
+      "name": "对策类型",
+      "type": "多选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入③必填（改设计/改固件/改工艺/换料/改检验/培训/更新文件）"
+    },
+    {
+      "id": "DEF-030",
+      "group": "E 对策",
+      "name": "ECN 单号",
+      "type": "文本",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：对策含改设计 / 改固件时必填"
+    },
+    {
+      "id": "DEF-031",
+      "group": "E 对策",
+      "name": "是否涉及设计 / 固件 / 元器件变更",
+      "type": "是否",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "★ 触发：进入③必填。仅判断「改了没有」——改了不等于要报备；要不要报备/送检由 F 组「变更影响判定」决定"
+    },
+    {
+      "id": "DEF-032",
+      "group": "E 对策",
+      "name": "SCAR 单号",
+      "type": "文本",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": false,
+      "note": "条件：责任方为供应商时必填"
+    },
+    {
+      "id": "DEF-033",
+      "group": "F 认证合规 · 变更影响判定",
+      "name": "认证证书编号",
+      "type": "文本",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": false,
+      "note": "按型号填写（四款型号各自对应证书）；认证类别=型式试验，发证机构=沈阳消防研究所（常量，无需每行填）"
+    },
+    {
+      "id": "DEF-034",
+      "group": "F 认证合规 · 变更影响判定",
+      "name": "变更影响判定",
+      "type": "单选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "★ 核心判定：条件=DEF-031 为「是」时必填。四选一：①无需报备 ②仅需报备（不送检） ③报备且需送检 ④待认证机构确认。四种走向完全不同的流程，见备注页"
+    },
+    {
+      "id": "DEF-035",
+      "group": "F 认证合规 · 变更影响判定",
+      "name": "判定依据与判定人",
+      "type": "长文本",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：DEF-034 为②③④时必填。须写明「改了哪些内容 + 依据什么判为需要/不需要」，由质量 + 认证对接人双签。★ AI 不得代判"
+    },
+    {
+      "id": "DEF-036",
+      "group": "F 认证合规 · 变更影响判定",
+      "name": "报备单号 / 回执",
+      "type": "文本",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": false,
+      "note": "条件：DEF-034 为②或③时必填。规则=先备案后实施，备案回执到手才允许实施永久对策；①无须、④暂缓"
+    },
+    {
+      "id": "DEF-037",
+      "group": "F 认证合规 · 变更影响判定",
+      "name": "送检范围",
+      "type": "单选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": false,
+      "note": "条件：DEF-034 为③时必填。全项 / 差异项 / 待定（与沈阳消防研究所确认）。全项周期约 3 个月"
+    },
+    {
+      "id": "DEF-038",
+      "group": "F 认证合规 · 变更影响判定",
+      "name": "送检样机准备状态",
+      "type": "单选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "★ 条件：DEF-034 为③时必填，触发点=判定当天就启动，不等整改完成。未启动 / 备料中 / 已齐套待寄 / 已寄出。须注明样机来源（工程样机 / 量产抽样 / 库存机）与数量。判据：方案锁定须早于整改完成；物理齐套按类型判——改固件的应早于整改完成，换料的受新料采购试制周期限制"
+    },
+    {
+      "id": "DEF-039",
+      "group": "F 认证合规 · 变更影响判定",
+      "name": "预计送检完成日",
+      "type": "日期",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": false,
+      "note": "条件：DEF-034 为③时必填。用于把「外部送检周期」从内部闭环周期里剥离，避免误判超期"
+    },
+    {
+      "id": "DEF-040",
+      "group": "F 认证合规 · 变更影响判定",
+      "name": "送检结论",
+      "type": "单选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": false,
+      "note": "条件：DEF-038 为「已寄出」后必填（通过 / 不通过 / 有条件通过）；不通过则打回③重做对策"
+    },
+    {
+      "id": "DEF-041",
+      "group": "G 验证",
+      "name": "验证方式",
+      "type": "多选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入④必填（台架/老化/EMC 复测/环境试验/小批试产/现场试点）"
+    },
+    {
+      "id": "DEF-042",
+      "group": "G 验证",
+      "name": "样本量与结果",
+      "type": "文本",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入④必填；样本量须写明否则「通过」无意义"
+    },
+    {
+      "id": "DEF-043",
+      "group": "G 验证",
+      "name": "验证结论",
+      "type": "单选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入④必填。注意：判定为③的，内部验证通过 ≠ 可关闭，还须等送检结论"
+    },
+    {
+      "id": "DEF-044",
+      "group": "G 验证",
+      "name": "验证人",
+      "type": "成员",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": false,
+      "note": "条件：进入④必填；独立验证人，避免自己验证自己"
+    },
+    {
+      "id": "DEF-045",
+      "group": "H 关闭与横展",
+      "name": "标准化横展项",
+      "type": "多选",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入④必填（DFMEA/PFMEA/设计规范/检验标准/作业指导书/BOM优选/测试用例/服务通告）"
+    },
+    {
+      "id": "DEF-046",
+      "group": "H 关闭与横展",
+      "name": "横展完成确认",
+      "type": "是否",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": false,
+      "note": "须附更新后的文件佐证"
+    },
+    {
+      "id": "DEF-047",
+      "group": "H 关闭与横展",
+      "name": "关闭日期",
+      "type": "日期",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": false,
+      "note": "进入监控期的起点。判定为③的，须送检结论=通过后才可填"
+    },
+    {
+      "id": "DEF-048",
+      "group": "H 关闭与横展",
+      "name": "关闭评审签字",
+      "type": "成员",
+      "required": "conditional",
+      "requiredText": "条件必填",
+      "show": true,
+      "note": "条件：进入⑤必填；质量经理把关"
+    },
+    {
+      "id": "DEF-049",
+      "group": "H 关闭与横展",
+      "name": "复发监控到期日",
+      "type": "日期",
+      "required": "optional",
+      "requiredText": "非必填",
+      "show": false,
+      "note": "建议 3~6 个月；到期无复发方可终态关闭"
+    }
+  ]
+}
